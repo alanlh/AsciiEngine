@@ -1,0 +1,8 @@
+
+
+History:
+
+Version 0.1 - 2018/11/18
+  A Scene object generates relevant html nodes on screen.
+  setWidth/setHeight methods work
+  Framework for storing Drawings mostly finished

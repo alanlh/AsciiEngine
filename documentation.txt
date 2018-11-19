@@ -1,0 +1,99 @@
+NOTE: This documentation is mostly for my own purposes, and is likely to be incomplete/not updated in many places.
+
+
+Project:
+
+A Project should be used for any element involving multiple scenes. Within the project, you can manage different scenes.
+
+Properties:
+  scenes - dictionary of ids to Scenes
+  sceneInfo - dictionary of ids to information about Scenes
+
+Methods:
+  Project(divId) - Creates a new empty project and assigns it to a certain div
+
+  createScene(id, order = -1) - Creates a new empty Scene with width, height = 0. Also creates a div associated with it.
+    If order is -1 or larger than # of scenes, then placed at end.
+
+
+
+----------
+
+Scene:
+A Scene is a complete and indivisible unit. Scenes may be used by themselves or as part of a larger Project.
+There are no safe-measures to ensure that scenes do not overlap. Please test your project on different screen sizes to ensure that they display properly.
+If a scene is used by itself, the user should create a matching <div> element with the matching id.
+  In this case, the div should be considered the property of the library. The user should not attempt to access the div without going through the Scene.
+Scenes may contain text (converted to a Drawing object) or Drawings which are loaded from pre-existing text files.
+
+All scenes should have a unique id. Reuse ids at your own risk.
+All Drawings within a Scene should have different names. However, there may be cases where reusing the id may be beneficial. Use at your own risk.
+Drawings in separate Scenes can freely share ids.
+
+Properties (private):
+  width - the width of the scene in terms of the number of characters.
+  height - the height of the scene in terms of the number of lines.
+  classMembers - A dictionary of class values to Sets of Drawings with that class name
+  drawingData - Maps unique ids to drawing objects
+  idTags - A dictionary containing the class names of the Drawing.
+
+Methods:
+  Scene(id) - Creates a new empty scene with width/height = 0 within the HTML "div" or "pre" element specified by id.
+    NOTE: This constructor and the next should only be used when the Scene is not contained within some larger Project.
+    NOTE: The div element should be created separately. Errors will occur if the div is not present.
+    NOTE: If the HTML element specified by id is a "div", then another "pre" element will be created within it.
+//?  Scene(id, width, height) - Creates a new empty scene with the desired width/height and assigns it to an div.
+
+  setWidth(newWidth) - Changes the width of the scene. Will also change the display
+  setHeight(newHeight) - Changes the height of the scene. Will also change the display
+
+  addDrawing(classSet, drawing) - Adds a Drawing to the Scene. Returns a unique positive integer id if successful, -1 if not successful.
+    NOTE: Reusing the unique id gives undefined behavior.
+    NOTE: Ids are user-given names for each drawing, and may be repeated (similar to classes). Ids are unique to each object and are assigned by the library.
+  addDrawingText(classSet, textStr) - Creates a Drawing from text and adds it to the Scene. Returns true if created successfully.
+  addFile(idSet, fileLoc) - Adds the contents of a file to the Scene as a Drawing. Returns true if called successfully. Wrapper for addDrawing.
+  shiftDrawing(classSet, shift) - Shifts all Drawing with the given class names by the given x, y value. (Must include all class names)
+  moveDrawing(classSet, newLoc) - Moves all Drawings with the given class names to the given x, y value.
+    NOTE: You probably don't want to use this if there are multiple Drawings with that same id.
+    TODO: Alternatively, if classSet is a Set or Array, apply operation to class names. If just string, apply to id
+  getDrawings(classSet) - Returns the ids of all Drawings which match all classes in classSet
+    NOTE: Behavior is undefined if a string representing a single id is passed in
+  orderDrawing(classSet, priority) - Changes the priority of all Drawings with the id. If two Drawings occupy the same space, the Drawing with the lower priority value is displayed.
+    NOTE: Behavior is undefined if two Drawings with the same priority occupy the same spot.
+    NOTE: All priority values should be positive, but won't be strictly checked. Non-positive values are reserved for other use.
+    NOTE: At a certain space, if one Drawing is empty while another isn't, the character from the second Drawing will be displayed regardless of priority.
+  removeDrawing(className) - Removes all drawings with that class name.
+
+  getDrawings(classSet) - if NULL or empty, return entire set of drawings.
+  getClassSet(id) - Gets the class names associated with the id. If not a valid id, return undefined
+
+  addEventListener(idSet, type, handler) - Adds a click listener to all drawings with the id
+    TYPES OF LISTENERS:
+      "click" -
+      "hover" -
+
+  addCLickListener(id, handler) - Adds a click listener to a drawing with the id.
+    NOTE: If only a certain part of a drawing should trigger a click, add a separate Drawing with a lower priority to simulate the same effect.
+  addHoverDisplay(idList, type, text) -
+----------
+
+Drawing:
+A Drawing object is either created from a text string or a file location. In
+
+Properties:
+  drawingText - the text of the Drawing, including line breaks.
+    The line break at the end is optional
+  width, height - height/width of Drawing, to save computation.
+
+  priority - the priority of the Drawing in the scene. Default 0. Low priority is in front
+  textFormat - formatting, including background color, text color, bold, etc. represented w/ dictionary
+
+
+  Drawing(textStr, width, height) - Creates a new empty drawing with the given text.
+    width and height are optional arguments, but either both should be included, or none.
+
+  render(sceneId) - called by SceneId
+  getCharVal(x,y) - Gets the char at those coordinates. (Positive right down)
+  setIds(idSet) - Sets a list of Ids so that the Scene can reference them later.
+
+  NOTE: A Drawing's Scene-related properties should be stored in a separate dictionary???????

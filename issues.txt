@@ -1,0 +1,14 @@
+  Vital:
+Where to store x, y? [Inside Drawing? Especially since Scene doesn't draw objects outside it.]
+Efficient way of rendering w/o iterating through all Drawings?
+Should start writing actual rendering function soon.
+Need to handle events? What framework?
+
+NOTE: Change most functions to public? Then add getters/setters to drawingData, idTags, and classMembers?
+
+  Important:
+Figure out how to include larger objects such as buttons/dropdown lists. Find solution AND figure out ASCII only solution
+
+
+  Bonus:
+More descriptive error messages (Print parameters for bad calls)
