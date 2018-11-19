@@ -67,6 +67,15 @@ Methods:
   getDrawings(classSet) - if NULL or empty, return entire set of drawings.
   getClassSet(id) - Gets the class names associated with the id. If not a valid id, return undefined
 
+  RENDERING:
+  Options:
+    User manually calls render() every time they want to see a new frame
+    Create a render(rate) function which calls render according to value specified by rate. User changes will be reflected in next refresh
+      A value must be returned so that user can stop update once necessary
+    Only changes when something is changed.
+
+  render() - Updates what is currently displayed.
+
   addEventListener(idSet, type, handler) - Adds a click listener to all drawings with the id
     TYPES OF LISTENERS:
       "click" -
@@ -92,7 +101,6 @@ Properties:
   Drawing(textStr, width, height) - Creates a new empty drawing with the given text.
     width and height are optional arguments, but either both should be included, or none.
 
-  render(sceneId) - called by SceneId
   getCharVal(x,y) - Gets the char at those coordinates. (Positive right down)
   setIds(idSet) - Sets a list of Ids so that the Scene can reference them later.
 

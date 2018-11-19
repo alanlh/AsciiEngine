@@ -2,7 +2,12 @@
 
 History:
 
-Version 0.1 - 2018/11/18
+Version 0.1.0 - 2018/11/18
+  Basic rendering completed
+  Updated sample project to test demonstrate class system and drawing placement
+  Bug fixes, including Drawing parsing
+
+Version 0.0.1 - 2018/11/18
   A Scene object generates relevant html nodes on screen.
   setWidth/setHeight methods work
   Framework for storing Drawings mostly finished

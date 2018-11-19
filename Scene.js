@@ -11,13 +11,13 @@ function Scene(id) {
     element = child;
   }
 
-  const sceneContainer = element;;
+  const sceneContainer = element;
   sceneContainer.style.fontFamily = "monospace";
+  sceneContainer.style.fontSize = "1em";
 
   let width_ = 0;
   let height_ = 0;
   this.setWidth = function(newWidth) {
-    console.log("Setting width");
     console.assert(Number.isInteger(newWidth), "Scene width must be an integer");
     console.assert(newWidth >= 0, "Scene width must be non-negative");
     if (newWidth < width_) {
@@ -105,7 +105,7 @@ function Scene(id) {
     idTags[id] = classSet;
     classSet.forEach(function(className) {
       if (!(className in classMembers)) {
-        classMembers[className] = Set();
+        classMembers[className] = new Set();
       }
       classMembers[className].add(id);
     });
@@ -137,8 +137,8 @@ function Scene(id) {
     // If string, search for id with that name, otherwise, must be array or set object.
 
     // Note: A slower algorithm is used for now because I'm not sure if the ids are ordered.
-    let candidates = Set();
-    let filtered = Set();
+    let candidates = new Set();
+    let filtered = new Set();
     for (let className of classSet) {
       console.assert(className in classMembers, "Non-existent class name");
       if (candidates.size == 0) {
@@ -162,10 +162,10 @@ function Scene(id) {
   this.shiftDrawing = function(classSet, shift) {
     // TODO: classSet validation relegated to filterDrawings
     // TODO: Check if coord is a object with x and y as numbers.
-    relevantDrawings = filterDrawings(classSet);
+    let relevantDrawings = filterDrawings(classSet);
     for (let id of relevantDrawings) {
       let drawing = drawingData[id];
-      currCoord = drawing.getLoc();
+      let currCoord = drawing.getLoc();
       currCoord.x += shift.x;
       currCoord.y += shift.y;
       drawing.setLoc(currCoord);
@@ -173,7 +173,7 @@ function Scene(id) {
   }
 
   this.moveDrawing = function(classSet, newLoc) {
-    relevantDrawings = filterDrawings(classSet);
+    let relevantDrawings = filterDrawings(classSet);
     for (let id of relevantDrawings) {
       let drawing = drawingData[id];
       drawing.setLoc(newLoc);
@@ -192,5 +192,25 @@ function Scene(id) {
     return idTags[id];
   }
 
-
+  this.render = function() {
+    // TODO: Optimize by checking only Drawings which have changed?
+    for (let id in drawingData) {
+      let drawing = drawingData[id];
+      let loc = drawing.getLoc();
+      let dimens = drawing.getDimens();
+      for (let i = 0; i < dimens.height; i ++) {
+        if (loc.y + i < 0 || loc.y + i >= height_) {
+          continue;
+        }
+        let row = sceneContainer.children[loc.y + i];
+        for (let j = 0; j < dimens.width; j ++) {
+          if (loc.x + j < 0 || loc.x + j >= width_) {
+            continue;
+          }
+          let cell = row.children[loc.x + j];
+          cell.innerHTML = drawing.getCharValDrawing(j, i);
+        }
+      }
+    }
+  }
 }

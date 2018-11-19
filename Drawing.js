@@ -1,5 +1,5 @@
 // Creates a drawing with the given set
-function Drawing(textStr, dimens, coords) {
+function Drawing(textStr, coords, dimens) {
   let text_ = textStr;
   let width_ = 0; // TODO
   let height_ = 0; // TODO
@@ -14,12 +14,16 @@ function Drawing(textStr, dimens, coords) {
         if (width_ == 0) {
           width_ = i;
         } else {
-          console.assert(i % (width_ + 1) == 0, "Invalid Drawing: Uneven line sizes");
+          console.assert(i % (width_ + 1) == width_, "Invalid Drawing: Uneven line sizes");
         }
       } else if (width_ > 0) {
-        console.assert(i % (width_ + 1) != 0, "Invalid Drawing: Uneven line sizes");
+        console.assert(i % (width_ + 1) != width_, "Invalid Drawing: Uneven line sizes");
       }
     }
+    if (width_ == 0) {
+      width_ = text_.length;
+    }
+    height_ = Math.ceil(text_.length / (width_ + 1));
   } else {
     console.assert(width in dimens && height in dimens, "width and/or height not defined in dimens");
     width_ = dimens.width;
@@ -32,44 +36,44 @@ function Drawing(textStr, dimens, coords) {
     y_ = coords.y;
   }
 
-  this.getLoc() = function() {
+  this.getLoc = function() {
     return {x: x_, y: y_};
   }
-
-  this.setLoc(newLoc) = function() {
-    // Validate newLoc; 
+  this.setLoc = function(newLoc) {
+    // Validate newLoc;
     x_ = newLoc.x;
     y_ = newLoc.y;
   }
 
+  this.getDimens = function() {
+    return {width: width_, height: height_};
+  }
+
   let priority_ = 0;
   this.setPriority = function(newPriority) {
+    // Validate
     priority_ = newPriority;
   }
+
   let textFormat_ = {};
   this.clearFormatting = function() {
     // TODO: Store old formatting, so that only the changes need to be re-rendered
     textFormat_ = {};
   }
 
-  this.render = function() {
-    // TODO??? Should this be here?
-    // Parameters: x,y?
-  }
-
-
   this.getCharValScene = function(xScene, yScene) {
+    // NOTE: Is it better to return " " if points out of bound?
     return this.getCharValDrawing(xScene - x_, yScene - y_);
   }
 
   this.getCharValDrawing = function(xDrawing, yDrawing) {
-    console.assert(xScene < width_ && xScene >= 0, "Drawing getChar Invalid x-Index");
-    console.assert(yScene < height_ && yScene >= 0, "Drawing getChar Invalid y-Index");
-    return this.text.charAt(yScene * (height_ + 1) + xScene);
+    console.assert(xDrawing < width_ && xDrawing >= 0, "Drawing getChar Invalid x-Index");
+    console.assert(yDrawing < height_ && yDrawing >= 0, "Drawing getChar Invalid y-Index");
+    return text_.charAt(yDrawing * (width_ + 1) + xDrawing);
   }
 
   let idSet_ = {};
-  this.setIds(idSet) {
+  this.setIds = function(idSet) {
     idSet_ = idSet;
   }
 }
