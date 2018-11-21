@@ -58,7 +58,7 @@ Methods:
     TODO: Alternatively, if classSet is a Set or Array, apply operation to class names. If just string, apply to id
   getDrawings(classSet) - Returns the ids of all Drawings which match all classes in classSet
     NOTE: Behavior is undefined if a string representing a single id is passed in
-  orderDrawing(classSet, priority) - Changes the priority of all Drawings with the id. If two Drawings occupy the same space, the Drawing with the lower priority value is displayed.
+  orderDrawing(classSet, newPriority) - Changes the priority of all Drawings with the id. If two Drawings occupy the same space, the Drawing with the lower priority value is displayed.
     NOTE: Behavior is undefined if two Drawings with the same priority occupy the same spot.
     NOTE: All priority values should be positive, but won't be strictly checked. Non-positive values are reserved for other use.
     NOTE: At a certain space, if one Drawing is empty while another isn't, the character from the second Drawing will be displayed regardless of priority.

@@ -135,7 +135,6 @@ function Scene(id) {
   let filterDrawings = function(classSet) {
     // Validate classSet
     // If string, search for id with that name, otherwise, must be array or set object.
-
     // Note: A slower algorithm is used for now because I'm not sure if the ids are ordered.
     let candidates = new Set();
     let filtered = new Set();
@@ -145,14 +144,14 @@ function Scene(id) {
         candidates = classMembers[className];
         continue;
       }
-      filtered = Set();
+      filtered = new Set();
       for (let id of candidates) {
-        if (id in classMembers[className]) {
+        if (classMembers[className].has(id)) {
           filtered.add(id);
         }
       }
       if (filtered.size == 0) {
-        return Set();
+        return new Set();
       }
       candidates = filtered;
     }
@@ -184,6 +183,15 @@ function Scene(id) {
     return filterDrawings(classSet);
   }
 
+  this.orderDrawing = function(classSet, newPriority) {
+    // TODO: Verify newPriority;
+    let relevantDrawings = filterDrawings(classSet);
+    for (let id of relevantDrawings) {
+      let drawing = drawingData[id];
+      drawing.setPriority(newPriority);
+    }
+  }
+
   this.getClassSet = function(id) {
     // Verify validity of id (Must be string)
     if (!(id in idTags)) {
@@ -194,22 +202,31 @@ function Scene(id) {
 
   this.render = function() {
     // TODO: Optimize by checking only Drawings which have changed?
-    for (let id in drawingData) {
-      let drawing = drawingData[id];
-      let loc = drawing.getLoc();
-      let dimens = drawing.getDimens();
-      for (let i = 0; i < dimens.height; i ++) {
-        if (loc.y + i < 0 || loc.y + i >= height_) {
-          continue;
-        }
-        let row = sceneContainer.children[loc.y + i];
-        for (let j = 0; j < dimens.width; j ++) {
-          if (loc.x + j < 0 || loc.x + j >= width_) {
+    for (let y = 0; y < height_; y++) {
+      let row = sceneContainer.children[y];
+      for (let x = 0; x < width_; x++) {
+        let topChar = " ";
+        let topPriority = Infinity;
+        for (let id in drawingData) {
+          let drawing = drawingData[id];
+          let loc = drawing.getLoc();
+          if (x < loc.x || y < loc.y) {
             continue;
           }
-          let cell = row.children[loc.x + j];
-          cell.innerHTML = drawing.getCharValDrawing(j, i);
+          let dimens = drawing.getDimens();
+          if (x >= dimens.width + loc.x || y >= dimens.height + loc.y) {
+            continue;
+          }
+
+          let priority = drawing.getPriority();
+          if (priority > topPriority) {
+            continue;
+          }
+          topChar = drawing.getCharValScene(x, y);
+          topPriority = priority;
         }
+        let cell = row.children[x];
+        cell.innerHTML = topChar;
       }
     }
   }

@@ -54,6 +54,9 @@ function Drawing(textStr, coords, dimens) {
     // Validate
     priority_ = newPriority;
   }
+  this.getPriority = function() {
+    return priority_;
+  }
 
   let textFormat_ = {};
   this.clearFormatting = function() {
@@ -69,7 +72,12 @@ function Drawing(textStr, coords, dimens) {
   this.getCharValDrawing = function(xDrawing, yDrawing) {
     console.assert(xDrawing < width_ && xDrawing >= 0, "Drawing getChar Invalid x-Index");
     console.assert(yDrawing < height_ && yDrawing >= 0, "Drawing getChar Invalid y-Index");
-    return text_.charAt(yDrawing * (width_ + 1) + xDrawing);
+    let char = text_.charAt(yDrawing * (width_ + 1) + xDrawing);
+    // Temporary fix. Planning to change system to no longer require evenly sized lines.
+    if (char === "") {
+      return " ";
+    }
+    return char;
   }
 
   let idSet_ = {};
