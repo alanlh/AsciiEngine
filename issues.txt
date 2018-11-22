@@ -5,7 +5,9 @@ Figure out which rendering systems to support.
 
   Important:
 Figure out how to include larger objects such as buttons/dropdown lists. Find solution AND figure out ASCII only solution
-Support for animations, formatting,
+Support for animations,
+Support for text formatting (e.g. background color, text color),
+Options on whether spaces should be transparent (?)
 
   Bonus:
 More descriptive error messages (Print parameters for bad calls)

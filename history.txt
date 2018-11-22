@@ -1,15 +1,20 @@
 Upcoming:
-  Rewrite Drawing parsing system to be more lenient (and to make life easier in general)
+
 
 History:
 
+Version 0.1.1.1 - 2018/11/21
+  Drawing lines no longer need to be the same length
+  Slight changes to examples to better illustrate features
+
 Version 0.1.1 - 2018/11/20
   Added support for different priorities
+  Bug fixes in class filtering, temporary fix to Drawing parsing
 
 Version 0.1.0 - 2018/11/18
   Basic rendering completed
   Updated sample project to test demonstrate class system and drawing placement
-  Bug fixes, temporary fix to Drawing parsing
+  Bug fixes, including Drawing parsing
 
 Version 0.0.1 - 2018/11/18
   A Scene object generates relevant html nodes on screen.

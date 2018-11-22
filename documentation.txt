@@ -74,6 +74,10 @@ Methods:
       A value must be returned so that user can stop update once necessary
     Only changes when something is changed.
 
+  Display Options:
+    By default, blank characters have the lowest priority, regardless of drawing.
+      However, this can be changed(?)
+
   render() - Updates what is currently displayed.
 
   addEventListener(idSet, type, handler) - Adds a click listener to all drawings with the id

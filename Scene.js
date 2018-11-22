@@ -222,7 +222,12 @@ function Scene(id) {
           if (priority > topPriority) {
             continue;
           }
-          topChar = drawing.getCharValScene(x, y);
+          // TODO: Check if getCharValScene returns blank space " "
+          let char = drawing.getCharValScene(x, y);
+          if (char === "") {
+            continue;
+          }
+          topChar = char;
           topPriority = priority;
         }
         let cell = row.children[x];
