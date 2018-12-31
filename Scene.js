@@ -17,6 +17,9 @@ function Scene(id) {
 
   let width_ = 0;
   let height_ = 0;
+
+  let topLayerId_ = [];
+
   this.setWidth = function(newWidth) {
     console.assert(Number.isInteger(newWidth), "Scene width must be an integer");
     console.assert(newWidth >= 0, "Scene width must be non-negative");
@@ -26,6 +29,7 @@ function Scene(id) {
         let row = sceneContainer.children[i];
         for (let j = width_; j > newWidth; j--) {
           row.removeChild(row.children[j - 1]);
+          topLayerId_[i].pop();
         }
       }
     } else if (newWidth > width_) {
@@ -36,9 +40,13 @@ function Scene(id) {
           let text = document.createTextNode(" ");
           node.appendChild(text);
           node.classList.add("scene-" + id + "-cell");
+          node.classList.add("scene-" + id + "-row-" + i);
+          node.classList.add("scene-" + id + "-column-" + j);
+          node.classList.add("scene-" + id + "-" + i + "-" + j);
           // TODO?????
 
           row.appendChild(node);
+          topLayerId_[i].push(0);
         }
       }
 
@@ -56,19 +64,25 @@ function Scene(id) {
       // TODO
       for (let i = height_; i > newHeight; i --) {
         sceneContainer.removeChild(sceneContainer.children[i - 1]);
+        topLayerId_.pop();
       }
     } else if (newHeight > height_) {
       // TODO
       for (let i = height_; i < newHeight; i ++) {
         let row = document.createElement("div");
         row.classList.add("scene-" + id + "-row");
+        topLayerId_.push([]);
         for (let j = 0; j < width_; j ++) {
           let cell = document.createElement("span");
           let text = document.createTextNode(" ");
           cell.appendChild(text);
           cell.classList.add("scene-" + id + "-cell")
+          cell.classList.add("scene-" + id + "-row-" + i);
+          cell.classList.add("scene-" + id + "-column-" + j);
+          cell.classList.add("scene-" + id + "-" + i + "-" + j);
 
           row.appendChild(cell);
+          topLayerId_[i].push(0);
         }
         sceneContainer.appendChild(row);
       }
@@ -92,12 +106,29 @@ function Scene(id) {
     }
   })();
 
+  this.addAnimation = function(classSet, animation) {
+    // TODO: Validate inputs
+
+    let id = generateId();
+    drawingData[id] = animation;
+    idTags[id] = classSet;
+
+    classSet.forEach(function(className) {
+      if (!(className in classMembers)) {
+        classMembers[className] = new Set();
+      }
+      classMembers[className].add(id);
+    })
+
+    return id;
+  }
+
   this.addDrawing = function(classSet, drawing) {
     // TODO: Find other failure conditions
     console.assert(typeof classSet == "object" && classSet instanceof Set,
       "Scene.addDrawing: Invalid input 'classSet'. Set object required");
-    console.assert(typeof drawing == "object" && drawing instanceof Drawing,
-      "Scene.addDrawing: Invalid input 'drawing'. Drawing object required");
+    // console.assert(typeof drawing == "object" && drawing instanceof Drawing,
+    //   "Scene.addDrawing: Invalid input 'drawing'. Drawing object required");
 
     let id = generateId();
     drawingData[id] = drawing;
@@ -164,10 +195,10 @@ function Scene(id) {
     let relevantDrawings = filterDrawings(classSet);
     for (let id of relevantDrawings) {
       let drawing = drawingData[id];
-      let currCoord = drawing.getLoc();
+      let currCoord = drawing.getCoords();
       currCoord.x += shift.x;
       currCoord.y += shift.y;
-      drawing.setLoc(currCoord);
+      drawing.setCoords(currCoord);
     }
   }
 
@@ -175,7 +206,7 @@ function Scene(id) {
     let relevantDrawings = filterDrawings(classSet);
     for (let id of relevantDrawings) {
       let drawing = drawingData[id];
-      drawing.setLoc(newLoc);
+      drawing.setCoords(newLoc);
     }
   }
 
@@ -205,11 +236,12 @@ function Scene(id) {
     for (let y = 0; y < height_; y++) {
       let row = sceneContainer.children[y];
       for (let x = 0; x < width_; x++) {
-        let topChar = " ";
+        let topCharPixel = new CharPixel();
         let topPriority = Infinity;
         for (let id in drawingData) {
           let drawing = drawingData[id];
-          let loc = drawing.getLoc();
+          // Ignore drawings/animations which are not in that region
+          let loc = drawing.getCoords();
           if (x < loc.x || y < loc.y) {
             continue;
           }
@@ -223,15 +255,16 @@ function Scene(id) {
             continue;
           }
           // TODO: Check if getCharValScene returns blank space " "
-          let char = drawing.getCharValScene(x, y);
-          if (char === "") {
+          let charPixel = drawing.getCharValScene(x, y);
+          if (charPixel.isTransparent()) {
             continue;
           }
-          topChar = char;
+          topCharPixel = charPixel;
           topPriority = priority;
         }
         let cell = row.children[x];
-        cell.innerHTML = topChar;
+        cell.innerHTML = topCharPixel.char;
+        // Other options here
       }
     }
   }

@@ -1,7 +1,14 @@
 Upcoming:
-
+More Animation/Layers features
+Formatting (colors, bold, etc.)
 
 History:
+
+Version 0.2.0 - 2018/12/30
+  Switched to a more flexible drawing system.
+    Drawing class still works but will no longer be supported.
+  Added preliminary support for animations and multiple layers.
+  Bug fixes
 
 Version 0.1.1.1 - 2018/11/21
   Drawing lines no longer need to be the same length

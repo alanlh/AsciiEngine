@@ -1,13 +1,15 @@
   Vital:
+Change for of loops because it doesn't gracefully handle empty objects 
 Efficient way of rendering w/o iterating through all Drawings?
 Need to handle events? What framework?
 Figure out which rendering systems to support.
 
   Important:
 Figure out how to include larger objects such as buttons/dropdown lists. Find solution AND figure out ASCII only solution
-Support for animations,
+Support for animations, on-hover dropdowns
 Support for text formatting (e.g. background color, text color),
 Options on whether spaces should be transparent (?)
+How are frames and animations stored in files?
 
   Bonus:
 More descriptive error messages (Print parameters for bad calls)

@@ -1,0 +1,9 @@
+On optimizing DOM changes
+https://stackoverflow.com/questions/37039667/executing-multiple-dom-updates-with-javascript-efficiently
+
+
+
+
+
+Creating a JS library
+http://www.adequatelygood.com/JavaScript-Module-Pattern-In-Depth.html

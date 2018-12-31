@@ -89,7 +89,51 @@ Methods:
     NOTE: If only a certain part of a drawing should trigger a click, add a separate Drawing with a lower priority to simulate the same effect.
   addHoverDisplay(idList, type, text) -
 ----------
+NOTE: All drawing levels can be created using the default constructor,
+  or by reading in a filname, a string (according to how a file would be formatted), or an HTML string (though this might be removed)
 
+
+Animation:
+A collection of frames which may be animated.
+
+Properties:
+  (private):
+    options_:
+      loop - Whether the animation goes back to the beginning after the cycle
+      manualIterate: Whether the animation progresses by itself or
+    frames_: an array of Frames.
+    iterationCounts_: how long each Frame should exist for (in terms of render counts)
+    interationIndex_: Which index the animation is on.
+    frameIndex_: Which frame the animation is on.
+
+    priority_:
+    width_, height_: max width and height of a constituent Frame
+    x_, y_: x and y coordinates of the Animation
+
+Methods:
+    readFromFile(filename) - Creates an animation from a textfile.
+      Each individual drawing should be marked using HTML and wrapped with <pre></pre> tags.
+      If there is no beginning <pre> tag, it will be interpreted as a single Frame.
+      Note that if there is a single '\n' after the <pre>, it will be ignored.
+    addFrame(frame, iterationCount) - appends a frame
+      iterationCount is optional and is 1 by default.
+    getCharVal(x,y) - Gets the char at those coordinates. (Positive right down)
+    nextFrame() - Lets the Animation know to increment the frame count.
+    setOptions(newOptions) - sets the above options. Other properties will be ignored.
+    setIds(idSet) - Sets a list of Ids so that the Scene can reference them later.
+
+Frame:
+
+  Types of inputs:
+    PlainText - Enter as plain text drawing
+    ReadFromFile - using HTML markup
+      (planned) Supported formatting: text color, background color, bold, italics, underline, strikethrough
+
+FrameLayer:
+
+
+
+******* NO LONGER USED ***************
 Drawing:
 A Drawing object is either created from a text string or a file location. In
 
