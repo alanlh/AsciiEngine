@@ -1,8 +1,13 @@
-Upcoming:
+Upcoming (Roughly in planned order):
+Constructors from strings, files, HTML
+Optimization (because current speeds are not viable)
+More formatting support
 More Animation/Layers features
-Formatting (colors, bold, etc.)
 
 History:
+
+Version 0.2.1 - 2019/1/4
+  Preliminary support for formatting
 
 Version 0.2.0 - 2018/12/30
   Switched to a more flexible drawing system.

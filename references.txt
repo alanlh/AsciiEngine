@@ -1,3 +1,5 @@
+Files I might utilize in the future. For private use only. 
+
 On optimizing DOM changes
 https://stackoverflow.com/questions/37039667/executing-multiple-dom-updates-with-javascript-efficiently
 

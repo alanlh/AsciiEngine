@@ -23,20 +23,29 @@ let basicAnimation = function() {
 
   let carBaseString ="\
   __________\n\
- /          \\\n\
-/            \\\n\
-|              ======\n\
+ /..........\\\n\
+/............\\\n\
+|..............======\n\
 |__nn___________nn__C|\n\
-   UU           UU    ";
+   UU           UU";
+
+  let carFrontWindowString = "\
+|   \\\n\
+|____\\\n";
 
   let carFrames = [];
   let carFrameIterations = [];
   for (let i = 0; i < 24; i ++ ) {
-    let carFrameLayer = new FrameLayer(carBaseString, {x: 3 * (i - 6), y: 10});
-    let carFrame = new Frame([carFrameLayer]);
+    let carFrameLayer = new FrameLayer(carBaseString, {x: 3 * (i - 6), y: 10},
+      {backgroundColor: "blue", textColor: "white"}, {setAsBlank: '.'});
+    let carFrontWindowLayer = new FrameLayer(carFrontWindowString, {x: 3 * i - 10, y: 11},
+      {backgroundColor: "#666666", textColor: "white"}, {spaceHasFormatting: true});
+    let carFrame = new Frame([carFrameLayer, carFrontWindowLayer]);
+
     carFrames.push(carFrame);
-    carFrameIterations.push(1);
+    carFrameIterations.push(3 - Math.ceil(Math.abs(i / 6 - 2)));
   }
+
   carAnimation = new Animation(carFrames, carFrameIterations);
   animatedScene.addDrawing(new Set(["car"]), carAnimation);
 
@@ -47,7 +56,7 @@ let basicAnimation = function() {
     let animationStop = performance.now();
     console.log("Rendering one frame took: ", animationStop - animationStart);
     carAnimation.nextFrame();
-    if (iteration < 24) {
+    if (iteration < 25) {
       setTimeout(renderBasic, 100, iteration + 1);
     }
   }

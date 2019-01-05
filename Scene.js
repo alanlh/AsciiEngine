@@ -264,6 +264,11 @@ function Scene(id) {
         }
         let cell = row.children[x];
         cell.innerHTML = topCharPixel.char;
+        cell.style.color = topCharPixel.textColor;
+        cell.style.backgroundColor = topCharPixel.backgroundColor;
+        cell.style.fontWeight = topCharPixel.fontWeight;
+        cell.style.fontStyle = topCharPixel.fontStyle;
+        cell.style.textDecoration = topCharPixel.textDecoration;
         // Other options here
       }
     }

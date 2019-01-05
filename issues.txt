@@ -1,14 +1,20 @@
+  Recently solved:
+Support for text formatting (e.g. background color, text color),
+Options on whether spaces should be transparent (?)
+Support for animations
+
   Vital:
-Change for of loops because it doesn't gracefully handle empty objects 
+Change for of loops because it doesn't gracefully handle empty objects
 Efficient way of rendering w/o iterating through all Drawings?
-Need to handle events? What framework?
+Need to handle events? What framework? Support for listeners, callbacks
 Figure out which rendering systems to support.
+Optimization in rendering. Two solutions:
+  Store which pixels are changed and only update/access those.
+  Treat each line as a single element, unless the formatting varies, to reduce the number of elements.
 
   Important:
 Figure out how to include larger objects such as buttons/dropdown lists. Find solution AND figure out ASCII only solution
-Support for animations, on-hover dropdowns
-Support for text formatting (e.g. background color, text color),
-Options on whether spaces should be transparent (?)
+Support for on-hover dropdowns
 How are frames and animations stored in files?
 
   Bonus:

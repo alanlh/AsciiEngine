@@ -130,7 +130,20 @@ Frame:
       (planned) Supported formatting: text color, background color, bold, italics, underline, strikethrough
 
 FrameLayer:
+  Each FrameLayer has the same formatting and options.
 
+  Formatting:
+    There is preliminary support for 5 types of formatting:
+      text color, background color, font weight (bold), font style (italics), and text decoration (underline/strikethrough)
+
+    Formatting, by default, applies to only non-space characters. Spaces are ignored and are considered transparent
+    Options allows you to change that. There are three settings currently supported:
+      spaceIsTransparent (boolean): This causes the space to not be transparent, but does not apply any of the other settings (i.e. background color is white)
+      spaceHasFormatting (boolean): This causes the space to take the same formatting as everything else.
+      setAsBlank (character): This replaces any copies of that character with a blank, and applies formatting as well. This is probably the most useful setting.
+
+      PLANNED:
+      leadingSpaceIgnored: This sets all leading spaces of each line to be transparent regardless of the other options. Any other spaces will be set according to the options above.
 
 
 ******* NO LONGER USED ***************

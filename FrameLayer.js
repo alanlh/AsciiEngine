@@ -45,19 +45,20 @@ function FrameLayer(textStr, coords, formatting, options) {
     return {width: width_, height: height_};
   }
 
+  formatting = formatting || {};
   let formatting_ = {
-    textColor: "#000000",
-    backgroundColor: "#FFFFFF",
-    bold: false,
-    underline: false,
-    italics: false,
-    strikethrough: false
+    textColor: formatting.textColor || "#000000",
+    backgroundColor: formatting.backgroundColor || "transparent",
+    fontWeight: formatting.fontWeight || "normal",
+    fontStyle: formatting.fontStyle || "normal",
+    textDecoration: formatting.textDecoration || "normal"
   }
 
+  options = options || {};
   let options_ = {
-    spaceIsTransparent: true,
-    spaceHasFormatting: false,
-    setAsBlank: ' '
+    spaceIsTransparent: options.spaceIsTransparent === undefined || options.spaceIsTransparent,
+    spaceHasFormatting: !(options.spaceHasFormatting === undefined || !options.spaceHasFormatting),
+    setAsBlank: options.setAsBlank || ' '
   }
 
   this.getCharData = function(x, y) {
@@ -72,36 +73,58 @@ function FrameLayer(textStr, coords, formatting, options) {
     nextRow = rowIndices[layerY + 1];
 
     let char = text_.charAt(rowStart + layerX);
-    if (formatting_.backgroundColor === "#FFFFFF" && char === ' ') {
+    if (layerX >= nextRow - rowStart - 1) {
       return new CharPixel();
-    } else if (layerX >= nextRow - rowStart - 1) {
-      return new CharPixel();
-    } else if (char === options_.setAsBlank) {
-      // TODO:
-    } else {
-      // Set the space as
-
+    } else if (char !== ' ' && char !== options_.setAsBlank) {
       return new CharPixel({
         char: char,
+        textColor: formatting_.textColor,
+        backgroundColor: formatting_.backgroundColor,
+        fontWeight: formatting_.fontWeight,
+        fontStyle: formatting_.fontStyle,
+        textDecoration: formatting_.textDecoration
+      });
+    } else if (char === options_.setAsBlank) {
+      return new CharPixel({
+        char: ' ',
+        textColor: formatting_.textColor,
+        backgroundColor: formatting_.backgroundColor,
+        fontWeight: formatting_.fontWeight,
+        fontStyle: formatting_.fontStyle,
+        textDecoration: formatting_.textDecoration
+      });
+    } else if (options_.spaceHasFormatting) {
+      // At this point, must be a blank
+      return new CharPixel({
+        char: ' ',
+        textColor: formatting_.textColor,
+        backgroundColor: formatting_.backgroundColor,
+        fontWeight: formatting_.fontWeight,
+        fontStyle: formatting_.fontStyle,
+        textDecoration: formatting_.textDecoration
+      });
+    } else if (!options_.spaceIsTransparent) {
+      return new CharPixel({
+        char: ' ',
+        backgroundColor: "#FFFFFF"
       });
     }
+    return new CharPixel();
   }
-
 }
 
 function CharPixel(charData) {
   charData = charData || {};
   this.char = charData.char || ' ';
   this.textColor = charData.textColor || "#000000";
-  this.backColor = charData.backColor || "#FFFFFF";
-  this.bold = charData.bold || false;
-  this.italics = charData.italics || false;
-  this.underline = charData.underline || false;
-  this.strikethrough = charData.strikethrough || false;
+  this.backgroundColor = charData.backgroundColor || "transparent";
+  this.fontWeight = charData.fontWeight || "normal";
+  this.fontStyle = charData.fontStyle || "normal";
+  this.textDecoration = charData.textDecoration || "normal";
 
   this.isTransparent = function() {
-    return this.char === ' ' && this.backColor === "#FFFFFF"
-      && !this.underline && !this.strikethrough;
+    return this.char === ' ' && this.backgroundColor === "transparent"
+      && this.textDecoration === "normal";
   }
 
 }
