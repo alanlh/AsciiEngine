@@ -223,6 +223,15 @@ function Scene(id) {
     }
   }
 
+  // Prompts the animations with those class names to move to next frame
+  this.iterateAnimation = function(classSet) {
+    let relevantDrawings = filterDrawings(classSet);
+    for (let id of relevantDrawings) {
+      let animation = drawingData[id];
+      animation.nextFrame();
+    }
+  }
+
   this.getClassSet = function(id) {
     // Verify validity of id (Must be string)
     if (!(id in idTags)) {
@@ -230,6 +239,8 @@ function Scene(id) {
     }
     return idTags[id];
   }
+
+  let currentRenderData = [];
 
   this.render = function() {
     // TODO: Optimize by checking only Drawings which have changed?

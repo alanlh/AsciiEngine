@@ -1,14 +1,66 @@
-window.onload = function() {
-  basicAnimation();
-  prioritiesTest();
+window.onload = async function() {
   basicDisplay();
+  prioritiesTest();
+  basicAnimation();
+  await constructorTests();
+}
+
+let constructorTests = async function() {
+  let constructorScene = new Scene("constructorTests");
+
+  constructorScene.setWidth(100);
+  constructorScene.setHeight(30);
+
+  let drawings = await readDataFromFile("Assets/SampleDrawings.txt");
+  console.debug(drawings);
+
+  let cityAnimation = new Animation([drawings.frames["City"]], [1]);
+  constructorScene.addDrawing(new Set(["city"]), cityAnimation);
+  constructorScene.shiftDrawing(new Set(["city"]), {x: 0, y: 10});
+  constructorScene.orderDrawing(new Set(["city"]), 10);
+
+  constructorScene.addDrawing(new Set(["boat"]), drawings.animations["BoatFinal"]);
+  constructorScene.shiftDrawing(new Set(["boat"]), {x: 5, y: 6});
+  let moonFrame = new Frame([drawings.frameLayers["MoonLayer"]]);
+  let moonAnimation = new Animation([moonFrame], [1]);
+  constructorScene.addDrawing(new Set(["moon"]), moonAnimation);
+  constructorScene.shiftDrawing(new Set(["moon"]), {x: 80, y: 0});
+  console.debug(cityAnimation.getPriority());
+  console.debug(drawings.animations["BoatFinal"].getPriority());
+
+  constructorScene.addDrawing(new Set(["sea"]), drawings.animations["SeaAnimation"]);
+  constructorScene.shiftDrawing(new Set(["sea"]), {x: 0, y: 19});
+  constructorScene.orderDrawing(new Set(["sea"]), 20);
+
+  constructorScene.render();
+
+  let renderBasic = function(iteration) {
+    constructorScene.iterateAnimation(new Set(["boat"]));
+    constructorScene.render();
+    if (iteration < 25) {
+      setTimeout(renderBasic, 1000, iteration + 1);
+    }
+  }
+  renderBasic(0);
+
+
+  // let boatAnimation = createAnimationFromFile("Assets/boatAnimation.txt");
+  // console.log(boatAnimation);
+  // constructorScene.addDrawing(new Set(["boat"]), boatAnimation);
+  // constructorScene.shiftDrawing(new Set(["boat"]), {x: 10, y: 10});
+  //
+  // let moonFrameLayer = createFrameLayerFromFile("Assets/moonFrameLayer.txt");
+  // let moonFrame = new Frame([moonFrameLayer]);
+  // let moonAnimation = new Animation([moonFrame]);
+  // constructorScene.addDrawing(new Set(["moon"]), moonAnimation);
+  // constructorScene.shiftDrawing(new Set(["moon"]), {x: 40, y: 0})
 }
 
 let basicAnimation = function() {
   let animatedScene = new Scene("animationTest");
 
   animatedScene.setWidth(60);
-  animatedScene.setHeight(20);
+  animatedScene.setHeight(10);
 
   let sidewalk = "  " + ("=".repeat(56)) + "  \n  " + ("=".repeat(56)) + "  "
     + ("\n".repeat(5)) + ("=".repeat(60)) + "\n" + ("=".repeat(60));
@@ -19,7 +71,9 @@ let basicAnimation = function() {
 
   let sidkewalkId = animatedScene.addDrawing(new Set(["sidewalk"]), sidewalkAnimation);
   animatedScene.orderDrawing(new Set(["sidewalk"]), 20);
-  animatedScene.shiftDrawing(new Set(["sidewalk"]), {x: 0, y: 10})
+  //animatedScene.shiftDrawing(new Set(["sidewalk"]), {x: 0, y: 10})
+
+  //createFrameLayerFromFile("Assets/car.txt");
 
   let carBaseString ="\
   __________\n\
@@ -36,9 +90,9 @@ let basicAnimation = function() {
   let carFrames = [];
   let carFrameIterations = [];
   for (let i = 0; i < 24; i ++ ) {
-    let carFrameLayer = new FrameLayer(carBaseString, {x: 3 * (i - 6), y: 10},
+    let carFrameLayer = new FrameLayer(carBaseString, {x: 3 * (i - 6), y: 0},
       {backgroundColor: "blue", textColor: "white"}, {setAsBlank: '.'});
-    let carFrontWindowLayer = new FrameLayer(carFrontWindowString, {x: 3 * i - 10, y: 11},
+    let carFrontWindowLayer = new FrameLayer(carFrontWindowString, {x: 3 * i - 10, y: 1},
       {backgroundColor: "#666666", textColor: "white"}, {spaceHasFormatting: true});
     let carFrame = new Frame([carFrameLayer, carFrontWindowLayer]);
 

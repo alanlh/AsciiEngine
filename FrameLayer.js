@@ -1,15 +1,3 @@
-function createFrameLayerFromFile(filename) {
-
-}
-
-function createFrameLayerFromString(string) {
-
-}
-
-function createFrameLayerFromHTML(htmlString) {
-
-}
-
 function FrameLayer(textStr, coords, formatting, options) {
   let text_ = textStr;
   let width_ = 0;
@@ -58,7 +46,8 @@ function FrameLayer(textStr, coords, formatting, options) {
   let options_ = {
     spaceIsTransparent: options.spaceIsTransparent === undefined || options.spaceIsTransparent,
     spaceHasFormatting: !(options.spaceHasFormatting === undefined || !options.spaceHasFormatting),
-    setAsBlank: options.setAsBlank || ' '
+    setAsBlank: options.setAsBlank || ' ',
+    leadingSpaceIgnored: options.leadingSpaceIgnored === undefined || options.leadingSpaceIgnored
   }
 
   this.getCharData = function(x, y) {
@@ -85,6 +74,16 @@ function FrameLayer(textStr, coords, formatting, options) {
         textDecoration: formatting_.textDecoration
       });
     } else if (char === options_.setAsBlank) {
+      if (formatting_.backgroundColor === "transparent") {
+        return new CharPixel({
+          char: ' ',
+          textColor: formatting_.textColor,
+          backgroundColor: "#FFFFFF",
+          fontWeight: formatting_.fontWeight,
+          fontStyle: formatting_.fontStyle,
+          textDecoration: formatting_.textDecoration
+        });
+      }
       return new CharPixel({
         char: ' ',
         textColor: formatting_.textColor,

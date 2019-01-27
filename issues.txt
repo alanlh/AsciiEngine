@@ -2,6 +2,7 @@
 Support for text formatting (e.g. background color, text color),
 Options on whether spaces should be transparent (?)
 Support for animations
+File system
 
   Vital:
 Change for of loops because it doesn't gracefully handle empty objects
@@ -16,6 +17,7 @@ Optimization in rendering. Two solutions:
 Figure out how to include larger objects such as buttons/dropdown lists. Find solution AND figure out ASCII only solution
 Support for on-hover dropdowns
 How are frames and animations stored in files?
+Let constructors accept strings and arrays instead of just Sets (user friendlier)
 
   Bonus:
 More descriptive error messages (Print parameters for bad calls)

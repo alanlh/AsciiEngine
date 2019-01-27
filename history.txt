@@ -3,8 +3,15 @@ Constructors from strings, files, HTML
 Optimization (because current speeds are not viable)
 More formatting support
 More Animation/Layers features
+Buttons/Dropdowns etc.
+Callbacks?
 
 History:
+
+Version 0.3.0 - 2019/1/26
+  Preliminary support for reading ASCII text from files
+  Added more animation functionality
+  Bug fixes
 
 Version 0.2.1 - 2019/1/4
   Preliminary support for formatting

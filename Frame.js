@@ -1,15 +1,3 @@
-function createFrameFromFile(filename) {
-
-}
-
-function createFrameFromString(string) {
-
-}
-
-function createFrameFromHtml(htmlString) {
-
-}
-
 /**
  * A frame represents a single image
  * Takes in a plaintext string, and three objects:

@@ -1,18 +1,3 @@
-/* Constructor for Animation object from an array of strings */
-function createAnimationFromString(string) {
-
-}
-
-/* Constructor for Animation object from filename */
-function createAnimationFromFile(filename) {
-
-}
-
-// Todo?
-function createAnimationFromHtml(htmlString) {
-
-}
-
 /**
  * An animation includes one or more Frames
  * Takes in an array of frames, and an array of lengths.
@@ -52,9 +37,11 @@ function Animation(frameArray, iterations, options) {
   let frameIndex_ = 0;
 
   // TODO: Set values according to input parameter
+  options = options || {};
   let options_ = {
-    loop: false,
-    manualIterate: false // Useful for when the number of frames is low,
+    loop: !(options.loop === undefined || !options.loop),
+    manualIterate: !(options.manualIterate === undefined || !options.manualIterate)
+      // Useful for when the number of frames is low,
       //or when the animation rate is defined by another factor
   }
 

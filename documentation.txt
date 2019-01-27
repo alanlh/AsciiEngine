@@ -1,6 +1,4 @@
 NOTE: This documentation is mostly for my own purposes, and is likely to be incomplete/not updated in many places.
-
-
 Project:
 
 A Project should be used for any element involving multiple scenes. Within the project, you can manage different scenes.
@@ -14,8 +12,6 @@ Methods:
 
   createScene(id, order = -1) - Creates a new empty Scene with width, height = 0. Also creates a div associated with it.
     If order is -1 or larger than # of scenes, then placed at end.
-
-
 
 ----------
 
@@ -111,11 +107,11 @@ Properties:
     x_, y_: x and y coordinates of the Animation
 
 Methods:
-    readFromFile(filename) - Creates an animation from a textfile.
+    [Deprecated?] readFromFile(filename) - Creates an animation from a textfile.
       Each individual drawing should be marked using HTML and wrapped with <pre></pre> tags.
       If there is no beginning <pre> tag, it will be interpreted as a single Frame.
       Note that if there is a single '\n' after the <pre>, it will be ignored.
-    addFrame(frame, iterationCount) - appends a frame
+    [Deprecated?] addFrame(frame, iterationCount) - appends a frame
       iterationCount is optional and is 1 by default.
     getCharVal(x,y) - Gets the char at those coordinates. (Positive right down)
     nextFrame() - Lets the Animation know to increment the frame count.
@@ -143,8 +139,15 @@ FrameLayer:
       setAsBlank (character): This replaces any copies of that character with a blank, and applies formatting as well. This is probably the most useful setting.
 
       PLANNED:
-      leadingSpaceIgnored: This sets all leading spaces of each line to be transparent regardless of the other options. Any other spaces will be set according to the options above.
+      leadingSpaceIgnored (boolean): This sets all leading spaces of each line to be transparent regardless of the other options. Any other spaces will be set according to the options above.
+      spaceHasFormattingOnly (boolean): Applies formatting, but selects the character (only) from the next framelayer if there is one
+        NOTE: This is not a necessary feature, but it might make visualizing certain drawings easier
 
+
+    Alternate Constructors:
+      createFrameLayerFromFile (filename): Assumes that the file uses the custom format
+      createFrameFromString (string): String version of JSON.
+        NOTE: These two constructors will remove the first leading newline, if there is one.
 
 ******* NO LONGER USED ***************
 Drawing:
