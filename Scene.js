@@ -244,6 +244,15 @@ function Scene(id) {
 
   this.render = function() {
     // TODO: Optimize by checking only Drawings which have changed?
+    while (currentRenderData.length < height_) {
+      currentRenderData.push([]);
+    }
+    for (let i = 0; i < height_; i ++) {
+      while (currentRenderData[i].length < width_) {
+        currentRenderData[i].push(new CharPixel());
+      }
+    }
+        
     for (let y = 0; y < height_; y++) {
       let row = sceneContainer.children[y];
       for (let x = 0; x < width_; x++) {
@@ -273,13 +282,20 @@ function Scene(id) {
           topCharPixel = charPixel;
           topPriority = priority;
         }
-        let cell = row.children[x];
-        cell.innerHTML = topCharPixel.char;
-        cell.style.color = topCharPixel.textColor;
-        cell.style.backgroundColor = topCharPixel.backgroundColor;
-        cell.style.fontWeight = topCharPixel.fontWeight;
-        cell.style.fontStyle = topCharPixel.fontStyle;
-        cell.style.textDecoration = topCharPixel.textDecoration;
+        if (topCharPixel.sameAs(currentRenderData[y][x])) {
+          
+        } else {
+          currentRenderData[y][x] = topCharPixel;
+          
+          let cell = row.children[x];
+          cell.innerHTML = topCharPixel.char;
+          cell.style.color = topCharPixel.textColor;
+          cell.style.backgroundColor = topCharPixel.backgroundColor;
+          cell.style.fontWeight = topCharPixel.fontWeight;
+          cell.style.fontStyle = topCharPixel.fontStyle;
+          cell.style.textDecoration = topCharPixel.textDecoration;
+        }
+        
         // Other options here
       }
     }

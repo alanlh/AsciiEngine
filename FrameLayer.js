@@ -125,5 +125,14 @@ function CharPixel(charData) {
     return this.char === ' ' && this.backgroundColor === "transparent"
       && this.textDecoration === "normal";
   }
+  
+  this.sameAs = function(other) {
+    return this.char === other.char &&
+      this.textColor === other.textColor &&
+      this.backgroundColor === other.backgroundColor &&
+      this.fontWeight === other.fontWeight &&
+      this.fontStyle === other.fontStyle &&
+      this.textDecoration === other.textDecoration;
+  }
 
 }

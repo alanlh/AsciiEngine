@@ -45,7 +45,6 @@ NAME: Type
   let frameLayerJobs = {};
 
   let splitter = dataString.split("\n", 1)[0] + '\n';
-  console.debug("Splitter: ", splitter);
   // TODO: Verify that there is data
   let components = dataString.split(splitter);
   // TODO: Verify that components[0] is empty string
@@ -53,19 +52,15 @@ NAME: Type
     if (components[i].length === 0) {
       continue;
     }
-    console.debug("Component: ", components[i]);
     let title = components[i].split("\n", 1)[0];
     let name = title.split(":")[0].trim()
     let type = title.split(":")[1].trim()
     if (type === "Animation") {
       animationJobs[name] = createAnimationFromString(components[i], frameJobs);
-      console.debug(animationJobs);
     } else if (type === "Frame") {
       frameJobs[name] = createFrameFromString(components[i], frameLayerJobs);
-      console.debug(frameJobs);
     } else if (type === "FrameLayer") {
       frameLayerJobs[name] = createFrameLayerFromString(components[i]);
-      console.debug(frameLayerJobs);
     } else {
       console.error("Improper type name.")
     }

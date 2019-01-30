@@ -12,7 +12,6 @@ let constructorTests = async function() {
   constructorScene.setHeight(30);
 
   let drawings = await readDataFromFile("Assets/SampleDrawings.txt");
-  console.debug(drawings);
 
   let cityAnimation = new Animation([drawings.frames["City"]], [1]);
   constructorScene.addDrawing(new Set(["city"]), cityAnimation);
@@ -25,8 +24,6 @@ let constructorTests = async function() {
   let moonAnimation = new Animation([moonFrame], [1]);
   constructorScene.addDrawing(new Set(["moon"]), moonAnimation);
   constructorScene.shiftDrawing(new Set(["moon"]), {x: 80, y: 0});
-  console.debug(cityAnimation.getPriority());
-  console.debug(drawings.animations["BoatFinal"].getPriority());
 
   constructorScene.addDrawing(new Set(["sea"]), drawings.animations["SeaAnimation"]);
   constructorScene.shiftDrawing(new Set(["sea"]), {x: 0, y: 19});
@@ -35,25 +32,16 @@ let constructorTests = async function() {
   constructorScene.render();
 
   let renderBasic = function(iteration) {
+    let start = performance.now();
     constructorScene.iterateAnimation(new Set(["boat"]));
     constructorScene.render();
+    let stop = performance.now();
+    console.log("ConstructorTest: Iteration: ", iteration, ". Runtime: ", stop - start);
     if (iteration < 25) {
-      setTimeout(renderBasic, 1000, iteration + 1);
+      setTimeout(renderBasic, 500, iteration + 1);
     }
   }
   renderBasic(0);
-
-
-  // let boatAnimation = createAnimationFromFile("Assets/boatAnimation.txt");
-  // console.log(boatAnimation);
-  // constructorScene.addDrawing(new Set(["boat"]), boatAnimation);
-  // constructorScene.shiftDrawing(new Set(["boat"]), {x: 10, y: 10});
-  //
-  // let moonFrameLayer = createFrameLayerFromFile("Assets/moonFrameLayer.txt");
-  // let moonFrame = new Frame([moonFrameLayer]);
-  // let moonAnimation = new Animation([moonFrame]);
-  // constructorScene.addDrawing(new Set(["moon"]), moonAnimation);
-  // constructorScene.shiftDrawing(new Set(["moon"]), {x: 40, y: 0})
 }
 
 let basicAnimation = function() {
@@ -105,10 +93,10 @@ let basicAnimation = function() {
 
   // Defined here because at time of writing, a good rendering implementation had not been written yet.
   let renderBasic = function(iteration) {
-    let animationStart = performance.now();
+    let start = performance.now();
     animatedScene.render();
-    let animationStop = performance.now();
-    console.log("Rendering one frame took: ", animationStop - animationStart);
+    let stop = performance.now();
+    console.log("AnimationTest: Iteration: ", iteration, ". Runtime: ", stop - start);
     carAnimation.nextFrame();
     if (iteration < 25) {
       setTimeout(renderBasic, 100, iteration + 1);
