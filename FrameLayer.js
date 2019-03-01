@@ -50,6 +50,10 @@ function FrameLayer(textStr, coords, formatting, options) {
     leadingSpaceIgnored: options.leadingSpaceIgnored === undefined || options.leadingSpaceIgnored
   }
 
+  this.copy = function() {
+    return new FrameLayer(text_, {x: x_, y: y_}, formatting_, options_);
+  }
+
   this.getCharData = function(x, y) {
     layerX = x - x_;
     layerY = y - y_;

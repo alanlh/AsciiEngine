@@ -1,12 +1,17 @@
 Upcoming (Roughly in planned order):
-Constructors from strings, files, HTML
-Optimization (because current speeds are not viable)
 More formatting support
 More Animation/Layers features
 Buttons/Dropdowns etc.
 Callbacks?
 
 History:
+Version 0.3.2 - 2019/3/1
+  Animations, Frames, and FrameLayers are now reusable.
+    The scene will create and use a deep copy every time an animation is added.
+  Scene method parameters no longer require a "Set" object to be created
+    Can either input as a single string (with space as delimiter) or as array
+  Rendering bug fixes
+
 Version 0.3.1 - 2019/1/30
   Added a simple but very effective optimization
   Added a document with test results

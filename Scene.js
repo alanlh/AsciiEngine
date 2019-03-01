@@ -108,9 +108,14 @@ function Scene(id) {
 
   this.addAnimation = function(classSet, animation) {
     // TODO: Validate inputs
-
+    if (typeof classSet === "string") {
+      classSet = classSet.split(" ");
+      classSet = new Set(classSet);
+    } else if (classSet instanceof Array) {
+      classSet = new Set(classSet);
+    }
     let id = generateId();
-    drawingData[id] = animation;
+    drawingData[id] = animation.copy();
     idTags[id] = classSet;
 
     classSet.forEach(function(className) {
@@ -125,8 +130,12 @@ function Scene(id) {
 
   this.addDrawing = function(classSet, drawing) {
     // TODO: Find other failure conditions
-    console.assert(typeof classSet == "object" && classSet instanceof Set,
-      "Scene.addDrawing: Invalid input 'classSet'. Set object required");
+    if (typeof classSet === "string") {
+      classSet = classSet.split(" ");
+      classSet = new Set(classSet);
+    } else if (classSet instanceof Array) {
+      classSet = new Set(classSet);
+    }
     // console.assert(typeof drawing == "object" && drawing instanceof Drawing,
     //   "Scene.addDrawing: Invalid input 'drawing'. Drawing object required");
 
@@ -167,6 +176,18 @@ function Scene(id) {
     // Validate classSet
     // If string, search for id with that name, otherwise, must be array or set object.
     // Note: A slower algorithm is used for now because I'm not sure if the ids are ordered.
+    if (typeof classSet === "string") {
+      classSet = classSet.split(" ");
+      if (classSet.length == 1) {
+        if (drawingData[classSet[0]]) {
+          return new Set(classSet)
+        }
+      }
+      classSet = new Set(classSet);
+    } else if (classSet instanceof Array) {
+      classSet = new Set(classSet);
+    }
+    
     let candidates = new Set();
     let filtered = new Set();
     for (let className of classSet) {

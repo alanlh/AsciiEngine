@@ -27,9 +27,10 @@ function Animation(frameArray, iterations, options) {
     }
   }
 
-  let frames_ = frameArray;
+  let frames_ = [];
   let iterationCounts_ = [0];
   for (let i = 0; i < frameArray.length; i ++) {
+    frames_.push(frameArray[i].copy());
     iterationCounts_.push(iterationCounts_[i] + iterations[i]);
   }
 
@@ -44,9 +45,24 @@ function Animation(frameArray, iterations, options) {
       // Useful for when the number of frames is low,
       //or when the animation rate is defined by another factor
   }
+  
+  this.copy = function() {
+    // TODO: Change iterations to create a copy
+    return new Animation(frames_, iterations, options_);
+  }
+  
+  this.printDebug = function() {
+    console.log("Animation Data:\n", "iterationIndex: ", iterationIndex_, "\nframeIndex: ", frameIndex_);
+  }
 
   this.setOptions = function(newOptions) {
-    // TODO:
+    newOptions = newOptions || {};
+    options_ = {
+      loop: !(newOptions.loop === undefined || !newOptions.loop),
+      manualIterate: !(newOptions.manualIterate === undefined || !newOptions.manualIterate)
+        // Useful for when the number of frames is low,
+        //or when the animation rate is defined by another factor
+    }
   }
 
   // Set to be the maximum dimensions of any frame. For internal use only.
