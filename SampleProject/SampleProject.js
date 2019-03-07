@@ -3,6 +3,19 @@ window.onload = async function() {
   prioritiesTest();
   basicAnimation();
   await constructorTests();
+  await interactiveTest();
+}
+
+let interactiveTest = async function() {
+  let interactiveScene = new Scene("interactiveTest");
+  
+  interactiveScene.setWidth(50);
+  interactiveScene.setHeight(25);
+  
+  let assets = await readDataFromFile("Assets/InteractiveSign.txt");
+  
+  interactiveScene.addAnimation("sign", assets.animations["Sign"]);
+  interactiveScene.render();
 }
 
 let constructorTests = async function() {

@@ -131,8 +131,11 @@ function CharPixel(charData) {
   }
   
   this.sameAs = function(other) {
-    return this.char === other.char &&
-      this.textColor === other.textColor &&
+    return this.char === other.char && this.sameFormatting(other);
+  }
+  
+  this.sameFormatting = function(other) {
+    return this.textColor === other.textColor &&
       this.backgroundColor === other.backgroundColor &&
       this.fontWeight === other.fontWeight &&
       this.fontStyle === other.fontStyle &&

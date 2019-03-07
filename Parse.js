@@ -125,8 +125,7 @@ function createFrameLayerFromString(string) {
   data = data.replace(/\r/g, '');
 
   let options = splitString.options;
-
-  let coordinates = options.coordinates || {x: 0, y: 0};
+  let coordinates = options.coords || options.coordinates || {x: 0, y: 0};
   let formatting = options.formatting || {};
 
   return new FrameLayer(data, coordinates, formatting, options);

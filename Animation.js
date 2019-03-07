@@ -48,6 +48,10 @@ function Animation(frameArray, iterations, options) {
   
   this.copy = function() {
     // TODO: Change iterations to create a copy
+    iterationsOriginal = [];
+    for (let i = 1; i < iterationCounts_.length; i ++) {
+      iterationsOriginal.push(iterationCounts_[i] - iterationCounts_[i - 1]);
+    }
     return new Animation(frames_, iterations, options_);
   }
   

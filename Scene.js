@@ -264,7 +264,6 @@ function Scene(id) {
   let currentRenderData = [];
 
   this.render = function() {
-    // TODO: Optimize by checking only Drawings which have changed?
     while (currentRenderData.length < height_) {
       currentRenderData.push([]);
     }
@@ -277,37 +276,11 @@ function Scene(id) {
     for (let y = 0; y < height_; y++) {
       let row = sceneContainer.children[y];
       for (let x = 0; x < width_; x++) {
-        let topCharPixel = new CharPixel();
-        let topPriority = Infinity;
-        for (let id in drawingData) {
-          let drawing = drawingData[id];
-          // Ignore drawings/animations which are not in that region
-          let loc = drawing.getCoords();
-          if (x < loc.x || y < loc.y) {
-            continue;
-          }
-          let dimens = drawing.getDimens();
-          if (x >= dimens.width + loc.x || y >= dimens.height + loc.y) {
-            continue;
-          }
-
-          let priority = drawing.getPriority();
-          if (priority > topPriority) {
-            continue;
-          }
-          // TODO: Check if getCharValScene returns blank space " "
-          let charPixel = drawing.getCharValScene(x, y);
-          if (charPixel.isTransparent()) {
-            continue;
-          }
-          topCharPixel = charPixel;
-          topPriority = priority;
-        }
+        let topCharPixel = getUpdatedCell(x, y);
         if (topCharPixel.sameAs(currentRenderData[y][x])) {
           
         } else {
           currentRenderData[y][x] = topCharPixel;
-          
           let cell = row.children[x];
           cell.innerHTML = topCharPixel.char;
           cell.style.color = topCharPixel.textColor;
@@ -316,9 +289,38 @@ function Scene(id) {
           cell.style.fontStyle = topCharPixel.fontStyle;
           cell.style.textDecoration = topCharPixel.textDecoration;
         }
-        
         // Other options here
       }
     }
+  }
+  
+  let getUpdatedCell = function(x, y) {
+    let topCharPixel = new CharPixel();
+    let topPriority = Infinity;
+    for (let id in drawingData) {
+      let drawing = drawingData[id];
+      // Ignore drawings/animations which are not in that region
+      let loc = drawing.getCoords();
+      if (x < loc.x || y < loc.y) {
+        continue;
+      }
+      let dimens = drawing.getDimens();
+      if (x >= dimens.width + loc.x || y >= dimens.height + loc.y) {
+        continue;
+      }
+
+      let priority = drawing.getPriority();
+      if (priority > topPriority) {
+        continue;
+      }
+      // TODO: Check if getCharValScene returns blank space " "
+      let charPixel = drawing.getCharValScene(x, y);
+      if (charPixel.isTransparent()) {
+        continue;
+      }
+      topCharPixel = charPixel;
+      topPriority = priority;
+    }
+    return topCharPixel;
   }
 }

@@ -5,6 +5,10 @@ Buttons/Dropdowns etc.
 Callbacks?
 
 History:
+Version 0.3.3 - 
+  
+  Minor bug fixes and updates
+
 Version 0.3.2 - 2019/3/1
   Animations, Frames, and FrameLayers are now reusable.
     The scene will create and use a deep copy every time an animation is added.
