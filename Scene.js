@@ -245,11 +245,11 @@ function Scene(id) {
   }
 
   // Prompts the animations with those class names to move to next frame
-  this.iterateAnimation = function(classSet) {
+  this.iterateAnimation = function(classSet, frameLabel) {
     let relevantDrawings = filterDrawings(classSet);
     for (let id of relevantDrawings) {
       let animation = drawingData[id];
-      animation.nextFrame();
+      animation.setFrame(frameLabel);
     }
   }
 

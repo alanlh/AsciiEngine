@@ -1,0 +1,52 @@
+----Delimiter----
+SignPost: FrameLayer
+{
+"coords": {"x": 20, "y": 10}
+}
+|       |
+|  \    |
+|       |
+|       |
+|    '  |
+|    '  |
+|       |
+|  ,    |
+|  ,    |
+|       |
+|       |
+|       |
+|       |
+|       |
+----Delimiter----
+SignBoard: FrameLayer
+{
+
+}
+      _____________________________________
+    /                                       \
+   /                                         \
+  /                                           \
+ /                                             \
+<       UNFINISHED - WAIT FOR NEXT PATCH       >
+ \                                             /
+  \                                           /
+   \                                         /
+    \ _____________________________________ /
+----Delimiter----
+SignFrame: Frame
+{
+
+}
+SignPost
+SignBoard
+----Delimiter----
+Sign: Animation
+{
+
+}
+SignFrame, 1
+----Delimiter----
+Sign1: Animation
+{
+
+}

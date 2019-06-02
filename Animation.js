@@ -2,87 +2,61 @@
  * An animation includes one or more Frames
  * Takes in an array of frames, and an array of lengths.
 **/
-function Animation(frameArray, iterations, options) {
-  if (!(frameArray instanceof Array)) {
-    console.error("Animation paramter frameArray is not an Array: ", frameArray);
-  }
-  for (let i = 0; i < frameArray.length; i ++) {
-    if (!(frameArray[i] instanceof Frame)) {
-      console.error("Animation parameter frameArray contains non-Frame objects at index ", i, ": ", frameArray[i]);
+function Animation(frames, startKey) {
+  // TODO: Add support for multiple keys pointing to same frame without extra memory.
+  
+  let frames_ = {};
+  let currentKey_ = startKey;
+  let defaultKey_ = startKey;
+  for (key in frames) {
+    console.assert(frames[key] instanceof Frame);
+    frames_[key] = frames[key].copy();
+    
+    if (!(currentKey_ in frames_) || currentKey_ == undefined) {
+      currentKey_ = key;
     }
-  }
-
-  if (!(iterations instanceof Array)) {
-    console.error("Animation parameter iterations is not an Array: ", iterations);
-  }
-  if (iterations.length !== frameArray.length) {
-    console.error("Animation parameters frameArray and iterations do not have the same length. ",
-      "frameArray length: ", frameArray.length, ". ",
-      "iterations length: ", iterations.length, ". "
-    )
-  }
-  for (let i = 0; i < iterations.length; i ++) {
-    if (!Number.isInteger(iterations[i])) {
-      console.error("Animation parameter iteration contains non-Integer values at index ", i, ": ", iterations[i]);
-    }
-  }
-
-  let frames_ = [];
-  let iterationCounts_ = [0];
-  for (let i = 0; i < frameArray.length; i ++) {
-    frames_.push(frameArray[i].copy());
-    iterationCounts_.push(iterationCounts_[i] + iterations[i]);
-  }
-
-  let iterationIndex_ = 0;
-  let frameIndex_ = 0;
-
-  // TODO: Set values according to input parameter
-  options = options || {};
-  let options_ = {
-    loop: !(options.loop === undefined || !options.loop),
-    manualIterate: !(options.manualIterate === undefined || !options.manualIterate)
-      // Useful for when the number of frames is low,
-      //or when the animation rate is defined by another factor
   }
   
   this.copy = function() {
-    // TODO: Change iterations to create a copy
-    iterationsOriginal = [];
-    for (let i = 1; i < iterationCounts_.length; i ++) {
-      iterationsOriginal.push(iterationCounts_[i] - iterationCounts_[i - 1]);
-    }
-    return new Animation(frames_, iterations, options_);
+    return new Animation(frames_, defaultKey_);
   }
   
-  this.printDebug = function() {
-    console.log("Animation Data:\n", "iterationIndex: ", iterationIndex_, "\nframeIndex: ", frameIndex_);
+  this.printDebug = function(title) {
+    // TODO: Print list of keys in frames? 
+    if (title) {
+      console.log(title);
+    }
+    for (key in frames) {
+      console.log(key);
+    }
+  }
+
+  this.setDefaultFrame = function(newDefault) {
+    // TODO: Handle bad input
+    
+    defaultKey_ = newDefault;
   }
 
   this.setOptions = function(newOptions) {
-    newOptions = newOptions || {};
-    options_ = {
-      loop: !(newOptions.loop === undefined || !newOptions.loop),
-      manualIterate: !(newOptions.manualIterate === undefined || !newOptions.manualIterate)
-        // Useful for when the number of frames is low,
-        //or when the animation rate is defined by another factor
-    }
+    console.debug("This function is deprecated as of v0.3.3");
+    return 0;
   }
 
   // Set to be the maximum dimensions of any frame. For internal use only.
   let width_ = 0;
   let height_ = 1;
 
-  for (let i = 0; i < frames_.length; i ++) {
-    width_ = Math.max(width_, frames_[i].getDimens().width);
-    height_ = Math.max(height_, frames_[i].getDimens().height);
+  for (key in frames_) {
+    width_ = Math.max(width_, frames_[key].getDimens().width);
+    height_ = Math.max(height_, frames_[key].getDimens().height);
   }
 
   let x_ = 0;
   let y_ = 0;
 
   this.addFrame = function(frame, iterationCount) {
-    console.log("Note: Animation.addFrame is currently unsupported.")
+    console.log("Note: Animation.addFrame is currently unsupported, and will fail as of v0.3.3");
+    return 0;
     console.assert(frame instanceof Frame, "addFrame parameter frame not Frame object");
     if (iterationCount === undefined) {
       iterationCount = 1;
@@ -97,11 +71,14 @@ function Animation(frameArray, iterations, options) {
   }
 
   this.getCharValFrame = function(x, y) {
-    currentFrame = frames_[frameIndex_];
+    currentFrame = frames_[currentKey_];
     return currentFrame.getCharVal(x, y);
   }
 
   this.nextFrame = function() {
+    console.warn("This function is now deprecated as of v0.3.3." +
+      "Use setFrame instead.");
+    return 0;
     iterationIndex_ ++;
     if (iterationIndex_ >= iterationCounts_[frameIndex_ + 1]) {
       if (frameIndex_ + 1 == frames_.length) {
@@ -115,6 +92,14 @@ function Animation(frameArray, iterations, options) {
         frameIndex_ += 1;
       }
     }
+  }
+  
+  this.setFrame = function(key) {
+    if (!key || !(key in frames_)) {
+      key = defaultKey_;
+    }
+    
+    currentKey_ = key;
   }
 
   let priority_ = 0;

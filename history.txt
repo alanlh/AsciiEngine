@@ -5,8 +5,11 @@ Buttons/Dropdowns etc.
 Callbacks?
 
 History:
-Version 0.3.3 - 
-  
+Version 0.3.3 - 2019/6
+  MAJOR: Changed Animation organization to be non-linear, giving greater flexibility.  
+    Frames are now named, and user specifies which frame to switch to.
+    Future updates should make this easier to manage (e.g. linear execution). 
+    Updated examples as well. 
   Minor bug fixes and updates
 
 Version 0.3.2 - 2019/3/1

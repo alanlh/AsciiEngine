@@ -1,3 +1,5 @@
+LOG_PERFORMANCE = false;
+
 window.onload = async function() {
   basicDisplay();
   prioritiesTest();
@@ -26,15 +28,16 @@ let constructorTests = async function() {
 
   let drawings = await readDataFromFile("Assets/SampleDrawings.txt");
 
-  let cityAnimation = new Animation([drawings.frames["City"]], [1]);
+  let cityAnimation = new Animation({"city": drawings.frames["City"]});
   constructorScene.addAnimation("city", cityAnimation);
   constructorScene.shiftDrawing(["city"], {x: 0, y: 10});
   constructorScene.orderDrawing(["city"], 10);
 
   constructorScene.addAnimation(["boat"], drawings.animations["BoatFinal"]);
   constructorScene.shiftDrawing("boat", {x: 5, y: 6});
+  
   let moonFrame = new Frame([drawings.frameLayers["MoonLayer"]]);
-  let moonAnimation = new Animation([moonFrame], [1]);
+  let moonAnimation = new Animation({"moon": moonFrame}, "moon");
   constructorScene.addAnimation(["moon"], moonAnimation);
   constructorScene.shiftDrawing(["moon"], {x: 80, y: 0});
 
@@ -43,13 +46,20 @@ let constructorTests = async function() {
   constructorScene.orderDrawing(["sea"], 20);
 
   constructorScene.render();
-
+  
   let renderBasic = function(iteration) {
     let start = performance.now();
-    constructorScene.iterateAnimation(new Set(["boat"]));
+    constructorScene.iterateAnimation(new Set(["boat"]));    
+    if (iteration % 2 == 0) {
+      constructorScene.iterateAnimation("boat", "Smoke1");
+    } else {
+      constructorScene.iterateAnimation("boat", "Smoke2");
+    }
     constructorScene.render();
     let stop = performance.now();
-    //console.log("ConstructorTest: Iteration: ", iteration, ". Runtime: ", stop - start);
+    if (LOG_PERFORMANCE) {
+      console.log("ConstructorTest: Iteration: ", iteration, ". Runtime: ", stop - start);
+    }
     if (iteration < 25) {
       setTimeout(renderBasic, 500, iteration + 1);
     }
@@ -68,7 +78,7 @@ let basicAnimation = function() {
 
   let sidewalkLayer = new FrameLayer(sidewalk);
   let sidewalkFrame = new Frame([sidewalkLayer]);
-  let sidewalkAnimation = new Animation([sidewalkFrame], [1]);
+  let sidewalkAnimation = new Animation({"sidewalk": sidewalkFrame}, "sidewalk");
 
   let sidkewalkId = animatedScene.addAnimation(new Set(["sidewalk"]), sidewalkAnimation);
   animatedScene.orderDrawing(["sidewalk"], 20);
@@ -88,20 +98,19 @@ let basicAnimation = function() {
 |   \\\n\
 |____\\\n";
 
-  let carFrames = [];
+  let carFrames = {};
   let carFrameIterations = [];
-  for (let i = 0; i < 24; i ++ ) {
+  for (let i = 0; i < 30; i ++ ) {
     let carFrameLayer = new FrameLayer(carBaseString, {x: 3 * i, y: 0},
       {backgroundColor: "blue", textColor: "white"}, {setAsBlank: '.'});
     let carFrontWindowLayer = new FrameLayer(carFrontWindowString, {x: 3 * i + 8, y: 1},
       {backgroundColor: "#666666", textColor: "white"}, {spaceHasFormatting: true});
     let carFrame = new Frame([carFrameLayer, carFrontWindowLayer]);
 
-    carFrames.push(carFrame);
-    carFrameIterations.push(3 - Math.ceil(Math.abs(i / 6 - 2)));
+    carFrames[i.toString()] = carFrame;
   }
 
-  carAnimation = new Animation(carFrames, carFrameIterations);
+  carAnimation = new Animation(carFrames);
   animatedScene.addAnimation("car", carAnimation);
   animatedScene.shiftDrawing("car", {x: -18, y: 2});
   
@@ -114,8 +123,10 @@ let basicAnimation = function() {
     let start = performance.now();
     animatedScene.render();
     let stop = performance.now();
-    //console.log("AnimationTest: Iteration: ", iteration, ". Runtime: ", stop - start);
-    animatedScene.iterateAnimation("car");
+    if (LOG_PERFORMANCE) {
+      console.log("AnimationTest: Iteration: ", iteration, ". Runtime: ", stop - start);
+    }
+    animatedScene.iterateAnimation("car", (iteration % 30).toString());
     if (iteration < 60) {
       setTimeout(renderBasic, 100, iteration + 1);
     }

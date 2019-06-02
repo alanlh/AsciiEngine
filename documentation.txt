@@ -1,8 +1,11 @@
 NOTE: This documentation is mostly for my own purposes, and is likely to be incomplete/not updated in many places.
+NOTE: As of 6/1/19, this is mostly out of date. 
+In the unlikely case someone reads this and actually wants to use this, you're probably better off just looking through the code and examples.
+It's not particularly complicated. 
 Project:
 
 A Project should be used for any element involving multiple scenes. Within the project, you can manage different scenes.
-
+NOTE: This has not been implemented yet. 
 Properties:
   scenes - dictionary of ids to Scenes
   sceneInfo - dictionary of ids to information about Scenes

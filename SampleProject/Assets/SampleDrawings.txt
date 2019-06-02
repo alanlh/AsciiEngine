@@ -62,8 +62,8 @@ BoatFinal : Animation
 {
   "loop": true
 }
-Boat1Frame, 1
-Boat2Frame, 1
+Boat1Frame : Smoke1
+Boat2Frame: Smoke2
 ----AnyTextHere----
 MoonLayer: FrameLayer
 {
@@ -130,4 +130,4 @@ SeaAnimation : Animation
 {
   "loop": true
 }
-SeaFrame, 1
+SeaFrame

@@ -55,6 +55,7 @@ NAME: Type
     let title = components[i].split("\n", 1)[0];
     let name = title.split(":")[0].trim()
     let type = title.split(":")[1].trim()
+    // Check to make sure that no two have the same name. 
     if (type === "Animation") {
       animationJobs[name] = createAnimationFromString(components[i], frameJobs);
     } else if (type === "Frame") {
@@ -70,26 +71,44 @@ NAME: Type
 
 function createAnimationFromString(string, frameJobs) {
   /**
-  Data in the following format:
-  Frame Name, iterations
-  Frame Name, iterations
-  ...
+  There are no options for this. 
+  Can Use either format. In the former case, the frame name will not be included.
+  Frame Name : Default Name, [Alternate Name], ...
+  Frame Name, [Alternate Name]
   **/
 
   let splitString = parseOptions(string);
   let data = splitString.data;
   let frameNames = data.split("\n");
-  let frames = [];
-  let iterations = [];
+  let frames = {};
+  // TODO: Add more formatting checks. 
   for (let i = 0; i < frameNames.length; i ++) {
     if (frameNames[i].length > 0) {
-      let name = frameNames[i].split(",")[0].trim();
-      frames.push(frameJobs[name]);
-      iterations.push(Number(frameNames[i].split(",")[1].trim()));
+      let splits = frameNames[i].split(":");
+      let labels = "";
+      let frameName = "";
+      if (splits.length == 1) {
+        labels = splits[0];
+        frameName = splits[0].split(",")[0].trim();
+      } else if (splits.length == 2) {
+        frameName = splits[0].trim();
+        labels = splits[1];      
+      } else {
+        console.warn("Possible improper formatting. Multiple colons.")
+      }
+      labels = labels.split(",");
+      for (let j = 0; j < labels.length; j ++) {
+        // Check if name has already been used. 
+        if (labels[j].length > 0) {
+          let label = labels[j].trim();
+          frames[label] = frameJobs[frameName];
+        }
+      }
     }
   }
-
-  return new Animation(frames, iterations, splitString.options);
+  // TODO: Allow for startKey. 
+  // Possibly in options? 
+  return new Animation(frames);
 }
 
 function createFrameFromString(string, frameLayerJobs) {
