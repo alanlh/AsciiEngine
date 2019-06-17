@@ -12,8 +12,8 @@ function Scene(id) {
   }
 
   const sceneContainer = element;
-  sceneContainer.style.fontFamily = "monospace";
-  sceneContainer.style.fontSize = "1em";
+  sceneContainer.style.fontFamily = "Courier New";
+  sceneContainer.style.fontSize = "0.75em";
 
   let width_ = 0;
   let height_ = 0;
@@ -176,6 +176,8 @@ function Scene(id) {
     // Validate classSet
     // If string, search for id with that name, otherwise, must be array or set object.
     // Note: A slower algorithm is used for now because I'm not sure if the ids are ordered.
+    
+    // TODO: If classSet is empty, then return all animations. 
     if (typeof classSet === "string") {
       classSet = classSet.split(" ");
       if (classSet.length == 1) {
@@ -193,6 +195,7 @@ function Scene(id) {
     for (let className of classSet) {
       console.assert(className in classMembers, "Non-existent class name");
       if (candidates.size == 0) {
+        // TODO: Fix bug so that only the first element does this. 
         candidates = classMembers[className];
         continue;
       }
@@ -247,6 +250,9 @@ function Scene(id) {
   // Prompts the animations with those class names to move to next frame
   this.iterateAnimation = function(classSet, frameLabel) {
     let relevantDrawings = filterDrawings(classSet);
+    if (relevantDrawings.size == 0) {
+      console.warn("No relevant drawings found with label: ", classSet);
+    }
     for (let id of relevantDrawings) {
       let animation = drawingData[id];
       animation.setFrame(frameLabel);
@@ -259,6 +265,35 @@ function Scene(id) {
       return undefined;
     }
     return idTags[id];
+  }
+
+  let events_ = {};
+  let eventHandlers_ = {};
+    
+  this.addEvents = function(newEvents) {
+    for (let eventType in newEvents) {
+      events_[eventType] = newEvents[eventType];
+    }
+  }
+  
+  this.removeEvents = function(removeList) {
+    // TODO: Verify input. Currently assume to be array of strings. 
+    for (let i = 0; i < removeList.length(); i ++) {
+      delete events_[removeList[i]];
+    }
+  }
+  
+  this.addEventHandlers = function(eventHandlers) {
+    for (let eventName in eventHandlers) {      
+      eventHandlers_[eventName] = eventHandlers[eventName];
+    }
+  }
+  
+  this.removeEventHandlers = function(eventHandlerList) {
+    // TODO: Verify input. Currently assume to be array of strings. 
+    for (let i = 0; i < eventHandlerList.length(); i ++) {
+      delete events_[eventHandlerList[i]];
+    }
   }
 
   let currentRenderData = [];
@@ -280,7 +315,6 @@ function Scene(id) {
         if (topCharPixel.sameAs(currentRenderData[y][x])) {
           
         } else {
-          currentRenderData[y][x] = topCharPixel;
           let cell = row.children[x];
           cell.innerHTML = topCharPixel.char;
           cell.style.color = topCharPixel.textColor;
@@ -288,6 +322,10 @@ function Scene(id) {
           cell.style.fontWeight = topCharPixel.fontWeight;
           cell.style.fontStyle = topCharPixel.fontStyle;
           cell.style.textDecoration = topCharPixel.textDecoration;
+          
+          handleEventListener.call(this, cell, currentRenderData[y][x], topCharPixel);
+          
+          currentRenderData[y][x] = topCharPixel;
         }
         // Other options here
       }
@@ -319,8 +357,32 @@ function Scene(id) {
         continue;
       }
       topCharPixel = charPixel;
+      topCharPixel.animationId = id;
       topPriority = priority;
     }
+    topCharPixel.addHigherLevelEventListeners(events_);
     return topCharPixel;
+  }
+  
+  let generateEventHandler = function(handler, animationId) {
+    let scene = this;
+    return function(e) {
+      handler(e, scene, drawingData[animationId]);
+    }
+  }
+  
+  // Add and remove event handlers from cells. 
+  let handleEventListener = function(cell, oldData, newData) {
+    // TODO: Find way to see if event is the same, only remove if different.
+    for (let oldEvent in oldData.activeListeners) {
+      cell.removeEventListener(oldEvent, oldData.activeListeners[oldEvent]);
+      oldData.removeActiveListenerRecord(oldEvent);
+    }
+    for (let newEvent in newData.events) {
+      let handler = generateEventHandler.call(this, eventHandlers_[newData.events[newEvent]], 
+        newData.animationId);
+      cell.addEventListener(newEvent, handler);
+      newData.addActiveListenerRecord(newEvent, handler);
+    }
   }
 }

@@ -1,7 +1,33 @@
 NOTE: This documentation is mostly for my own purposes, and is likely to be incomplete/not updated in many places.
-NOTE: As of 6/1/19, this is mostly out of date. 
+
+Options for Animations, Frames, and FrameLayers:
+Animations: 
+  startKey: The starting frame. Undefined behavior if not specified. 
+  defaultKey: The default frame. Defaults to startKey if not specified. 
+  events: Key value pairs which determine which events to listen for and how to handle them.
+    Defaults to empty (no event listeners)
+  settings: Currently unsupported. Might be relevant in future.   
+  
+Frames: 
+  events: See above. 
+  settings: Currently unsupported. 
+  
+FrameLayers:
+  coords: (x,y) integer pair to determine where the FrameLayer is placed relative to the top left corner of the Frame
+    Undefined behavior if negative. 
+  formatting: determines how to format the text.
+    Currently supports: textColor, backgroundColor, fontWeight ("bold"), fontStyle ("italics"), and textDecoration ("underline")
+  events: See above.
+  settings: determines various behavior
+    spaceIsTransparent (true): If true, will render the next opaque object instead, or blank white if no objects behind
+    spaceHasFormatting (false): If true, will still apply formatting options above, but use the character of the object behind it.
+    setAsBlank (' '): The character is removed, but the formatting still applies.
+      This is the most versatile option, since the above settings can't solve leading spaces. 
+    leadingSpaceIgnored (true): Will not apply formatting to leading spaces if spaceIsTransparent is false or spaceHasFormatting is true [CURRENTLY NOT IMPLEMENTED]
+
+NOTE: As of 6/1/19, everything below this is mostly out of date. 
 In the unlikely case someone reads this and actually wants to use this, you're probably better off just looking through the code and examples.
-It's not particularly complicated. 
+It's not *particularly* complicated. 
 Project:
 
 A Project should be used for any element involving multiple scenes. Within the project, you can manage different scenes.

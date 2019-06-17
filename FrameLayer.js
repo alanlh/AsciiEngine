@@ -1,10 +1,12 @@
-function FrameLayer(textStr, coords, formatting, options) {
+function FrameLayer(textStr, options) {
   let text_ = textStr;
   let width_ = 0;
   let height_ = 1;
   let rowIndices = [0];
 
-  coords = coords || {x: 0, y: 0};
+  options = options || {};
+
+  let coords = options.coords || {x: 0, y: 0};
   let x_ = coords.x || 0;
   let y_ = coords.y || 0;
 
@@ -33,7 +35,7 @@ function FrameLayer(textStr, coords, formatting, options) {
     return {width: width_, height: height_};
   }
 
-  formatting = formatting || {};
+  let formatting = options.formatting || {};
   let formatting_ = {
     textColor: formatting.textColor || "#000000",
     backgroundColor: formatting.backgroundColor || "transparent",
@@ -42,16 +44,26 @@ function FrameLayer(textStr, coords, formatting, options) {
     textDecoration: formatting.textDecoration || "normal"
   }
 
-  options = options || {};
-  let options_ = {
-    spaceIsTransparent: options.spaceIsTransparent === undefined || options.spaceIsTransparent,
-    spaceHasFormatting: !(options.spaceHasFormatting === undefined || !options.spaceHasFormatting),
-    setAsBlank: options.setAsBlank || ' ',
-    leadingSpaceIgnored: options.leadingSpaceIgnored === undefined || options.leadingSpaceIgnored
+  let settings = options.settings || {};
+  let settings_ = {
+    spaceIsTransparent: settings.spaceIsTransparent === undefined || settings.spaceIsTransparent,
+    spaceHasFormatting: !(settings.spaceHasFormatting === undefined || !settings.spaceHasFormatting),
+    setAsBlank: settings.setAsBlank || ' ',
+    leadingSpaceIgnored: settings.leadingSpaceIgnored === undefined || settings.leadingSpaceIgnored
+  }
+  
+  let events_ = options.events || {};
+  
+  this.getEvents = function() {
+    return events_;
   }
 
   this.copy = function() {
-    return new FrameLayer(text_, {x: x_, y: y_}, formatting_, options_);
+    return new FrameLayer(text_, {coords: {x: x_, y: y_}, 
+      formatting: formatting_, 
+      settings: settings_,
+      events: events_
+    });
   }
 
   this.getCharData = function(x, y) {
@@ -68,16 +80,17 @@ function FrameLayer(textStr, coords, formatting, options) {
     let char = text_.charAt(rowStart + layerX);
     if (layerX >= nextRow - rowStart - 1) {
       return new CharPixel();
-    } else if (char !== ' ' && char !== options_.setAsBlank) {
+    } else if (char !== ' ' && char !== settings_.setAsBlank) {
       return new CharPixel({
         char: char,
         textColor: formatting_.textColor,
         backgroundColor: formatting_.backgroundColor,
         fontWeight: formatting_.fontWeight,
         fontStyle: formatting_.fontStyle,
-        textDecoration: formatting_.textDecoration
+        textDecoration: formatting_.textDecoration,
+        events: events_
       });
-    } else if (char === options_.setAsBlank) {
+    } else if (char === settings_.setAsBlank) {
       if (formatting_.backgroundColor === "transparent") {
         return new CharPixel({
           char: ' ',
@@ -85,7 +98,8 @@ function FrameLayer(textStr, coords, formatting, options) {
           backgroundColor: "#FFFFFF",
           fontWeight: formatting_.fontWeight,
           fontStyle: formatting_.fontStyle,
-          textDecoration: formatting_.textDecoration
+          textDecoration: formatting_.textDecoration,
+          events: events_
         });
       }
       return new CharPixel({
@@ -94,9 +108,10 @@ function FrameLayer(textStr, coords, formatting, options) {
         backgroundColor: formatting_.backgroundColor,
         fontWeight: formatting_.fontWeight,
         fontStyle: formatting_.fontStyle,
-        textDecoration: formatting_.textDecoration
+        textDecoration: formatting_.textDecoration,
+        events: events_
       });
-    } else if (options_.spaceHasFormatting) {
+    } else if (settings_.spaceHasFormatting) {
       // At this point, must be a blank
       return new CharPixel({
         char: ' ',
@@ -104,9 +119,10 @@ function FrameLayer(textStr, coords, formatting, options) {
         backgroundColor: formatting_.backgroundColor,
         fontWeight: formatting_.fontWeight,
         fontStyle: formatting_.fontStyle,
-        textDecoration: formatting_.textDecoration
+        textDecoration: formatting_.textDecoration,
+        events: events_
       });
-    } else if (!options_.spaceIsTransparent) {
+    } else if (!settings_.spaceIsTransparent) {
       return new CharPixel({
         char: ' ',
         backgroundColor: "#FFFFFF"
@@ -131,7 +147,9 @@ function CharPixel(charData) {
   }
   
   this.sameAs = function(other) {
-    return this.char === other.char && this.sameFormatting(other);
+    return this.char === other.char && 
+      this.sameFormatting(other) &&
+      this.sameEvents(other);
   }
   
   this.sameFormatting = function(other) {
@@ -141,5 +159,52 @@ function CharPixel(charData) {
       this.fontStyle === other.fontStyle &&
       this.textDecoration === other.textDecoration;
   }
-
+  
+  this.sameEvents = function(other) {
+    for (myEvent in this.events) {
+      if (!(myEvent in other.events) || 
+        this.events[myEvent] !== other.events[myEvent]) {
+        return false;
+      }
+    }
+    for (otherEvent in other.events) {
+      if (!(otherEvent in this.events)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  // TODD: Make private
+  this.animationId = undefined;
+  
+  // TODO: Make private.
+  this.events = charData.events || {};
+  
+  this.addHigherLevelEventListeners = function(otherEvents) {
+    for (newEvent in otherEvents) {
+      if (!(newEvent in this.events)) {
+        this.events[newevent] = otherEvents[newEvent];
+      }
+    }
+  }
+  
+  // TODO: Make private. 
+  this.activeListeners = {};
+  this.addActiveListenerRecord = function(eventType, func) {
+    if (eventType in this.activeListeners) {
+      console.warn("Multiple handlers for the same event: \n", 
+        "Event Type: ", eventType
+      );
+    }
+    
+    this.activeListeners[eventType] = func;
+  }
+  
+  this.removeActiveListenerRecord = function(eventType) {
+    if (!(eventType in this.activeListeners)) {
+      console.warn("Event type: ", eventType, " not found.");
+    }
+    delete this.activeListeners[eventType];
+  }
 }

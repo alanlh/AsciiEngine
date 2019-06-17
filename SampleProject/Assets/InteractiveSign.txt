@@ -27,11 +27,101 @@ SignBoard: FrameLayer
    /                                         \
   /                                           \
  /                                             \
-<       UNFINISHED - WAIT FOR NEXT PATCH       >
+<       UNFINISHED - WAIT FOR NEXT PATCH        >
  \                                             /
   \                                           /
    \                                         /
     \ _____________________________________ /
+----Delimiter----
+LeftArrow: FrameLayer
+{
+  "coords": {"x": 0, "y": 1},
+  "events": {
+    "click": "InteractiveSignLeft",
+    "mouseover": "boldLeft"
+  },
+  "settings": {
+    "setAsBlank": "."
+  }
+}
+    /
+   /.
+  /..
+ /...
+<....
+ \...
+  \..
+   \.
+    \
+----Delimiter----
+LeftArrowBold: FrameLayer
+{
+  "coords": {"x": 0, "y": 1},
+  "events": {
+    "click": "InteractiveSignLeft",
+    "mouseleave": "unboldLeft"
+  },
+  "formatting": {
+    "fontWeight": "bold"
+  },
+  "settings": {
+    "setAsBlank": "."
+  }
+}
+    /
+   /.
+  /..
+ /...
+<....
+ \...
+  \..
+   \.
+    \
+----Delimiter----
+RightArrow: FrameLayer
+{
+  "coords": {"x": 44, "y": 1},
+  "events": {
+    "click": "InteractiveSignRight",
+    "mouseover": "boldRight"
+  },
+  "settings": {
+    "setAsBlank": "."
+  }
+}
+\
+.\
+..\
+...\
+....>
+.../
+../
+./
+/
+----Delimiter----
+RightArrowBold: FrameLayer
+{
+  "coords": {"x": 44, "y": 1},
+  "events": {
+    "click": "InteractiveSignRight",
+    "mouseout": "unboldRight"
+  },
+  "formatting": {
+    "fontWeight": "bold"
+  },
+  "settings": {
+    "setAsBlank": "."
+  }
+}
+\
+.\
+..\
+...\
+....>
+.../
+../
+./
+/
 ----Delimiter----
 SignFrame: Frame
 {
@@ -39,12 +129,34 @@ SignFrame: Frame
 }
 SignPost
 SignBoard
+LeftArrow
+RightArrow
+----Delimiter----
+SignFrameRightBold: Frame
+{
+
+}
+SignPost
+SignBoard
+LeftArrow
+RightArrowBold
+----Delimiter----
+SignFrameLeftBold: Frame
+{
+
+}
+SignPost
+SignBoard
+LeftArrowBold
+RightArrow
 ----Delimiter----
 Sign: Animation
 {
 
 }
-SignFrame, 1
+SignFrame:Normal
+SignFrameLeftBold:Left
+SignFrameRightBold:Right
 ----Delimiter----
 Sign1: Animation
 {

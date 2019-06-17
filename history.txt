@@ -1,15 +1,30 @@
 Upcoming (Roughly in planned order):
+Simplifying temporary formatting effects (e.g. bold on hover)
+Buttons/Dropdowns etc.
+Partial rendering and other rendering options
 More formatting support
 More Animation/Layers features
-Buttons/Dropdowns etc.
-Callbacks?
 
 History:
-Version 0.3.3 - 2019/6
+Version 0.4 - 2019/6/15
+  Added event listeners support
+    Event handlers are passed in to a scene, with each handler referenced by a name.
+    Listeners can be added at the Scene, Animation, Frame, and FrameLayer levels, but are all executed at the Scene level. 
+    Listeners are passed in as key-value pairs, with the key being the event being listened to
+      and the value being the name of the handler. 
+  Original options values for FrameLayers are renamed to "settings", and are placed within the overall "options" object. See examples. 
+  Modified Animation, Frame, and FrameLayer parameter list. 
+  Added JSON error messages to parsing for easier debugging. 
+  Updated examples. 
+
+
+Version 0.3.3 - 2019/6/1
   MAJOR: Changed Animation organization to be non-linear, giving greater flexibility.  
     Frames are now named, and user specifies which frame to switch to.
     Future updates should make this easier to manage (e.g. linear execution). 
-    Updated examples as well. 
+    Updated examples as well.
+     
+Version 0.3.2.1 - 2019/3/7
   Minor bug fixes and updates
 
 Version 0.3.2 - 2019/3/1

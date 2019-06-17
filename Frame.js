@@ -2,7 +2,7 @@
  * A frame represents a single image
  * Takes in a plaintext string, and three objects:
  */
-function Frame(layers) {
+function Frame(layers, options) {
   // TODO: Check that layers is an array of FrameLayer objects
   let layers_ = [];
   for (let i = 0; i < layers.length; i ++) {
@@ -21,9 +21,20 @@ function Frame(layers) {
     width_ = Math.max(width_, layer.getCoords().x + layer.getDimens().width);
     height_ = Math.max(height_, layer.getCoords().y + layer.getDimens().height);
   }
+  
+  options = options || {};
+  
+  let events_ = options.events || {};
+  
+  this.getEvents = function() {
+    return events_;
+  }
 
   this.copy = function() {
-    return new Frame(layers_);
+    // TODO: Also handle pass in options. 
+    return new Frame(layers_, {
+      events: events_
+    });
   }
 
   // TODO:
@@ -35,6 +46,7 @@ function Frame(layers) {
     for (let i = count_ - 1; i >= 0; i --) {
       let charData = layers_[i].getCharData(x, y);
       if (!(charData.isTransparent())) {
+        charData.addHigherLevelEventListeners(events_);
         return charData;
       }
     }

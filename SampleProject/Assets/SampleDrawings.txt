@@ -1,9 +1,11 @@
 ----AnyTextHere----
 Boat1 : FrameLayer
 {
-"coords": {"x": 0, "y": 0},
-"formatting": {},
-"setAsBlank": "."
+  "coords": {"x": 0, "y": 0},
+  "formatting": {},
+  "settings": {
+    "setAsBlank": "."
+  }
 }
                                                     k ..   / \
                                               l.a./..p.  p   .     /
@@ -25,8 +27,10 @@ Boat1 : FrameLayer
 ----AnyTextHere----
 Boat2: FrameLayer
 {
-"coords": {"x": 0, "y": 0},
-"setAsBlank": "."
+  "coords": {"x": 0, "y": 0},
+  "settings": {
+    "setAsBlank": "."
+  }
 }
                                                 ,   ...k..   ./.
                                                .r l a./..p. .p.  .
@@ -60,16 +64,19 @@ Boat2
 ----AnyTextHere----
 BoatFinal : Animation
 {
-  "loop": true
+  "settings": {
+    "loop": true
+  }
 }
 Boat1Frame : Smoke1
 Boat2Frame: Smoke2
 ----AnyTextHere----
 MoonLayer: FrameLayer
 {
-"formatting": {"backgroundColor": "yellow"},
-"setAsBlank": "."
-
+  "settings": {
+    "formatting": {"backgroundColor": "yellow"},
+    "setAsBlank": "."
+  }
 }
    _______
   /...0...\
@@ -81,7 +88,7 @@ MoonLayer: FrameLayer
 ----AnyTextHere----
 City: FrameLayer
 {
-"formatting": {}
+  "formatting": {}
 }
                                |                                                                |
                               / \                                                              / \
@@ -103,11 +110,13 @@ City
 ----AnyTextHere----
 SeaLayer: FrameLayer
 {
-"formatting": {
-  "backgroundColor": "#2222BB",
-  "textColor": "white"
-},
-"spaceHasFormatting": true
+  "formatting": {
+    "backgroundColor": "#2222BB",
+    "textColor": "white"
+  },
+  "settings": {
+    "spaceHasFormatting": true
+  }
 }
                       ``            ~~
           ~                                           ""                                      
@@ -128,6 +137,8 @@ SeaLayer
 ----AnyTextHere----
 SeaAnimation : Animation
 {
-  "loop": true
+  "settings": {
+    "loop": true
+  }
 }
 SeaFrame

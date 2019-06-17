@@ -77,8 +77,8 @@ function createAnimationFromString(string, frameJobs) {
   Frame Name, [Alternate Name]
   **/
 
-  let splitString = parseOptions(string);
-  let data = splitString.data;
+  let jsonData = parseOptions(string);
+  let data = jsonData.data;
   let frameNames = data.split("\n");
   let frames = {};
   // TODO: Add more formatting checks. 
@@ -106,9 +106,8 @@ function createAnimationFromString(string, frameJobs) {
       }
     }
   }
-  // TODO: Allow for startKey. 
-  // Possibly in options? 
-  return new Animation(frames);
+  
+  return new Animation(frames, jsonData.options);
 }
 
 function createFrameFromString(string, frameLayerJobs) {
@@ -119,8 +118,8 @@ function createFrameFromString(string, frameLayerJobs) {
   ...
   **/
 
-  let splitString = parseOptions(string);
-  let data = splitString.data;
+  let jsonData = parseOptions(string);
+  let data = jsonData.data;
   let frameLayerNames = data.split(/\r?\n/);
 
   let frameLayers = [];
@@ -131,7 +130,7 @@ function createFrameFromString(string, frameLayerJobs) {
     }
   }
 
-  return new Frame(frameLayers);
+  return new Frame(frameLayers, jsonData);
 }
 
 function createFrameLayerFromString(string) {
@@ -139,15 +138,17 @@ function createFrameLayerFromString(string) {
     Data section is just the drawing.
     Formatting and coordinates should be within JSON
   **/
-  let splitString = parseOptions(string);
-  let data = splitString.data;
+  let jsonData = parseOptions(string);
+  let data = jsonData.data;
   data = data.replace(/\r/g, '');
 
-  let options = splitString.options;
-  let coordinates = options.coords || options.coordinates || {x: 0, y: 0};
-  let formatting = options.formatting || {};
+  let options = jsonData.options;
 
-  return new FrameLayer(data, coordinates, formatting, options);
+  return new FrameLayer(data, options);
+}
+
+function printJSONError(string, error) {
+  console.error("JSON Error: " + error + "\nString: \n" + string);
 }
 
 function parseOptions(string) {
@@ -166,7 +167,12 @@ function parseOptions(string) {
   }
 
   let optionsString = string.substring(0, optionsIndex + 1);
-  let options = JSON.parse(optionsString);
+  let options = {};
+  try {
+    options = JSON.parse(optionsString);
+  } catch (e) {
+    printJSONError(optionsString, e);
+  }
 
   let data = string.substring(string.indexOf("\n", optionsIndex) + 1);
   return {options: options, data: data};

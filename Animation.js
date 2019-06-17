@@ -2,19 +2,29 @@
  * An animation includes one or more Frames
  * Takes in an array of frames, and an array of lengths.
 **/
-function Animation(frames, startKey) {
+function Animation(frames, options) {
   // TODO: Add support for multiple keys pointing to same frame without extra memory.
   
   let frames_ = {};
-  let currentKey_ = startKey;
-  let defaultKey_ = startKey;
+  options = options || {};
+  let currentKey_ = options.startKey;
+  let defaultKey_ = options.defaultKey || options.startKey;
   for (key in frames) {
-    console.assert(frames[key] instanceof Frame);
+    console.assert(frames[key] instanceof Frame, frames[key]);
     frames_[key] = frames[key].copy();
     
     if (!(currentKey_ in frames_) || currentKey_ == undefined) {
       currentKey_ = key;
     }
+    if (!(defaultKey_ in frames_) || defaultKey_ == undefined) {
+      defaultKey_ = key;
+    }
+  }
+  
+  let events_ = options.events || {};
+  
+  this.getEvents = function() {
+    return events_;
   }
   
   this.copy = function() {
@@ -33,7 +43,6 @@ function Animation(frames, startKey) {
 
   this.setDefaultFrame = function(newDefault) {
     // TODO: Handle bad input
-    
     defaultKey_ = newDefault;
   }
 
@@ -72,7 +81,9 @@ function Animation(frames, startKey) {
 
   this.getCharValFrame = function(x, y) {
     currentFrame = frames_[currentKey_];
-    return currentFrame.getCharVal(x, y);
+    let charData = currentFrame.getCharVal(x, y);
+    charData.addHigherLevelEventListeners(events_);
+    return charData;
   }
 
   this.nextFrame = function() {

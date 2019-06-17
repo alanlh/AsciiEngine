@@ -9,3 +9,6 @@ https://stackoverflow.com/questions/37039667/executing-multiple-dom-updates-with
 
 Creating a JS library
 http://www.adequatelygood.com/JavaScript-Module-Pattern-In-Depth.html
+
+For running functions based off of name. See answer 2. 
+https://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string

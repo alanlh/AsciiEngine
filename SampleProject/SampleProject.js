@@ -17,6 +17,32 @@ let interactiveTest = async function() {
   let assets = await readDataFromFile("Assets/InteractiveSign.txt");
   
   interactiveScene.addAnimation("sign", assets.animations["Sign"]);
+    
+  interactiveScene.addEventHandlers({
+    "InteractiveSignLeft": function(e, scene, animation) {
+      alert("LEFT BUTTON PRESSED");
+    }, 
+    "InteractiveSignRight": function(e, scene, animation) {
+      alert("RIGHT BUTTON PRESSED");
+    },
+    "boldLeft": function(e, scene, animation) {
+      scene.iterateAnimation("sign", "Left");
+      scene.render();
+    },
+    "unboldLeft": function(e, scene, animation) {
+      scene.iterateAnimation("sign", "Normal");
+      scene.render();
+    },
+    "boldRight": function(e, scene, animation) {
+      scene.iterateAnimation("sign", "Right");
+      scene.render();
+    },
+    "unboldRight": function(e, scene, animation) {
+      scene.iterateAnimation("sign", "Normal");
+      scene.render();
+    }
+  });
+  
   interactiveScene.render();
 }
 
@@ -101,10 +127,16 @@ let basicAnimation = function() {
   let carFrames = {};
   let carFrameIterations = [];
   for (let i = 0; i < 30; i ++ ) {
-    let carFrameLayer = new FrameLayer(carBaseString, {x: 3 * i, y: 0},
-      {backgroundColor: "blue", textColor: "white"}, {setAsBlank: '.'});
-    let carFrontWindowLayer = new FrameLayer(carFrontWindowString, {x: 3 * i + 8, y: 1},
-      {backgroundColor: "#666666", textColor: "white"}, {spaceHasFormatting: true});
+    let carFrameLayer = new FrameLayer(carBaseString, {
+      coords: {x: 3 * i, y: 0},
+      formatting: {backgroundColor: "blue", textColor: "white"},
+      settings: {setAsBlank: "."}
+    });
+    let carFrontWindowLayer = new FrameLayer(carFrontWindowString, {
+      coords: {x: 3 * i + 8, y: 1},
+      formatting: {backgroundColor: "#666666", textColor: "white"},
+      settings: {spaceHasFormatting: true}
+    });
     let carFrame = new Frame([carFrameLayer, carFrontWindowLayer]);
 
     carFrames[i.toString()] = carFrame;
