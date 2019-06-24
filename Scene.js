@@ -357,32 +357,44 @@ function Scene(id) {
         continue;
       }
       topCharPixel = charPixel;
-      topCharPixel.animationId = id;
       topPriority = priority;
     }
     topCharPixel.addHigherLevelEventListeners(events_);
     return topCharPixel;
   }
   
-  let generateEventHandler = function(handler, animationId) {
+  let generateEventHandler = function(handler, containers) {
     let scene = this;
     return function(e) {
-      handler(e, scene, drawingData[animationId]);
+      handler(e, scene, containers);
     }
   }
   
   // Add and remove event handlers from cells. 
   let handleEventListener = function(cell, oldData, newData) {
-    // TODO: Find way to see if event is the same, only remove if different.
     for (let oldEvent in oldData.activeListeners) {
-      cell.removeEventListener(oldEvent, oldData.activeListeners[oldEvent]);
+      if (oldEvent in newData.events && oldData.events[oldEvent] == newData.events[oldEvent]
+        && oldData.sameContainersAs(newData)) {
+        // Transfer records over, since nothing changed
+        newData.addActiveListenerRecord(oldEvent, oldData.activeListeners[oldEvent]);
+      } else {
+        // console.log("Removing old event listener: ", oldEvent);
+        cell.removeEventListener(oldEvent, oldData.activeListeners[oldEvent]);
+      }
       oldData.removeActiveListenerRecord(oldEvent);
     }
     for (let newEvent in newData.events) {
-      let handler = generateEventHandler.call(this, eventHandlers_[newData.events[newEvent]], 
-        newData.animationId);
-      cell.addEventListener(newEvent, handler);
-      newData.addActiveListenerRecord(newEvent, handler);
+      if (newData.events[newEvent] in eventHandlers_ && !(newEvent in newData.activeListeners)) {
+        // console.log("Adding new event listener: ", newEvent);
+        // TODO: Change to store a thisScene variable to avoid this situtation. 
+        // TODO: Include scene into CharPixel containers. 
+        let handler = generateEventHandler.call(this, eventHandlers_[newData.events[newEvent]], 
+          newData.getContainerReferences());
+        cell.addEventListener(newEvent, handler);
+        newData.addActiveListenerRecord(newEvent, handler);
+      } else {
+        // TODO: Warn if the eventHandler does not exist. 
+      }
     }
   }
 }

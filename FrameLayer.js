@@ -1,4 +1,5 @@
 function FrameLayer(textStr, options) {
+  let thisFrameLayer = this;
   let text_ = textStr;
   let width_ = 0;
   let height_ = 1;
@@ -35,13 +36,63 @@ function FrameLayer(textStr, options) {
     return {width: width_, height: height_};
   }
 
-  let formatting = options.formatting || {};
-  let formatting_ = {
-    textColor: formatting.textColor || "#000000",
-    backgroundColor: formatting.backgroundColor || "transparent",
-    fontWeight: formatting.fontWeight || "normal",
-    fontStyle: formatting.fontStyle || "normal",
-    textDecoration: formatting.textDecoration || "normal"
+  // Default settings must be completely filled out (set as default values if not)
+  let multipleFormattingOptions = false;
+  let formattingOptions_ = options.formatting || {};
+  let defaultFormatting_ = {};
+  if ("default" in formattingOptions_) {
+    multipleFormattingOptions = Object.keys(formattingOptions_).length > 1;
+    defaultFormatting_ = {
+      textColor: formattingOptions_.default.textColor || "#000000",
+      backgroundColor: formattingOptions_.default.backgroundColor || "transparent",
+      fontWeight: formattingOptions_.default.fontWeight || "normal",
+      fontStyle: formattingOptions_.default.fontStyle || "normal",
+      textDecoration: formattingOptions_.default.textDecoration || "normal"
+    };
+    formattingOptions_.default = defaultFormatting_;
+  } else {
+    defaultFormatting_ = {
+      textColor: formattingOptions_.textColor || "#000000",
+      backgroundColor: formattingOptions_.backgroundColor || "transparent",
+      fontWeight: formattingOptions_.fontWeight || "normal",
+      fontStyle: formattingOptions_.fontStyle || "normal",
+      textDecoration: formattingOptions_.textDecoration || "normal"
+    };
+    formattingOptions_ = {
+      default: defaultFormatting_
+    };
+  }
+  
+  // TODO: These values shouldn't be undefined, but add check just in case. 
+  let currentFormatting_ = {
+    textColor: defaultFormatting_.textColor,
+    backgroundColor: defaultFormatting_.backgroundColor,
+    fontWeight: defaultFormatting_.fontWeight,
+    fontStyle: defaultFormatting_.fontStyle,
+    textDecoration: defaultFormatting_.textDecoration
+  };
+  
+  this.triggerFormattingKey = function(key) {
+    // Avoid check if only one format.
+    if (multipleFormattingOptions && key in formattingOptions_) {
+      currentFormatting_.textColor = formattingOptions_[key].textColor || currentFormatting_.textColor;
+      currentFormatting_.backgroundColor = formattingOptions_[key].backgroundColor || currentFormatting_.backgroundColor;
+      currentFormatting_.fontWeight = formattingOptions_[key].fontWeight || currentFormatting_.fontWeight;
+      currentFormatting_.fontStyle = formattingOptions_[key].fontStyle || currentFormatting_.fontStyle;
+      currentFormatting_.textDecoration = formattingOptions_[key].textDecoration || currentFormatting_.textDecoration;
+    } else {
+      // TODO: Handle? It might be possible that key isn't added on purpose. 
+    }
+  }
+  
+  this.revertToDefaultFormat = function() {
+    currentFormatting_ = {
+      textColor: defaultFormatting_.textColor,
+      backgroundColor: defaultFormatting_.backgroundColor,
+      fontWeight: defaultFormatting_.fontWeight,
+      fontStyle: defaultFormatting_.fontStyle,
+      textDecoration: defaultFormatting_.textDecoration
+    };
   }
 
   let settings = options.settings || {};
@@ -60,10 +111,16 @@ function FrameLayer(textStr, options) {
 
   this.copy = function() {
     return new FrameLayer(text_, {coords: {x: x_, y: y_}, 
-      formatting: formatting_, 
+      formatting: formattingOptions_, 
       settings: settings_,
       events: events_
     });
+  }
+
+  this.getCharPixel = function(x, y) {
+    let charPixel = this.getCharData(x, y);
+    charPixel.setFrameLayerReference(thisFrameLayer);
+    return charPixel;
   }
 
   this.getCharData = function(x, y) {
@@ -83,43 +140,43 @@ function FrameLayer(textStr, options) {
     } else if (char !== ' ' && char !== settings_.setAsBlank) {
       return new CharPixel({
         char: char,
-        textColor: formatting_.textColor,
-        backgroundColor: formatting_.backgroundColor,
-        fontWeight: formatting_.fontWeight,
-        fontStyle: formatting_.fontStyle,
-        textDecoration: formatting_.textDecoration,
+        textColor: currentFormatting_.textColor,
+        backgroundColor: currentFormatting_.backgroundColor,
+        fontWeight: currentFormatting_.fontWeight,
+        fontStyle: currentFormatting_.fontStyle,
+        textDecoration: currentFormatting_.textDecoration,
         events: events_
       });
     } else if (char === settings_.setAsBlank) {
-      if (formatting_.backgroundColor === "transparent") {
+      if (currentFormatting_.backgroundColor === "transparent") {
         return new CharPixel({
           char: ' ',
-          textColor: formatting_.textColor,
+          textColor: currentFormatting_.textColor,
           backgroundColor: "#FFFFFF",
-          fontWeight: formatting_.fontWeight,
-          fontStyle: formatting_.fontStyle,
-          textDecoration: formatting_.textDecoration,
+          fontWeight: currentFormatting_.fontWeight,
+          fontStyle: currentFormatting_.fontStyle,
+          textDecoration: currentFormatting_.textDecoration,
           events: events_
         });
       }
       return new CharPixel({
         char: ' ',
-        textColor: formatting_.textColor,
-        backgroundColor: formatting_.backgroundColor,
-        fontWeight: formatting_.fontWeight,
-        fontStyle: formatting_.fontStyle,
-        textDecoration: formatting_.textDecoration,
+        textColor: currentFormatting_.textColor,
+        backgroundColor: currentFormatting_.backgroundColor,
+        fontWeight: currentFormatting_.fontWeight,
+        fontStyle: currentFormatting_.fontStyle,
+        textDecoration: currentFormatting_.textDecoration,
         events: events_
       });
     } else if (settings_.spaceHasFormatting) {
       // At this point, must be a blank
       return new CharPixel({
         char: ' ',
-        textColor: formatting_.textColor,
-        backgroundColor: formatting_.backgroundColor,
-        fontWeight: formatting_.fontWeight,
-        fontStyle: formatting_.fontStyle,
-        textDecoration: formatting_.textDecoration,
+        textColor: currentFormatting_.textColor,
+        backgroundColor: currentFormatting_.backgroundColor,
+        fontWeight: currentFormatting_.fontWeight,
+        fontStyle: currentFormatting_.fontStyle,
+        textDecoration: currentFormatting_.textDecoration,
         events: events_
       });
     } else if (!settings_.spaceIsTransparent) {
@@ -149,7 +206,8 @@ function CharPixel(charData) {
   this.sameAs = function(other) {
     return this.char === other.char && 
       this.sameFormatting(other) &&
-      this.sameEvents(other);
+      this.sameEvents(other) &&
+      this.sameContainersAs(other);
   }
   
   this.sameFormatting = function(other) {
@@ -176,7 +234,38 @@ function CharPixel(charData) {
   }
   
   // TODD: Make private
-  this.animationId = undefined;
+  const containerReferences = {
+    animation: undefined,
+    frame: undefined,
+    frameLayer: undefined
+  };
+  
+  this.setAnimationReference = function(animation) {
+    // TODO: Check to make sure animation is valid. 
+    containerReferences.animation = animation;
+  }
+  
+  this.setFrameReference = function(frame) {
+    // TODO: Check to make sure animation is valid. 
+    containerReferences.frame = frame;
+  }
+
+  this.setFrameLayerReference = function(frameLayer) {
+    // TODO: Check to make sure animation is valid. 
+    containerReferences.frameLayer = frameLayer;
+  }
+
+  this.getContainerReferences = function() {
+    // TODO: Check if this is necessary and correct. 
+    return containerReferences;
+  }
+  
+  this.sameContainersAs = function(other) {
+    otherContainers = other.getContainerReferences();
+    return containerReferences.animation == otherContainers.animation
+      && containerReferences.frame == otherContainers.frame
+      && containerReferences.frameLayer == otherContainers.frameLayer;
+  }
   
   // TODO: Make private.
   this.events = charData.events || {};

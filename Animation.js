@@ -4,7 +4,7 @@
 **/
 function Animation(frames, options) {
   // TODO: Add support for multiple keys pointing to same frame without extra memory.
-  
+  let thisAnimation = this;
   let frames_ = {};
   options = options || {};
   let currentKey_ = options.startKey;
@@ -83,6 +83,7 @@ function Animation(frames, options) {
     currentFrame = frames_[currentKey_];
     let charData = currentFrame.getCharVal(x, y);
     charData.addHigherLevelEventListeners(events_);
+    charData.setAnimationReference(thisAnimation);
     return charData;
   }
 
@@ -109,7 +110,6 @@ function Animation(frames, options) {
     if (!key || !(key in frames_)) {
       key = defaultKey_;
     }
-    
     currentKey_ = key;
   }
 

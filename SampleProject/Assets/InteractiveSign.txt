@@ -27,7 +27,7 @@ SignBoard: FrameLayer
    /                                         \
   /                                           \
  /                                             \
-<       UNFINISHED - WAIT FOR NEXT PATCH        >
+<                                               >
  \                                             /
   \                                           /
    \                                         /
@@ -38,31 +38,16 @@ LeftArrow: FrameLayer
   "coords": {"x": 0, "y": 1},
   "events": {
     "click": "InteractiveSignLeft",
-    "mouseover": "boldLeft"
-  },
-  "settings": {
-    "setAsBlank": "."
-  }
-}
-    /
-   /.
-  /..
- /...
-<....
- \...
-  \..
-   \.
-    \
-----Delimiter----
-LeftArrowBold: FrameLayer
-{
-  "coords": {"x": 0, "y": 1},
-  "events": {
-    "click": "InteractiveSignLeft",
-    "mouseleave": "unboldLeft"
+    "mouseover": "boldMouseOver",
+    "mouseleave": "unboldMouseLeave"
   },
   "formatting": {
-    "fontWeight": "bold"
+    "default": {
+    
+    },
+    "bold": {
+      "fontWeight": "bold"
+    }
   },
   "settings": {
     "setAsBlank": "."
@@ -83,31 +68,16 @@ RightArrow: FrameLayer
   "coords": {"x": 44, "y": 1},
   "events": {
     "click": "InteractiveSignRight",
-    "mouseover": "boldRight"
-  },
-  "settings": {
-    "setAsBlank": "."
-  }
-}
-\
-.\
-..\
-...\
-....>
-.../
-../
-./
-/
-----Delimiter----
-RightArrowBold: FrameLayer
-{
-  "coords": {"x": 44, "y": 1},
-  "events": {
-    "click": "InteractiveSignRight",
-    "mouseout": "unboldRight"
+    "mouseover": "boldMouseOver",
+    "mouseleave": "unboldMouseLeave"
   },
   "formatting": {
-    "fontWeight": "bold"
+    "default": {
+    
+    },
+    "bold": {
+      "fontWeight": "bold"
+    }
   },
   "settings": {
     "setAsBlank": "."
@@ -123,42 +93,73 @@ RightArrowBold: FrameLayer
 ./
 /
 ----Delimiter----
-SignFrame: Frame
+SignBoardTextOld: FrameLayer
+{
+  "coords": {
+    "x": 8,
+    "y": 5
+  },
+  "events": {
+    "click": "updateSignText",
+    "mouseover": "boldMouseOver",
+    "mouseleave": "unboldMouseLeave"
+  },
+  "formatting": {
+    "default": {
+    
+    },
+    "bold": {
+      "fontWeight": "bold"
+    }
+  }
+}
+UNFINISHED - WAIT FOR NEXT PATCH
+----Delimiter----
+SignBoardTextNew: FrameLayer
+{
+  "coords": {
+    "x": 12,
+    "y": 5
+  },
+  "events": {
+    "click": "revertSignText",
+    "mouseover": "boldMouseOver",
+    "mouseleave": "unboldMouseLeave"
+  },
+  "formatting": {
+    "default": {
+    
+    },
+    "bold": {
+      "fontWeight": "bold"
+    }
+  }
+}
+I CAN BE CLICKED NOW!!!!
+----Delimiter----
+SignFrameOldText: Frame
 {
 
 }
 SignPost
 SignBoard
+SignBoardTextOld
 LeftArrow
 RightArrow
 ----Delimiter----
-SignFrameRightBold: Frame
+SignFrameNewText: Frame
 {
 
 }
 SignPost
 SignBoard
+SignBoardTextNew
 LeftArrow
-RightArrowBold
-----Delimiter----
-SignFrameLeftBold: Frame
-{
-
-}
-SignPost
-SignBoard
-LeftArrowBold
 RightArrow
 ----Delimiter----
 Sign: Animation
 {
-
+  
 }
-SignFrame:Normal
-SignFrameLeftBold:Left
-SignFrameRightBold:Right
-----Delimiter----
-Sign1: Animation
-{
-
-}
+SignFrameOldText
+SignFrameNewText

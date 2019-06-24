@@ -1,11 +1,16 @@
-Upcoming (Roughly in planned order):
-Simplifying temporary formatting effects (e.g. bold on hover)
+Upcoming Features (Roughly in planned order):
 Buttons/Dropdowns etc.
 Partial rendering and other rendering options
 More formatting support
 More Animation/Layers features
 
 History:
+Version 0.4.1 - 2019/6/23
+  Allows frame layers to have multiple formatting options. 
+    Simplifies temporary formatting effects (e.g. bold on hover)
+  Optimizations of event listener handling. 
+  Updated examples. 
+
 Version 0.4 - 2019/6/15
   Added event listeners support
     Event handlers are passed in to a scene, with each handler referenced by a name.

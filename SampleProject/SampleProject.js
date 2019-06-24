@@ -19,26 +19,38 @@ let interactiveTest = async function() {
   interactiveScene.addAnimation("sign", assets.animations["Sign"]);
     
   interactiveScene.addEventHandlers({
-    "InteractiveSignLeft": function(e, scene, animation) {
-      alert("LEFT BUTTON PRESSED");
+    "InteractiveSignLeft": function(e, scene, containers) {
+      console.log("LEFT BUTTON PRESSED");
     }, 
-    "InteractiveSignRight": function(e, scene, animation) {
-      alert("RIGHT BUTTON PRESSED");
+    "InteractiveSignRight": function(e, scene, containers) {
+      console.log("RIGHT BUTTON PRESSED");
     },
-    "boldLeft": function(e, scene, animation) {
-      scene.iterateAnimation("sign", "Left");
+    "boldMouseOver": function(e, scene, containers) {
+      if (LOG_PERFORMANCE) {
+        var start = performance.now();
+      }
+      containers.frameLayer.triggerFormattingKey("bold");
+      scene.render();
+      if (LOG_PERFORMANCE) {
+        console.log("Bold time: ", performance.now() - start);
+      }
+    },
+    "unboldMouseLeave": function(e, scene, containers) {
+      if (LOG_PERFORMANCE) {
+        var start = performance.now();
+      }
+      containers.frameLayer.revertToDefaultFormat();
+      scene.render();
+      if (LOG_PERFORMANCE) {
+        console.log("Unbold time: ", performance.now() - start);
+      }
+    },
+    "updateSignText": function(e, scene, containers) {
+      scene.iterateAnimation("sign", "SignFrameNewText");
       scene.render();
     },
-    "unboldLeft": function(e, scene, animation) {
-      scene.iterateAnimation("sign", "Normal");
-      scene.render();
-    },
-    "boldRight": function(e, scene, animation) {
-      scene.iterateAnimation("sign", "Right");
-      scene.render();
-    },
-    "unboldRight": function(e, scene, animation) {
-      scene.iterateAnimation("sign", "Normal");
+    "revertSignText": function(e, scene, containers) {
+      scene.iterateAnimation("sign", "SignFrameOldText");
       scene.render();
     }
   });

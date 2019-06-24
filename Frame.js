@@ -1,8 +1,8 @@
 /**
  * A frame represents a single image
- * Takes in a plaintext string, and three objects:
  */
 function Frame(layers, options) {
+  let thisFrame = this;
   // TODO: Check that layers is an array of FrameLayer objects
   let layers_ = [];
   for (let i = 0; i < layers.length; i ++) {
@@ -44,9 +44,10 @@ function Frame(layers, options) {
 
   this.getCharVal = function(x, y) {
     for (let i = count_ - 1; i >= 0; i --) {
-      let charData = layers_[i].getCharData(x, y);
+      let charData = layers_[i].getCharPixel(x, y);
       if (!(charData.isTransparent())) {
         charData.addHigherLevelEventListeners(events_);
+        charData.setFrameReference(thisFrame);
         return charData;
       }
     }

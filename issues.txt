@@ -1,25 +1,28 @@
   Recently solved:
-Support for text formatting (e.g. background color, text color),
-Options on whether spaces should be transparent (?)
-Support for animations
 File system
 Speed increases
-Reusing animations
+Event listeners
+How are frames and animations stored in files?
+Let constructors accept strings and arrays instead of just Sets (user friendlier)
 
   Vital:
 Change for of loops because it doesn't gracefully handle empty objects
 Efficient way of rendering w/o iterating through all Drawings?
-Need to handle events? What framework? Support for listeners, callbacks
 Figure out which rendering systems to support.
 Optimization in rendering. Two solutions:
-  Store which pixels are changed and only update/access those.
+  [COMPLETED] Store which pixels are changed and only update/access those.
   Treat each line as a single element, unless the formatting varies, to reduce the number of elements.
+Optimization in event handling.
+  Specifically, when mouse moves between multiple characters of the same FrameLayer, "mouseenter"/"mouseleave" events are always triggered.
+  Need to find a way such that such events are only triggered when leaving the same FrameLayer. 
+  Preliminary measurements suggest that while the time between each mouseleave and mouseenter is small (<0.1 ms). However, there are still two renders. 
 
   Important:
 Figure out how to include larger objects such as buttons/dropdown lists. Find solution AND figure out ASCII only solution
 Support for on-hover dropdowns
-How are frames and animations stored in files?
-Let constructors accept strings and arrays instead of just Sets (user friendlier)
+Hide certain methods from public. Only expose necessary methods. 
+Allow frames to toggle frameLayers (?) for more versatility 
 
   Bonus:
 More descriptive error messages (Print parameters for bad calls)
+Allow for formatting changes to be done automatically (?) (no event handlers for them specifically) 
