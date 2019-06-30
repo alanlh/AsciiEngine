@@ -1,5 +1,5 @@
-"use strict"
 function Scene(id) {
+  "use strict"
   let element = document.getElementById(id);
   // Makes sure the div exists.
   console.assert(element && (element.tagName === "PRE" || element.tagName ==="DIV"),

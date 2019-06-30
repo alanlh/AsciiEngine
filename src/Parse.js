@@ -1,6 +1,6 @@
 // Functions for reading ASCII data from files
-
 async function readDataFromFile(filename) {
+  "use strict"
   // Code referenced from here
   // https://stackoverflow.com/questions/48969495/in-javascript-how-do-i-should-i-use-async-await-with-xmlhttprequest
 
@@ -28,6 +28,7 @@ async function readDataFromFile(filename) {
 }
 
 function parseFromString(dataString) {
+  "use strict"
   /**
 --CODE--
 NAME: Type
@@ -70,6 +71,7 @@ NAME: Type
 }
 
 function createAnimationFromString(string, frameJobs) {
+  "use strict"
   /**
   There are no options for this. 
   Can Use either format. In the former case, the frame name will not be included.
@@ -111,6 +113,7 @@ function createAnimationFromString(string, frameJobs) {
 }
 
 function createFrameFromString(string, frameLayerJobs) {
+  "use strict"
   /**
   Data in following format:
   FrameLayerName
@@ -134,6 +137,7 @@ function createFrameFromString(string, frameLayerJobs) {
 }
 
 function createFrameLayerFromString(string) {
+  "use strict"
   /**
     Data section is just the drawing.
     Formatting and coordinates should be within JSON
@@ -148,10 +152,12 @@ function createFrameLayerFromString(string) {
 }
 
 function printJSONError(string, error) {
+  "use strict"
   console.error("JSON Error: " + error + "\nString: \n" + string);
 }
 
 function parseOptions(string) {
+  "use strict"
   string = string.substring(string.indexOf("\n") + 1);
   let netBrackets = 0;
   let optionsIndex = 0;

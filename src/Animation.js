@@ -3,13 +3,14 @@
  * Takes in an array of frames, and an array of lengths.
 **/
 function Animation(frames, options) {
+  "use strict"
   // TODO: Add support for multiple keys pointing to same frame without extra memory.
   let thisAnimation = this;
   let frames_ = {};
   options = options || {};
   let currentKey_ = options.startKey;
   let defaultKey_ = options.defaultKey || options.startKey;
-  for (key in frames) {
+  for (let key in frames) {
     console.assert(frames[key] instanceof Frame, frames[key]);
     frames_[key] = frames[key].copy();
     
@@ -55,7 +56,7 @@ function Animation(frames, options) {
   let width_ = 0;
   let height_ = 1;
 
-  for (key in frames_) {
+  for (let key in frames_) {
     width_ = Math.max(width_, frames_[key].getDimens().width);
     height_ = Math.max(height_, frames_[key].getDimens().height);
   }
@@ -80,7 +81,7 @@ function Animation(frames, options) {
   }
 
   this.getCharValFrame = function(x, y) {
-    currentFrame = frames_[currentKey_];
+    let currentFrame = frames_[currentKey_];
     let charData = currentFrame.getCharVal(x, y);
     charData.addHigherLevelEventListeners(events_);
     charData.setAnimationReference(thisAnimation);

@@ -2,6 +2,7 @@
  * A frame represents a single image
  */
 function Frame(layers, options) {
+  "use strict"
   let thisFrame = this;
   // TODO: Check that layers is an array of FrameLayer objects
   let layers_ = [];

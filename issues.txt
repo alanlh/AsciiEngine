@@ -14,7 +14,7 @@ Optimization in rendering. Two solutions:
   Treat each line as a single element, unless the formatting varies, to reduce the number of elements.
 Optimization in event handling.
   Specifically, when mouse moves between multiple characters of the same FrameLayer, "mouseenter"/"mouseleave" events are always triggered.
-  Need to find a way such that such events are only triggered when leaving the same FrameLayer. 
+  Need to find a way such that such events are only triggered when leaving the same FrameLayer. (Partially solved by second rendering optimization idea)
   Preliminary measurements suggest that while the time between each mouseleave and mouseenter is small (<0.1 ms). However, there are still two renders. 
 
   Important:

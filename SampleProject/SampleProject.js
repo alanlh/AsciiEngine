@@ -1,4 +1,5 @@
-LOG_PERFORMANCE = false;
+"use strict"
+var LOG_PERFORMANCE = false;
 
 window.onload = async function() {
   basicDisplay();
@@ -154,7 +155,7 @@ let basicAnimation = function() {
     carFrames[i.toString()] = carFrame;
   }
 
-  carAnimation = new Animation(carFrames);
+  let carAnimation = new Animation(carFrames);
   animatedScene.addAnimation("car", carAnimation);
   animatedScene.shiftDrawing("car", {x: -18, y: 2});
   

@@ -1,4 +1,5 @@
 function FrameLayer(textStr, options) {
+  "use strict"
   let thisFrameLayer = this;
   let text_ = textStr;
   let width_ = 0;
@@ -124,8 +125,8 @@ function FrameLayer(textStr, options) {
   }
 
   this.getCharData = function(x, y) {
-    layerX = x - x_;
-    layerY = y - y_;
+    let layerX = x - x_;
+    let layerY = y - y_;
     if (layerX < 0 || layerX > width_ || layerY < 0 || layerY > height_) {
       // If outside of Layer boundaries, immediately return false
       return new CharPixel();
@@ -190,6 +191,7 @@ function FrameLayer(textStr, options) {
 }
 
 function CharPixel(charData) {
+  "use strict"
   charData = charData || {};
   this.char = charData.char || ' ';
   this.textColor = charData.textColor || "#000000";
@@ -219,13 +221,13 @@ function CharPixel(charData) {
   }
   
   this.sameEvents = function(other) {
-    for (myEvent in this.events) {
+    for (let myEvent in this.events) {
       if (!(myEvent in other.events) || 
         this.events[myEvent] !== other.events[myEvent]) {
         return false;
       }
     }
-    for (otherEvent in other.events) {
+    for (let otherEvent in other.events) {
       if (!(otherEvent in this.events)) {
         return false;
       }
@@ -261,7 +263,7 @@ function CharPixel(charData) {
   }
   
   this.sameContainersAs = function(other) {
-    otherContainers = other.getContainerReferences();
+    let otherContainers = other.getContainerReferences();
     return containerReferences.animation == otherContainers.animation
       && containerReferences.frame == otherContainers.frame
       && containerReferences.frameLayer == otherContainers.frameLayer;
