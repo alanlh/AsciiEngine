@@ -22,7 +22,9 @@ Figure out how to include larger objects such as buttons/dropdown lists. Find so
 Support for on-hover dropdowns
 Hide certain methods from public. Only expose necessary methods. 
 Allow frames to toggle frameLayers (?) for more versatility 
+CSS for buttons, dropdowns, etc. 
 
   Bonus:
 More descriptive error messages (Print parameters for bad calls)
 Allow for formatting changes to be done automatically (?) (no event handlers for them specifically) 
+Use Object.defineProperty whenever possible to prevent values from being changed. 

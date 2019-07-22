@@ -5,6 +5,18 @@ More formatting support
 More Animation/Layers features
 
 History:
+Version 0.6.0 - 2019/7/21
+  Rewrote entire project to be more versatile, moved old code to src_old and SampleProjectOld folder. New code is in src and SampleProject folder. 
+    Previous code will be deleted by next patch. 
+  Implemented basic features in new version:
+    Most data structures for creating and rendering objects (now named Elements)
+    Rendering
+    Formatting
+  Not yet implemented:
+    Events
+    Parsing
+  Added documentation for new structure (incomplete, but more than previously). 
+
 Version 0.4.2 - 2019/6/29
   Slightly restructured code
   Added "use strict" to all functions. 
