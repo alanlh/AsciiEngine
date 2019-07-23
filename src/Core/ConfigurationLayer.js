@@ -63,7 +63,7 @@ function ConfigurationLayer(children, data) {
   
   this.setConfiguration = function(newConfiguration) {
     // TODO: Verify newConfiguration
-    this._activeKey = newConfiguration;
+    this.activeKey = newConfiguration;
     for (let key in _children) {
       _children[key].setConfiguration(newConfiguration);
     }
@@ -87,6 +87,6 @@ function ConfigurationLayer(children, data) {
     
   this.copy = function() {
     // TODO: Format data better. 
-    return new ConfigurationLayer(children_, data);
+    return new ConfigurationLayer(_children, data);
   }
 }

@@ -45,7 +45,7 @@ function ContainerLayer(children, data) {
   });
   
   this.setConfiguration = function(newConfiguration) {
-    for (let child in _children) {
+    for (let child of _children) {
       child.setConfiguration(newConfiguration);
     }
   }

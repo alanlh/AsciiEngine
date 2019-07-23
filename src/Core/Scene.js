@@ -141,11 +141,12 @@ function Scene(data) {
 
     // TODO: Find better algorithm? 
     for (let className of classSet) {
-      if (!className in _classMembers) {
+      if (!(className in _classMembers)) {
         LOGGING.WARN(
           "filterElements: ",
           "Filter string: ", className, " not found."
         );
+        continue;
       }
       if (candidates.size == 0) {
         // NOTE: This will never be empty after the initial iteration, because filtered.size == 0. 
