@@ -4,7 +4,8 @@ function BaseLayer(data) {
   Element.call(self, {
     boundingBoxDimens: data.boundingBoxDimens,
     topLeftCoords: data.topLeftCoords,
-    priority: data.priority
+    priority: data.priority,
+    events: data.events
   });
   
   if (self.constructor == BaseLayer) {

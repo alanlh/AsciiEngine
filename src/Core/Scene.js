@@ -44,16 +44,23 @@ function Scene(data) {
       cell.classList.add("scene-" + this.id + "-" + y + "-" + x);
       
       rowDomElement.append(cell);
-      _domElementReferences[y].push(cell);
+      _domElementReferences[y].push(new CellData(cell, new Vector2(x, y)));
       _currentPixelData[y].push(new PixelData());
     }
     _domContainer.append(rowDomElement);
   }
-    
-  this.module = new EventHandlerModule({
+  
+  // TODO: Verify eventHandlers
+  // TODO: Is this even necessary, especially if not exposed to public?
+  let _eventHandlers = new EventHandlerModule({
     layerId: this.id,
     eventHandlers: data.eventHandlers
   });
+  
+  let _events = new EventModule({
+    layerId: this.id,
+    events: data.events
+  })
   
   let _elementData = {};
   let _idTags = {};
@@ -72,11 +79,9 @@ function Scene(data) {
     }
     // Always use a copy of the element. 
     let internalElement = element.copy();
-    internalElement.module = new CoreModule({
-      layerId: internalElement.id,
-      topLeftCoords: internalElement.topLeftCoords,
-      priority: internalElement.priority
-    });
+    internalElement.initializeModule(CoreModule.type);
+    internalElement.initializeModule(EventModule.type);
+
     _elementData[internalElement.id] = internalElement;
     _idTags[internalElement.id] = classSet;
     
@@ -220,6 +225,17 @@ function Scene(data) {
     LOGGING.PERFORMANCE.STOP("Scene.configureElements");
   }
   
+  // TODO: Should this be an option? If so, how to implement? 
+  this.setEventEnabled = function(classSet, status) {
+    LOGGING.PERFORMANCE.START("Scene.setEventEnabled", 1);
+    let relevantElements = filterElements(classSet);
+    for (let id of relevantElements) {
+      let element = _elementData[id];
+      element.setEventStatus(status);
+    }
+    LOGGING.PERFORMANCE.STOP("Scene.setEventEnabled");
+  }
+  
   this.render = function() {
     LOGGING.PERFORMANCE.START("Scene.render", 0);
     
@@ -231,38 +247,37 @@ function Scene(data) {
           // If nothing changed, don't set anything.
         } else {
           let cell = _domElementReferences[y][x];
-          cell.innerHTML = newPixelData.char;
-          cell.style.color = newPixelData.formatting.textColor;
-          cell.style.backgroundColor = newPixelData.formatting.backgroundColor;
-          cell.style.fontWeight = newPixelData.formatting.fontWeight;
-          cell.style.fontStyle = newPixelData.formatting.fontStyle;
-          cell.style.textDecoration = newPixelData.formatting.textDecoration;
+          cell.domElement.innerHTML = newPixelData.char;
+          cell.domElement.style.color = newPixelData.formatting.textColor;
+          cell.domElement.style.backgroundColor = newPixelData.formatting.backgroundColor;
+          cell.domElement.style.fontWeight = newPixelData.formatting.fontWeight;
+          cell.domElement.style.fontStyle = newPixelData.formatting.fontStyle;
+          cell.domElement.style.textDecoration = newPixelData.formatting.textDecoration;
           
-          let eventHandlerModule = this[EventHandlerModule.type];
           for (let eventType in _currentPixelData[y][x].events) {
             let oldEventData = _currentPixelData[y][x].events[eventType];
-            if (oldEventData.active
-              && oldEventData.eventType == newPixelData.events.eventType
-              && oldEventData.layerId == newPixelData.events.layerId
-              && oldEventData.handlerKey == newPixelData.events[eventType].handlerKey
-              && newPixelData.event[eventType].enabled) {
+            let newEventData = newPixelData.events[eventType];
+            if (eventType in newPixelData.events
+              && oldEventData.eventType == newEventData.eventType
+              && oldEventData.layerId == newEventData.layerId
+              && oldEventData.handlerKey == newEventData.handlerKey
+              && newEventData.enabled) {
               // If they belong to the same element, then don't change.
               // Cannot check newPixelData.id, since the event may have originated from a different layer.
-              
+              LOGGING.DEBUG("Keeping the same event listener for: (", x, ", ", y, ")");
             } else {
               // There might be other cases where the handler could be reused, but being safe for now. 
-              cell.removeEventListener(eventType, oldEventData.handler);
-              oldEventData.active = false;
+              LOGGING.DEBUG("Removing event listener from: (", x, ", ", y, ")");
+              _eventHandlers.unbindEvent(cell, oldEventData);
             }
           }
           
           for (let eventType in newPixelData.events) {
             let eventData = newPixelData.events[eventType];
-            if (newPixelData.events[eventType].enabled && !newPixelData.events[eventType].active) {
-              let handler = generateEventHandler(eventHandlerModule[newPixelData.handlerKey], newPixelData.events.layerId);
-              cell.addEventListener(eventType, handler);
-              newPixelData.events[eventType].handler = handler;
-              newPixelData.events[eventType].active = true;
+            if (eventData.enabled
+              && !eventData.attachedCells.has(cell)) {
+              _eventHandlers.bindEvent(cell, eventData);
+              LOGGING.DEBUG("Adding event listener to: (", x, ", ", y, ")");
             }
           }
           
@@ -307,13 +322,36 @@ function Scene(data) {
     return topPixelData;
   }
   
-  let generateEventHandler = function(handler, layerId) {
-    return function(e) {
-      handler(e, layerId);
-    }
-  }
   LOGGING.PERFORMANCE.STOP("Scene.constructor");
 }
 
 Scene.prototype = Object.create(Layer.prototype);
 Scene.prototype.constructor = Scene;
+
+/**
+  Wrapper around dom elements with some utility functions.
+  Internal class of scene only. 
+  
+  cellReference: reference to the dom element
+  coords: coordinates of the cell in the Scene.
+*/
+function CellData(domReference, coords) {
+  // TODO: Object.define. 
+  this.domElement = domReference;
+  this.coords = Vector2.copy(coords);
+  this.activeEvents = {};
+}
+
+CellData.prototype.addEventListener = function(eventType, handler) {
+  // TODO: Make this safe.
+  if (this.activeEvents[eventType]) {
+    this.removeEventListener(eventType);
+  }
+  this.domElement.addEventListener(eventType, handler);
+  this.activeEvents[eventType] = handler;
+}
+
+CellData.prototype.removeEventListener = function(eventType) {
+  this.domElement.removeEventListener(eventType, this.activeEvents[eventType]);
+  delete this.activeEvents[eventType];
+}

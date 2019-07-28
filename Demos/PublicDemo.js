@@ -72,7 +72,10 @@ function helloWorld2() {
     [balloon, balloonStem],
     {
       priority: 0,
-      topLeftCoords: new Vector2(0, 0)
+      topLeftCoords: new Vector2(0, 0),
+      events: {
+        click: "balloonMove"
+      }
     }
   );
   
@@ -148,11 +151,55 @@ function helloWorld2() {
       topLeftCoords: new Vector2(0, 0),
       defaultKey: "hold"
     }
-  )
+  );
+  
+  let eventHandlers = {
+    balloonMove: (function() {
+      let iteration = 0;
+      let started = false;
+      let startFunc = function() {
+        if (started) {
+          console.error("Pressing more than once doesn't work!");
+          return;
+        }
+        started = true;
+        scene.shiftElements("balloon", new Vector2(2, 0));
+        scene.render();
+        setTimeout(followup, 1000);
+        iteration ++;
+      }
+      let followup = function() {
+        scene.shiftElements("balloon", new Vector2(2, 0));
+        if (iteration == 2) {
+          scene.configureElements("balloon", "drift");
+        } else if (iteration == 4) {
+          scene.configureElements("balloon", "far");
+        } else if (iteration == 6) {
+          scene.configureElements("human", "reach");
+          scene.shiftElements("balloon", new Vector2(0, -1));
+        } else if (iteration == 8){
+          scene.shiftElements("balloon", new Vector2(0, -1));
+          scene.configureElements("balloon", "away");
+        } 
+        if (iteration >= 6 && iteration % 2 == 0) {
+          scene.shiftElements("human", new Vector2(1, 0));
+        }
+        
+        scene.render();
+        if (iteration <= 12) {
+          setTimeout(followup, 1000);
+        }
+        iteration ++;
+      };
+      
+      return startFunc;
+    })()
+  };
     
   let scene = new Scene({
     divId: "hello2",
-    boundingBoxDimens: new Vector2(30, 15)
+    boundingBoxDimens: new Vector2(30, 15),
+    eventHandlers: eventHandlers
   });
   
   scene.addElement("HELLO", helloText);
@@ -161,30 +208,4 @@ function helloWorld2() {
   scene.moveElements("dynamic", new Vector2(5, 5));
   scene.shiftElements("balloon", new Vector2(2, -5));
   scene.render();
-  
-  let iteration = 0;
-  function fly() {
-    scene.shiftElements("balloon", new Vector2(2, 0));
-    if (iteration == 2) {
-      scene.configureElements("balloon", "drift");
-    } else if (iteration == 4) {
-      scene.configureElements("balloon", "far");
-    } else if (iteration == 6) {
-      scene.configureElements("human", "reach");
-      scene.shiftElements("balloon", new Vector2(0, -1));
-    } else if (iteration == 8){
-      scene.shiftElements("balloon", new Vector2(0, -1));
-      scene.configureElements("balloon", "away");
-    } 
-    if (iteration >= 6 && iteration % 2 == 0) {
-      scene.shiftElements("human", new Vector2(1, 0));
-    }
-    
-    scene.render();
-    if (iteration <= 12) {
-      setTimeout(fly, 1000);
-    }
-    iteration ++;
-  }
-  setTimeout(fly, 2000);
 }

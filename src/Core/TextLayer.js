@@ -13,7 +13,8 @@ function TextLayer(text, data) {
     boundingBoxDimens: textShapeData.boundingBoxDimens,
     topLeftCoords: data.topLeftCoords,
     priority: data.priority,
-  })
+    events: data.events
+  });
   // TODO: Verify that string itself cannot be modified. 
   Object.defineProperty(this, "text", {
     value: textShapeData.text
@@ -47,11 +48,6 @@ function TextLayer(text, data) {
   // TODO: Verify data.leadingSpaceIgnored
   Object.defineProperty(this, "leadingSpaceIgnored", {
     value: data.leadingSpaceIgnored === undefined || data.leadingSpaceIgnored
-  });
-
-  this.module = new EventModule({
-    layerId: this.id,
-    events: data.events
   });
 
   this.copy = function() {

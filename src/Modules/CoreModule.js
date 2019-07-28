@@ -41,10 +41,8 @@ Object.defineProperty(CoreModule, "type", {
 });
 
 
-Object.defineProperty(BaseModule, CoreModule.prototype.type, {
-  get: function() {
-    return CoreModule.EmptyModule();
-  }
+Object.defineProperty(BaseModule, CoreModule.type, {
+  value: CoreModule.prototype.constructor
 });
 
 CoreModule.prototype.copy = function(newId) {

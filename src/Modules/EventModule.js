@@ -4,24 +4,24 @@ function EventModule(data) {
   // TODO: Make sure layerId is defined. 
   BaseModule.call(this, data.layerId, EventModule.type);
   
-  let _events = {};
+  const _events = {};
+  const _eventsPublic = {};
   Object.defineProperty(this, "events", {
-    value: Object.keys(_events)
+    value: _eventsPublic
   })
   for (let eventType in data.events) {
     _events[eventType] = new EventData(eventType, data.events[eventType]);
-    Object.defineProperty(this, eventType, {
+    Object.defineProperty(_eventsPublic, eventType, {
       get: function() {
         return _events[eventType];
       },
-      // TODO: Should set exist? 
-      set: function(newHandler) {
-        // TODO: Verify handler to be string
-        _events[eventType] = new EventData(eventType, data.events[eventType]);
-      }
+      set: function(newEventData) {
+        // TODO: Verify new EventData
+        _events[eventType] = newEventData;
+      },
+      enumerable: true
     });
   }
-  
   this.copy = function(newId) {
     // TODO: Verify newId
     let events = {};
@@ -45,11 +45,9 @@ Object.defineProperty(EventModule, "type", {
 EventModule.EmptyModule = function() {
   return new EventModule("EMPTY");
 }
+
 Object.defineProperty(BaseModule, EventModule.type, {
-  get: function() {
-    // TODO: Handle empty case. 
-    return EventModule.EmptyModule();
-  }
+  value: EventModule.prototype.constructor
 });
 
 EventModule.prototype.addEvent = function(type, key) {
@@ -82,8 +80,9 @@ function EventData(eventType, handlerKey) {
   // TODO: Make safe. 
   this.eventType = eventType;
   this.handlerKey = handlerKey;
-  this.active = false;
   this.enabled = true;
+  this.handlerMethod = undefined;
+  this.attachedCells = new Set();
 }
 
 EventData.isEqual = function(e1, e2) {

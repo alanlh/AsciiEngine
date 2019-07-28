@@ -9,6 +9,25 @@ function Element(data) {
     LOGGING.ERROR("Element is an abstract class. Do not instantiate directly.");
   }
   
+  let modules = {};
+  Object.defineProperty(self, "module", {
+    set: function(newModule) {
+      if (newModule.type in modules) {
+        LOGGING.WARN("Replacing module of type ", newModule.type, " in layer: ", this.id);
+        return;
+      }
+      modules[newModule.type] = newModule;
+      Object.defineProperty(self, newModule.type, {
+        get: function() {
+          if (newModule.type in modules) {
+            return modules[newModule.type];
+          }
+          return BaseModule[newModule.type];
+        }
+      });
+    }
+  });
+  
   // TODO: Handle case where not included. 
   LOGGING.ASSERT(Vector2.isInteger(data.topLeftCoords), 
     "Layer constructor parameter data.topLeftCoords has non-integer coordinates.",
@@ -24,6 +43,16 @@ function Element(data) {
   Object.defineProperty(this, "priority", {
     value: priority
   });
+  
+  Object.defineProperty(this, "events", {
+    value: {}
+  });
+  // Create copy. 
+  for (let eventType in data.events) {
+    this.events[eventType] = data.events[eventType];
+  }
+  // Prevent changes. To access current state of events, use the event module. 
+  Object.freeze(this.events);
 }
 
 Element.prototype = Object.create(Layer.prototype);
@@ -37,4 +66,9 @@ Element.prototype.copy = function() {
 
 Element.prototype.setConfiguration = function() {
   // Intentionally do nothing.
+}
+
+// Overriden by Elements that have children.
+Element.prototype.initializeModule = function(moduleType) {
+  this.module = new BaseModule[moduleType](this);
 }

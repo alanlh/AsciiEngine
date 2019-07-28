@@ -22,24 +22,6 @@ function Layer(data) {
   Object.defineProperty(this, "id", {
     value: Layer.generateId()
   });
-  
-  let modules = {};
-  Object.defineProperty(self, "module", {
-    set: function(newModule) {
-      if (newModule.type in modules) {
-        LOGGING.WARN("Replacing module of type ", newModule.type, " in layer: ", this.id);
-      }
-      modules[newModule.type] = newModule;
-      Object.defineProperty(self, newModule.type, {
-        get: function() {
-          if (newModule.type in modules) {
-            return modules[newModule.type];
-          }
-          return BaseModule[newModule.type];
-        }
-      });
-    }
-  });
 }
 
 Layer.prototype.getCharAt = function() {

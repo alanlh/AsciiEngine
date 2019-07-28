@@ -29,7 +29,8 @@ function ConfigurationLayer(children, data) {
   Element.call(this, {
     boundingBoxDimens: Vector2.subtract(bottomRight, topLeft),
     topLeftCoords: Vector2.add(topLeft, data.topLeftCoords),
-    priority: data.priority
+    priority: data.priority,
+    events: data.events
   });
   
   Object.defineProperty(this, "size", {
@@ -80,13 +81,22 @@ function ConfigurationLayer(children, data) {
   this.getPixelDataAt = function(vec2) {
     // TODO: Verify that vec2 is Vector2
     if (vec2.inBoundingBox(_children[_activeKey].topLeftCoords, _children[_activeKey].boundingBoxDimens)) {
-      return _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
+      let childPixelData = _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
+      childPixelData.pushEventModule(this[EventModule.type]);
+      return childPixelData;
     }
     return new PixelData();
   }
     
   this.copy = function() {
-    // TODO: Format data better. 
+    // TODO: Format data better. Use internal values, not parameter. 
     return new ConfigurationLayer(_children, data);
+  }
+  
+  this.initializeModule = function(moduleType) {
+    this.module = new BaseModule[moduleType](this);
+    for (let childKey in _children) {
+      _children[childKey].initializeModule(moduleType);
+    }
   }
 }
