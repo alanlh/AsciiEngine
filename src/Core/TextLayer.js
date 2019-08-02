@@ -13,8 +13,10 @@ function TextLayer(text, data) {
     boundingBoxDimens: textShapeData.boundingBoxDimens,
     topLeftCoords: data.topLeftCoords,
     priority: data.priority,
-    events: data.events
+    events: data.events,
+    formatting: data.formatting
   });
+
   // TODO: Verify that string itself cannot be modified. 
   Object.defineProperty(this, "text", {
     value: textShapeData.text
@@ -24,12 +26,7 @@ function TextLayer(text, data) {
   Object.defineProperty(this, "rowIndices", {
     value: textShapeData.rowIndices
   });
-    
-  // FormattingSelection constructor can handle if values exist. 
-  Object.defineProperty(this, "formatting", {
-    value: new FormattingSelection(data)
-  });
-    
+  
   // TODO: Verify data.setAsBlank
   Object.defineProperty(this, "setAsBlank", {
     value: data.setAsBlank || false
@@ -60,11 +57,7 @@ function TextLayer(text, data) {
       spaceIsTransparent: self.spaceIsTransparent,
       spaceHasFormatting: self.spaceHasFormatting,
       leadingSpaceIgnored: self.leadingSpaceIgnored,
-      textColor: self.formatting.textColor,
-      backgroundColor: self.formatting.backgroundColor,
-      fontWeight: self.formatting.fontWeight,
-      fontStyle: self.formatting.fontStyle,
-      textDecoration: self.formatting.textDecoration
+      formatting: self.formatting
     });
   }
   
@@ -163,7 +156,7 @@ TextLayer.prototype.getPixelDataAt = function(coord) {
     LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning space, has formatting.");
     return new PixelData({
       char: c,
-      formatting: this.formatting,
+      formatting: this[FormattingModule.type],
       events: this[EventModule.type],
       id: this.id
     });
@@ -175,9 +168,10 @@ TextLayer.prototype.getPixelDataAt = function(coord) {
       this.setAsBlank,
       " to space."
     );
+    // TODO: Return default nonModule values if no module? 
     return new PixelData({
       char: ' ',
-      formatting: this.formatting,
+      formatting: this[FormattingModule.type],
       events: this[EventModule.type],
       id: this.id
     });
@@ -190,7 +184,7 @@ TextLayer.prototype.getPixelDataAt = function(coord) {
     );
     return new PixelData({
       char: c,
-      formatting: this.formatting,
+      formatting: this[FormattingModule.type],
       events: this[EventModule.type],
       id: this.id
     });

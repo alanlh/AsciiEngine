@@ -11,9 +11,49 @@ function PixelData(data) {
   // If data.formatting is a FormattingSelection object, then keep.
   // Otherwise, create a new FormattingSelection object around it.
   // Same goes for events. 
+  const _formattingDataReferences = {
+    textColor: new FormattingData("textColor", "#000000"),
+    backgroundColor: new FormattingData("backgroundColor", "transparent"),
+    fontStyle: new FormattingData("fontStyle", "normal"),
+    fontWeight: new FormattingData("fontWeight", "normal"),
+    textDecoration: new FormattingData("textDecoration", "normal"),
+    cursor: new FormattingData("cursor", "default")
+  };
+  if (data.formatting) {
+    for (let key in data.formatting.properties) {
+      Object.defineProperty(_formattingDataReferences, key, {
+        value: data.formatting.properties[key],
+        enumerable: true
+      });
+    }
+  }
+  
   Object.defineProperty(this, "formatting", {
-    value: data.formatting || new FormattingSelection()
+    value: _formattingDataReferences
   });
+
+  Object.defineProperty(this, "baseFormattingModule", {
+    value: data.formatting || FormattingModule.EmptyModule()
+  })
+  
+  self.pushFormattingModule = function(newFormattingModule) {
+    if (!newFormattingModule) {
+      // TODO: Verify to be FormattingModule object.
+      return;
+    }
+    for (let key in newFormattingModule.properties) {
+      // TODO: Better way of handling this? 
+      if (!(key in _formattingDataReferences)) {
+        Object.defineProperty(_formattingDataReferences, key, {
+          value: newFormattingModule.properties[key],
+          enumerable: true,
+          writable: true
+        });
+      } else if (!_formattingDataReferences[key].set) {
+        _formattingDataReferences[key] = newFormattingModule.properties[key]
+      }
+    }
+  }
   
   const _eventDataReferences = {};
   // TODO: Is this used? Maybe only need _eventDataReferences
@@ -55,7 +95,7 @@ function PixelData(data) {
       }
     }
   }
-      
+
   // TODO: Check data.id is valid. 
   Object.defineProperty(this, "id", {
     value: data.id
@@ -63,12 +103,13 @@ function PixelData(data) {
 }
 
 PixelData.prototype.isTransparent = function() {
-  return this.char === ' ' && !this.formatting.hasVisibleFormatting();
+  return this.char === ' ' && !this.baseFormattingModule.hasVisibleFormatting();
 }
 
 PixelData.isEqual = function(p1, p2) {
+  // TODO: Modules shouldn't have isEqual methods, since pixelData contains multiple modules. 
   return p1.char === p2.char
-    && FormattingSelection.isEqual(p1.formatting, p2.formatting)
+    && FormattingModule.isEqual(p1.formatting, p2.formatting)
     && EventModule.isEqual(p1.events, p2.events)
     && p1.id == p2.id;
 }

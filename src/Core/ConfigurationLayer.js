@@ -30,7 +30,8 @@ function ConfigurationLayer(children, data) {
     boundingBoxDimens: Vector2.subtract(bottomRight, topLeft),
     topLeftCoords: Vector2.add(topLeft, data.topLeftCoords),
     priority: data.priority,
-    events: data.events
+    events: data.events,
+    formatting: data.formatting
   });
   
   Object.defineProperty(this, "size", {
@@ -83,6 +84,7 @@ function ConfigurationLayer(children, data) {
     if (vec2.inBoundingBox(_children[_activeKey].topLeftCoords, _children[_activeKey].boundingBoxDimens)) {
       let childPixelData = _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
       childPixelData.pushEventModule(this[EventModule.type]);
+      childPixelData.pushFormattingModule(this[FormattingModule.type]);
       return childPixelData;
     }
     return new PixelData();

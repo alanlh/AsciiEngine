@@ -5,7 +5,8 @@ function BaseLayer(data) {
     boundingBoxDimens: data.boundingBoxDimens,
     topLeftCoords: data.topLeftCoords,
     priority: data.priority,
-    events: data.events
+    events: data.events,
+    formatting: data.formatting
   });
   
   if (self.constructor == BaseLayer) {

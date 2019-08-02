@@ -23,7 +23,9 @@ function helloWorld2() {
     " \\./\n",
     {
       priority: 10,
-      backgroundColor: "red",
+      formatting: {
+        backgroundColor: "red"
+      },
       setAsBlank: '.',
       topLeftCoords: new Vector2(1, 0)
     }
@@ -68,14 +70,25 @@ function helloWorld2() {
     }
   );
   
-  let balloonInHand = new ContainerLayer(
+  let balloonInHandClickable = new ContainerLayer(
     [balloon, balloonStem],
     {
       priority: 0,
       topLeftCoords: new Vector2(0, 0),
       events: {
         click: "balloonMove"
+      },
+      formatting: {
+        cursor: "pointer"
       }
+    }
+  );
+  
+  let balloonInHandClicked = new ContainerLayer(
+    [balloon, balloonStem],
+    {
+      priority: 0,
+      topLeftCoords: new Vector2(0, 0),
     }
   );
   
@@ -105,7 +118,8 @@ function helloWorld2() {
   
   let balloonPhases = new ConfigurationLayer(
     {
-      "hold": balloonInHand,
+      "hold": balloonInHandClickable,
+      "release": balloonInHandClicked,
       "drift": balloonAway1,
       "far": balloonAway2,
       "away": balloonAway3
@@ -163,6 +177,7 @@ function helloWorld2() {
           return;
         }
         started = true;
+        scene.configureElements("balloon", "release");
         scene.shiftElements("balloon", new Vector2(2, 0));
         scene.render();
         setTimeout(followup, 1000);

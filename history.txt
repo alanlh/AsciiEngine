@@ -5,6 +5,11 @@ More formatting support
 More Animation/Layers features
 
 History:
+Version 0.6.2 - 2019/7/29
+  Reworked formatting logic. Can now specify formatting for all Elements (similar to events)
+  Modified code structure
+  Bug fixes
+
 Version 0.6.1 - 2019/7/27
   Preliminary support for events
   Updated demo (try clicking the balloon)

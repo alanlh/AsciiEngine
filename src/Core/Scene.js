@@ -81,6 +81,7 @@ function Scene(data) {
     let internalElement = element.copy();
     internalElement.initializeModule(CoreModule.type);
     internalElement.initializeModule(EventModule.type);
+    internalElement.initializeModule(FormattingModule.type);
 
     _elementData[internalElement.id] = internalElement;
     _idTags[internalElement.id] = classSet;
@@ -247,12 +248,14 @@ function Scene(data) {
           // If nothing changed, don't set anything.
         } else {
           let cell = _domElementReferences[y][x];
+          // TODO: Optimize
           cell.domElement.innerHTML = newPixelData.char;
-          cell.domElement.style.color = newPixelData.formatting.textColor;
-          cell.domElement.style.backgroundColor = newPixelData.formatting.backgroundColor;
-          cell.domElement.style.fontWeight = newPixelData.formatting.fontWeight;
-          cell.domElement.style.fontStyle = newPixelData.formatting.fontStyle;
-          cell.domElement.style.textDecoration = newPixelData.formatting.textDecoration;
+          cell.domElement.style.color = newPixelData.formatting.textColor.value;
+          cell.domElement.style.backgroundColor = newPixelData.formatting.backgroundColor.value;
+          cell.domElement.style.fontWeight = newPixelData.formatting.fontWeight.value;
+          cell.domElement.style.fontStyle = newPixelData.formatting.fontStyle.value;
+          cell.domElement.style.textDecoration = newPixelData.formatting.textDecoration.value;
+          cell.domElement.style.cursor = newPixelData.formatting.cursor.value;          
           
           for (let eventType in _currentPixelData[y][x].events) {
             let oldEventData = _currentPixelData[y][x].events[eventType];

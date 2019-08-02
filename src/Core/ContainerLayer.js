@@ -40,7 +40,8 @@ function ContainerLayer(children, data) {
     boundingBoxDimens: Vector2.subtract(bottomRight, topLeft),
     topLeftCoords: Vector2.add(topLeft, data.topLeftCoords),
     priority: data.priority,
-    events: data.events
+    events: data.events,
+    formatting: data.formatting
   });
   
   Object.defineProperty(this, "size", {
@@ -71,6 +72,7 @@ function ContainerLayer(children, data) {
         let childPixelData = _children[i].getPixelDataAt(Vector2.subtract(vec2, _children[i].topLeftCoords));
         if (!childPixelData.isTransparent()) {
           childPixelData.pushEventModule(this[EventModule.type]);
+          childPixelData.pushFormattingModule(this[FormattingModule.type]);
           return childPixelData;
         }
       }

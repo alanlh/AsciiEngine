@@ -44,6 +44,14 @@ function Element(data) {
     value: priority
   });
   
+  Object.defineProperty(this, "formatting", {
+    value: {}
+  });
+  for (let property in data.formatting) {
+    this.formatting[property] = data.formatting[property]
+  }
+  Object.freeze(this.formatting);
+  
   Object.defineProperty(this, "events", {
     value: {}
   });

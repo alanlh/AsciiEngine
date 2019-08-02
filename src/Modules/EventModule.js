@@ -12,6 +12,7 @@ function EventModule(data) {
   for (let eventType in data.events) {
     _events[eventType] = new EventData(eventType, data.events[eventType]);
     Object.defineProperty(_eventsPublic, eventType, {
+      // TODO: Is a setter needed? 
       get: function() {
         return _events[eventType];
       },
@@ -43,49 +44,36 @@ Object.defineProperty(EventModule, "type", {
 });
 
 EventModule.EmptyModule = function() {
-  return new EventModule("EMPTY");
+  return new EventModule({});
 }
 
 Object.defineProperty(BaseModule, EventModule.type, {
   value: EventModule.prototype.constructor
 });
 
+// TODO: Implement? 
 EventModule.prototype.addEvent = function(type, key) {
-  // TODO: Implement? 
+  LOGGING.WARN("EventModule.addEvent is not implemented");
 }
 
 EventModule.prototype.removeEvent = function(type) {
   // TODO: Implement? 
+  LOGGING.WARN("EventModule.removeEvent is not implemented");
   if (!(type in this.events)) {
     LOGGING.WARN("Attempting to remove non-existent event from EventModule.");
   }
 }
 
 EventModule.isEqual = function(e1, e2) {
-  for (eventType in e1.events) {
-    if (!(eventType in e2.events) || !EventData.isEqual(e1[eventType], e2[eventType])) {
+  for (let eventType in e1) {
+    if (!(eventType in e2) || !EventData.isEqual(e1[eventType], e2[eventType])) {
       return false;
     }
   }
-  for (eventType in e2.events) {
-    if (!(eventType in e1.events) || !EventData.isEqual(e1[eventType], e2[eventType])) {
+  for (let eventType in e2) {
+    if (!(eventType in e1) || !EventData.isEqual(e1[eventType], e2[eventType])) {
       return false;
     }
   }
   return true;
-}
-
-// A simple container class to make life easier. 
-function EventData(eventType, handlerKey) {
-  // TODO: Make safe. 
-  this.eventType = eventType;
-  this.handlerKey = handlerKey;
-  this.enabled = true;
-  this.handlerMethod = undefined;
-  this.attachedCells = new Set();
-}
-
-EventData.isEqual = function(e1, e2) {
-  return e1.eventType == e2.eventType
-    && e1.handlerKey == e2.handlerKey;
 }
