@@ -28,12 +28,12 @@ function Element(data) {
     }
   });
   
-  // TODO: Handle case where not included. 
-  LOGGING.ASSERT(Vector2.isInteger(data.topLeftCoords), 
+  // TODO: Is there a better way?
+  LOGGING.ASSERT(!("topLeftCoords" in data) || Vector2.isInteger(data.topLeftCoords), 
     "Layer constructor parameter data.topLeftCoords has non-integer coordinates.",
     "Value: ", data.topLeftCoords
   );
-  let topLeftCoords = Vector2.copy(data.topLeftCoords);
+  let topLeftCoords = data.topLeftCoords ? Vector2.copy(data.topLeftCoords) : new Vector2(0, 0);
   Object.defineProperty(this, "topLeftCoords", {
     value: topLeftCoords
   });
@@ -48,16 +48,16 @@ function Element(data) {
     value: {}
   });
   for (let property in data.formatting) {
-    this.formatting[property] = data.formatting[property]
+    self.formatting[property] = data.formatting[property]
   }
-  Object.freeze(this.formatting);
+  Object.freeze(self.formatting);
   
   Object.defineProperty(this, "events", {
     value: {}
   });
   // Create copy. 
   for (let eventType in data.events) {
-    this.events[eventType] = data.events[eventType];
+    self.events[eventType] = data.events[eventType];
   }
   // Prevent changes. To access current state of events, use the event module. 
   Object.freeze(this.events);

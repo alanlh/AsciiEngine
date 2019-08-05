@@ -55,6 +55,11 @@ function PixelData(data) {
     }
   }
   
+  self.markedAsOpaque = false;
+  if ("opaque" in data) {
+    self.markedAsOpaque = data.opaque;
+  }
+  
   const _eventDataReferences = {};
   // TODO: Is this used? Maybe only need _eventDataReferences
   let _eventModules = [];
@@ -103,7 +108,7 @@ function PixelData(data) {
 }
 
 PixelData.prototype.isTransparent = function() {
-  return this.char === ' ' && !this.baseFormattingModule.hasVisibleFormatting();
+  return !this.markedAsOpaque && this.char === ' ' && this.baseFormattingModule.hasInvisibleFormatting();
 }
 
 PixelData.isEqual = function(p1, p2) {

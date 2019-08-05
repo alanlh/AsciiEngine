@@ -27,13 +27,12 @@ function ContainerLayer(children, data) {
     _children.push(child.copy());
   }
   
+  // TODO: ???
   /**
   _children.sort(function(a, b) {
     return a.priority - b.priority;
   });
   **/
-  
-  
   
   // TODO: Check value of topLeftCoords and priority. 
   Element.call(this, {

@@ -1,0 +1,114 @@
+----delimiter----
+Boat : Text
+{
+  "setAsBlank": ".",
+  "topLeftCoords": {
+    "x": 10,
+    "y": 0
+  }
+}
+
+            /----|
+           /.....|
+           /.....|
+         /.......|
+       /...._____|
+      //___//    |
+=====            |          
+\\..===__________|________======
+ .\\.........................//
+  \\........................//
+       .........    .......
+----delimiter----
+SeaBase : Text
+{
+  "formatting": {
+    "textColor": "white"
+  },
+  "spaceIsTransparent": false,
+  "spaceHasFormatting": true
+}
+                                                                                                                                                               
+                                                                                                                                                          
+                                 ~                                            ~                                         ~                              
+         c                                                                           ~                                                                   
+                                                           ,                                                               ~                             
+                                                                                                                                  ~                  
+             ``                                                                                     ~                                              
+                                                                                                                                                  
+                                                                                                                                                    
+                                                                                                                                                   
+                                                 ~                                 ~                                     ~                            
+                                   ~                                                                                                            
+                                                                                                                                                     
+                                  ~                                                                                                              
+                                                                                                               u                                   
+             ~                                                                                                                         o         
+                                                                                                                                                    
+                                                                                                                                               
+                                                                                 ~                                           -                  
+                                                @                                                                                              
+                                                                                                                                              
+                                    ~                        ~                                                  ~     ~                         
+                                                                                                       ~                                   
+                                                                                                                                               
+                          ~                                                                                                                    
+         c                                                                  ~                                                                   
+                                                                                                                                  ~           
+                     ~                                                                                                                         
+                                                                                                                                              
+                          ~                                            ``        ``                          ,                                    
+                                                                                                                                              
+                                                       ~                                                             ~                          
+       .               ~                                                                                                                        
+                                          ""                                                                                                    
+                                          ~                                    ~                                       ~                         
+                      ~                                                                                                          ~              
+                                                                                                                                                
+               .                       ~                                                                        ~                               
+                                                                                                   @                         ~                   
+                                                                                   ~                                                           
+                                                             ~                                                                                  
+                                        ``                                                                     ~                                      
+                                                                                                        ,                                  ~      
+                                                                             ~                                             ~                     
+                  .                                                              ~                   ~                                              
+                                      ~                                                                           ~                                
+                            ~                                                                                                                        
+                                                                                                                                                    
+                                                                                              ,                                                          
+----delimiter----
+SeaBlue1 : Container
+{
+  "formatting": {
+    "backgroundColor": "blue"
+  },
+  "topLeftCoords": {
+    "x": 0,
+    "y": 0
+  }
+}
+SeaBase
+----delimiter----
+SeaBlue2 : Container
+{
+  "formatting": {
+    "backgroundColor": "blue"
+  },
+  "topLeftCoords": {
+    "x": 120,
+    "y": 0
+  }
+}
+SeaBase
+----delimiter----
+SeaCombined : Container
+{
+  "topLeftCoords": {
+    "x": -5,
+    "y": 8
+  },
+  "priority": 10
+}
+SeaBlue1
+SeaBlue2

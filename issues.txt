@@ -7,11 +7,13 @@ Let constructors accept strings and arrays instead of just Sets (user friendlier
 
   Vital:
 Change for of loops because it doesn't gracefully handle empty objects
-Efficient way of rendering w/o iterating through all Drawings?
+Efficient way of rendering w/o iterating through all Elements?
 Figure out which rendering systems to support.
 Optimization in rendering. Two solutions:
   [COMPLETED] Store which pixels are changed and only update/access those.
   Treat each line as a single element, unless the formatting varies, to reduce the number of elements.
+  Update all elements at once, instead of per cell.
+  Not sure if relevant, but check to be different before setting first. 
 Optimization in event handling.
   Specifically, when mouse moves between multiple characters of the same FrameLayer, "mouseenter"/"mouseleave" events are always triggered.
   Need to find a way such that such events are only triggered when leaving the same FrameLayer. (Partially solved by second rendering optimization idea)

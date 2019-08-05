@@ -7,6 +7,7 @@ window.onload = async function() {
   LOGGING.PERFORMANCE.LEVEL = 0;
   
   helloWorld2();
+  await fileParsing();
 }
 
 function helloWorld2() {
@@ -223,4 +224,35 @@ function helloWorld2() {
   scene.moveElements("dynamic", new Vector2(5, 5));
   scene.shiftElements("balloon", new Vector2(2, -5));
   scene.render();
+}
+
+async function fileParsing() {
+  let scene = new Scene({
+    divId: "parsing",
+    boundingBoxDimens: new Vector2(150, 30)
+  });
+  
+  let textParseElements = await Parse.readDataFromFile("Demos/Assets/TextParse.txt");
+  
+  scene.addElement("boat", textParseElements["Boat"]);
+  scene.addElement("sea", textParseElements["SeaCombined"]);
+  scene.render();
+  let iteration = 0;
+  function sail() {
+    scene.shiftCamera({x: 1, y: 0});
+    if (iteration % 4 == 1) {
+      scene.shiftElements("boat", {x: 1, y: 1});
+    } else if (iteration % 4 == 3) {
+      scene.shiftElements("boat", {x: 1, y: -1});
+    } else {
+      scene.shiftElements("boat", {x: 1, y: 0});
+    }
+    scene.render();
+    iteration ++;
+    if (iteration < 100) {
+      setTimeout(sail, 1000);
+    }
+  }
+  
+  setTimeout(sail, 1000);
 }

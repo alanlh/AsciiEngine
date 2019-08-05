@@ -72,15 +72,15 @@ TextLayer.parseTextShape = function(text) {
   let rowIndices = [0];
   let width = 0;
   let height = 1;
-  // Ignore first character if new line. 
-  for (let i = 1; i < text.length; i ++) {
+  // Ignore first character 
+  for (let i = 0; i < text.length; i ++) {
     if (text.charAt(i) === '\n') {
       if (i - rowIndices[rowIndices.length - 1] > width) {
         width = Math.max(width, i - rowIndices[rowIndices.length - 1]);
       }
       rowIndices.push(i + 1);
     }
-    if (text.charAt(i - 1) === '\n') {
+    if (i > 0 && text.charAt(i - 1) === '\n') {
       height ++;
     }
   }
@@ -158,7 +158,8 @@ TextLayer.prototype.getPixelDataAt = function(coord) {
       char: c,
       formatting: this[FormattingModule.type],
       events: this[EventModule.type],
-      id: this.id
+      id: this.id,
+      opaque: true
     });
   }
 
@@ -173,7 +174,8 @@ TextLayer.prototype.getPixelDataAt = function(coord) {
       char: ' ',
       formatting: this[FormattingModule.type],
       events: this[EventModule.type],
-      id: this.id
+      id: this.id,
+      opaque: true
     });
   }
   

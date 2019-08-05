@@ -10,6 +10,10 @@ function Scene(data) {
     LOGGING.WARN("Scene height or width is 0");
   }
   
+  let _camera = new CoreModule({
+    topLeftCoords: new Vector2(0, 0)
+  });
+  
   let _domContainer = document.getElementById(data.divId);
   // TODO: Make sure element exists. 
 
@@ -237,12 +241,19 @@ function Scene(data) {
     LOGGING.PERFORMANCE.STOP("Scene.setEventEnabled");
   }
   
+  this.shiftCamera = function(shift) {
+    // TODO: Verify shift. 
+    LOGGING.PERFORMANCE.START("Scene.shiftCamera", 1);
+    _camera.topLeftCoords = Vector2.subtract(_camera.topLeftCoords, shift);
+    LOGGING.PERFORMANCE.STOP("Scene.shiftCamera");
+  }
+  
   this.render = function() {
     LOGGING.PERFORMANCE.START("Scene.render", 0);
     
     for (let y = 0; y < this.boundingBoxDimens.y; y++) {
       for (let x = 0; x < this.boundingBoxDimens.x; x++) {
-        let newPixelData = getUpdatedCell(new Vector2(x, y));
+        let newPixelData = getUpdatedCell(Vector2.subtract(new Vector2(x, y), _camera.topLeftCoords));
         LOGGING.PERFORMANCE.START("Scene.render: CELL", 2);
         if (PixelData.isEqual(newPixelData, _currentPixelData[y][x])) {
           // If nothing changed, don't set anything.
@@ -308,7 +319,6 @@ function Scene(data) {
       if (priority > topPriority) {
         continue;
       }
-      
       let pixelData = element.getPixelDataAt(Vector2.subtract(coord, element[CoreModule.type].topLeftCoords));
       if (pixelData.isTransparent()) {
         continue;
@@ -330,31 +340,3 @@ function Scene(data) {
 
 Scene.prototype = Object.create(Layer.prototype);
 Scene.prototype.constructor = Scene;
-
-/**
-  Wrapper around dom elements with some utility functions.
-  Internal class of scene only. 
-  
-  cellReference: reference to the dom element
-  coords: coordinates of the cell in the Scene.
-*/
-function CellData(domReference, coords) {
-  // TODO: Object.define. 
-  this.domElement = domReference;
-  this.coords = Vector2.copy(coords);
-  this.activeEvents = {};
-}
-
-CellData.prototype.addEventListener = function(eventType, handler) {
-  // TODO: Make this safe.
-  if (this.activeEvents[eventType]) {
-    this.removeEventListener(eventType);
-  }
-  this.domElement.addEventListener(eventType, handler);
-  this.activeEvents[eventType] = handler;
-}
-
-CellData.prototype.removeEventListener = function(eventType) {
-  this.domElement.removeEventListener(eventType, this.activeEvents[eventType]);
-  delete this.activeEvents[eventType];
-}
