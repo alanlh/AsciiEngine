@@ -99,43 +99,45 @@ TextLayer.parseTextShape = function(text) {
   }
 }
 
-TextLayer.prototype.getCharAt = function(coord) {
-  let x = coord.x || 0;
-  let y = coord.y || 0;
-  // TODO: Guard value of y. 
+TextLayer.prototype.getCharAt = function(vec2) {
+  LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ContainerLayer getCharAt of instance", self.id, " is not Vector2-like: ", vec2);
+  let x = vec2.x || 0;
+  let y = vec2.y || 0;
+  LOGGING.ASSERT(x < this.boundingBoxDimens.x && x >= 0,
+    "TextLayer.getCharAt received input coordinate x which is outside of the bounding box. ",
+    "Bounding Box Dimens: ", this.boundingBoxDimens, " ",
+    "x: ", x
+  );
+  LOGGING.ASSERT(y < this.boundingBoxDimens.y && y >= 0,
+    "TextLayer.getCharAt received input coordinate y which is outside of the bounding box. ",
+    "Bounding Box Dimens: ", this.boundingBoxDimens, " ",
+    "y: ", y
+  );
   let rowStart = this.rowIndices[y];
   let nextRow = rowIndices[y + 1];
-  if (x + rowStart > nextRow) {
-    if (x + rowStart >= this.text.length) {
-      // TODO: These logs may not be correct. Only wrong case is if greater than boundingBoxDimens
-      LOG.WARN(
-        "TextLayer.prototype.getCharAt parameter coord has x coordinate which is longer than the length of the string.\n", 
-        "Coord: ", coord, "\n",
-        "Maximum x value: ", (nextRow - x)
-      );
-    } else {
-      LOG.WARN(
-        "TextLayer.prototype.getCharAt parameter coord has x coordinate which overflows row length.\n", 
-        "Coord: ", coord, "\n",
-        "Maximum x value: ", (nextRow - x)
-      );
-    }
+  if (x + rowStart + 1 >= nextRow) {
+    // Empty coordinates. Not wrong given bounding box, but no characters. 
+    LOGGING.DEBUG("TextLayer.getCharAt: Empty coordinates.");
     return false;
   }
   
   return this.text.charAt(rowStart + x);
 }
 
-TextLayer.prototype.getPixelDataAt = function(coord) {
-  LOGGING.DEBUG("TextLayer.getPixelDataAt called with parameter coord: ", coord);
-  let x = coord.x || 0;
-  let y = coord.y || 0;
-  LOGGING.ASSERT(x < this.boundingBoxDimens.x,
+TextLayer.prototype.getPixelDataAt = function(vec2) {
+  LOGGING.DEBUG("TextLayer.getPixelDataAt called with parameter vec2: ", vec2);
+  let x = vec2.x || 0;
+  let y = vec2.y || 0;
+  LOGGING.ASSERT(x < this.boundingBoxDimens.x && x >= 0,
     "TextLayer.getPixelDataAt received input coordinate x which is outside of the bounding box. ",
     "Bounding Box Dimens: ", this.boundingBoxDimens, " ",
     "x: ", x
   );
-  // TODO: Guard value of y. 
+  LOGGING.ASSERT(y < this.boundingBoxDimens.y && y >= 0,
+    "TextLayer.getPixelDataAt received input coordinate y which is outside of the bounding box. ",
+    "Bounding Box Dimens: ", this.boundingBoxDimens, " ",
+    "y: ", y
+  );
   let rowStart = this.rowIndices[y];
   let nextRow = this.rowIndices[y + 1];
   if (x + rowStart + 1 >= nextRow) {

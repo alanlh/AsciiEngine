@@ -1,13 +1,12 @@
 ----delimiter----
-Boat : Text
+BoatBody : Text
 {
   "setAsBlank": ".",
-  "topLeftCoords": {
-    "x": 10,
-    "y": 0
+  "formatting": {
+    "backgroundColor": "brown",
+    "textColor": "black"
   }
 }
-
             /----|
            /.....|
            /.....|
@@ -19,6 +18,35 @@ Boat : Text
  .\\.........................//
   \\........................//
        .........    .......
+----delimiter----
+BoatFlag : Text
+{
+  "formatting": {
+    "backgroundColor": "white",
+    "textColor": "#CCCCCC"
+  },
+  "topLeftCoords": {
+    "x": 5,
+    "y": 0
+  },
+  "setAsBlank": "."
+}
+       /----
+      /.....
+      /.....
+    /.......
+  /...._____
+ //___//    
+----delimiter----
+Boat : Container
+{
+  "topLeftCoords": {
+    "x": 10,
+    "y": 2
+  }
+}
+BoatBody
+BoatFlag
 ----delimiter----
 SeaBase : Text
 {
@@ -106,7 +134,7 @@ SeaCombined : Container
 {
   "topLeftCoords": {
     "x": -5,
-    "y": 8
+    "y": -5
   },
   "priority": 10
 }

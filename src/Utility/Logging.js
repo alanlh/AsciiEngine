@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 const LOGGING = {
   STATUS: {
     ERROR: true,
@@ -6,7 +6,7 @@ const LOGGING = {
     LOG: false,
     DEBUG: false,
     DEBUG_VERBOSE: false,
-    PERFORMANCE: false
+    PERFORMANCE: false,
   },
   ASSERT: function(statement) {
     if (!statement && LOGGING.STATUS.ERROR) {
@@ -88,8 +88,8 @@ const LOGGING = {
         performanceLevel = newLevel;
       }
     } 
-  })()
-}
+  })(),
+};
 
 Object.seal(LOGGING.STATUS);
 Object.freeze(LOGGING);

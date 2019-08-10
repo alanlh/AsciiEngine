@@ -23,7 +23,8 @@ function PixelData(data) {
     for (let key in data.formatting.properties) {
       Object.defineProperty(_formattingDataReferences, key, {
         value: data.formatting.properties[key],
-        enumerable: true
+        enumerable: true,
+        writable: true
       });
     }
   }
@@ -50,7 +51,7 @@ function PixelData(data) {
           writable: true
         });
       } else if (!_formattingDataReferences[key].set) {
-        _formattingDataReferences[key] = newFormattingModule.properties[key]
+        _formattingDataReferences[key] = newFormattingModule.properties[key];
       }
     }
   }
@@ -93,7 +94,7 @@ function PixelData(data) {
       if (!(eventData.eventType in _eventDataReferences)) {
         _eventDataReferences[eventData.eventType] = eventData;
         // These should be using references, i.e. changes to the eventData should be reflected in original Element object.
-        Object.defineProperty(_eventDataReferences, eventData.eventType, {          
+        Object.defineProperty(_eventDataReferences, eventData.eventType, {
           value: eventData,
           enumerable: true
         });
@@ -101,7 +102,6 @@ function PixelData(data) {
     }
   }
 
-  // TODO: Check data.id is valid. 
   Object.defineProperty(this, "id", {
     value: data.id
   });

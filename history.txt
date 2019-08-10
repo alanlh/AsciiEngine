@@ -5,9 +5,12 @@ More formatting support
 More Animation/Layers features
 
 History:
+Version 0.6.3.1 - 2019/8/10
+  Fixed TODOs and other code improvements
+
 Version 0.6.3 - 2019/8/4
-Added file reading support
-Added a new example
+  Added file reading support
+  Added a new example
 
 Version 0.6.2 - 2019/7/29
   Reworked formatting logic. Can now specify formatting for all Elements (similar to events)

@@ -15,12 +15,11 @@ function Scene(data) {
   });
   
   let _domContainer = document.getElementById(data.divId);
-  // TODO: Make sure element exists. 
-
+  // Make sure element exists and is of appropriate type.
   LOGGING.ASSERT(_domContainer && (_domContainer.tagName === "PRE" || _domContainer.tagName ==="DIV"),
-    "Cannot construct Scene: given DOM element not valid");
+    "Cannot construct Scene: given DOM element not valid"
+  );
 
-  // TODO: Clear any existing objects? 
   if (_domContainer.tagName === "DIV") {
     let child = document.createElement("pre");
     _domContainer.appendChild(child);
@@ -251,25 +250,30 @@ function Scene(data) {
   this.render = function() {
     LOGGING.PERFORMANCE.START("Scene.render", 0);
     
+    // TODO: Get all information, and then update everything at once. 
     for (let y = 0; y < this.boundingBoxDimens.y; y++) {
       for (let x = 0; x < this.boundingBoxDimens.x; x++) {
         let newPixelData = getUpdatedCell(Vector2.subtract(new Vector2(x, y), _camera.topLeftCoords));
+        let currPixelData = _currentPixelData[y][x];
         LOGGING.PERFORMANCE.START("Scene.render: CELL", 2);
-        if (PixelData.isEqual(newPixelData, _currentPixelData[y][x])) {
+        if (PixelData.isEqual(newPixelData, currPixelData)) {
           // If nothing changed, don't set anything.
         } else {
           let cell = _domElementReferences[y][x];
-          // TODO: Optimize
-          cell.domElement.innerHTML = newPixelData.char;
-          cell.domElement.style.color = newPixelData.formatting.textColor.value;
-          cell.domElement.style.backgroundColor = newPixelData.formatting.backgroundColor.value;
-          cell.domElement.style.fontWeight = newPixelData.formatting.fontWeight.value;
-          cell.domElement.style.fontStyle = newPixelData.formatting.fontStyle.value;
-          cell.domElement.style.textDecoration = newPixelData.formatting.textDecoration.value;
-          cell.domElement.style.cursor = newPixelData.formatting.cursor.value;          
+          if (currPixelData.char !== newPixelData.char) {
+            cell.domElement.textContent = newPixelData.char;
+          }
+          let cellStyle = cell.domElement.style;
+          // TODO: Use loop to iterate over formatting.          
+          cellStyle.color = newPixelData.formatting.textColor.value;
+          cellStyle.backgroundColor = newPixelData.formatting.backgroundColor.value;
+          cellStyle.fontWeight = newPixelData.formatting.fontWeight.value;
+          cellStyle.fontStyle = newPixelData.formatting.fontStyle.value;
+          cellStyle.textDecoration = newPixelData.formatting.textDecoration.value;
+          cellStyle.cursor = newPixelData.formatting.cursor.value;
           
-          for (let eventType in _currentPixelData[y][x].events) {
-            let oldEventData = _currentPixelData[y][x].events[eventType];
+          for (let eventType in currPixelData.events) {
+            let oldEventData = currPixelData.events[eventType];
             let newEventData = newPixelData.events[eventType];
             if (eventType in newPixelData.events
               && oldEventData.eventType == newEventData.eventType

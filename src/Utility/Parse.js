@@ -22,17 +22,27 @@ const Parse = {
 
     let fileString = await makeRequest(filename);
     
-    let fileData = Parse.readDataFromString(fileString);
+    if (fileString) {
+      LOGGING.DEBUG("Started parsing file: ", filename);
+      let fileData = Parse.readDataFromString(fileString);
+      LOGGING.DEBUG("Finished parsing file: ", filename)
+      LOGGING.PERFORMANCE.STOP("readDataFromFile");
+      return fileData;
+    }
     LOGGING.PERFORMANCE.STOP("readDataFromFile");
-    return fileData;
   },
   readDataFromString: function(dataString) {
     const parsedLayers = {};
     
     const parseDelimiter = dataString.split("\n", 1)[0] + '\n';
     const layers = dataString.split(parseDelimiter);
-    // TODO: Verify that there is data.
-    // TODO: Assert that components[0] is empty. 
+    if (layers.length < 2) {
+      LOGGING.WARN("Parse.readDataFromString did not parse any data from file.");
+    }
+    // First element should always be length 0, since the entire first line is delimiter. 
+    LOGGING.ASSERT(layers[0].length === 0, 
+      "Parse.readDataFromString variable layers[0] is not empty as expected: ", layers[0]
+    );
     for (let i = 1; i < layers.length; i ++) {
       if (layers[i].length === 0) {
         continue;
@@ -40,7 +50,9 @@ const Parse = {
       const layer = layers[i];
       const title = layers[i].split("\n", 1)[0];
       const name = title.split(":")[0].trim();
-      // TODO: Verify name. Should not repeat. 
+      if (name in parsedLayers) {
+        LOGGING.WARN("Layer name: ", name, " is being reused.");
+      }
       let body = Parse.parseBody(layers[i].substring(layers[i].indexOf("\n") + 1));
       const type = title.split(":")[1].trim();
       let constructedLayer = undefined;
@@ -57,7 +69,7 @@ const Parse = {
         default:
           LOGGING.ERROR("Layer type ", type, " does not exist or is not supported");
       }
-      // TODO: Verify constructedLayer is valid.
+      // TODO: Verify constructedLayer is valid. How? 
       parsedLayers[name] = constructedLayer;
     }
     return parsedLayers;
@@ -88,7 +100,7 @@ const Parse = {
     return {data: data, content: content};
   },
   printJSONError: function(string, e) {
-    LOGGING.ERROR("JSON Error: ", error, "\n",
+    LOGGING.ERROR("JSON Error: ", e, "\n",
       "At string: ", string
     );
   },

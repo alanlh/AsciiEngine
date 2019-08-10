@@ -227,13 +227,16 @@ function helloWorld2() {
 }
 
 async function fileParsing() {
+  let textParseElements = await Parse.readDataFromFile("Demos/Assets/TextParse.txt");
+  if (!textParseElements) {
+    return;
+  }
+  
   let scene = new Scene({
     divId: "parsing",
     boundingBoxDimens: new Vector2(150, 30)
   });
-  
-  let textParseElements = await Parse.readDataFromFile("Demos/Assets/TextParse.txt");
-  
+    
   scene.addElement("boat", textParseElements["Boat"]);
   scene.addElement("sea", textParseElements["SeaCombined"]);
   scene.render();

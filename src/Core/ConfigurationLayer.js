@@ -4,8 +4,7 @@ function ConfigurationLayer(children, data) {
   LOGGING.ASSERT(children, "ConfigurationLayer constructor parameter 'children' is missing or invalid.");
   LOGGING.ASSERT(data, "ConfigurationLayer constructor parameter 'data' is missing or invalid.");
 
-  // TODO: Since ContainerLayers are immutable, store a reference for each coordinate to the corresponding child. 
-  // TODO: Verify childrn is an object.
+  // TODO: Verify childrn is an Element.
   const _children = {};
   let topLeft = new Vector2(0, 0);
   let bottomRight = new Vector2(0, 0);
@@ -25,10 +24,9 @@ function ConfigurationLayer(children, data) {
     );
     _children[key] = child.copy();
   }
-  // TODO: Check value of topLeftCoords and priority. 
   Element.call(this, {
     boundingBoxDimens: Vector2.subtract(bottomRight, topLeft),
-    topLeftCoords: Vector2.add(topLeft, data.topLeftCoords),
+    topLeftCoords: Vector2.add(topLeft, Vector2.createFrom(data.topLeftCoords)),
     priority: data.priority,
     events: data.events,
     formatting: data.formatting
@@ -39,11 +37,23 @@ function ConfigurationLayer(children, data) {
   });
   
   Object.defineProperty(this, "childKeys", {
-    value: Object.keys(_children)
+    get: function() {
+      return Object.keys(_children);
+    }
   });
   
-  let _defaultKey = data.defaultKey || Object.keys(_children)[0];
-  let _activeKey = data.activeKey || _defaultKey;
+  let _defaultKey = data.defaultKey;
+  let _activeKey = data.activeKey;
+  if (!(data.defaultKey in _children)) {
+    LOGGING.WARN("ConfigurationLayer constructor parameter defaultKey does not exist among child keys: ", defualtKey);
+    _defaultKey = Object.keys(_children)[0];
+  }
+  
+  if (!(data.activeKey in _children)) {
+    LOGGING.WARN("ConfigurationLayer constructor parameter activeKey does not exist among child keys: ", data.activeKey);
+    _activeKey = _defaultKey;
+  }
+  
   Object.defineProperty(this, "defaultKey", {
     get: function() {
       return _defaultKey;
@@ -54,33 +64,32 @@ function ConfigurationLayer(children, data) {
       return _activeKey;
     },
     set: function(newKey) {
-      // TODO: Mark as changed. 
       if (newKey in _children) {
+        // TODO: Mark as changed?
         _activeKey = newKey;
       } else {
-        _activeKey = _defaultKey;
+        // Do not change. Could just be setting key of children. 
       }
     }
   });
   
-  this.setConfiguration = function(newConfiguration) {
-    // TODO: Verify newConfiguration
-    this.activeKey = newConfiguration;
+  self.setConfiguration = function(newConfiguration) {
+    self.activeKey = newConfiguration;
     for (let key in _children) {
       _children[key].setConfiguration(newConfiguration);
     }
   }
   
-  this.getCharAt = function(vec2) {
-    // TODO: Verify that vec2 is Vector2
+  self.getCharAt = function(vec2) {
+    LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ConfigurationLayer getCharAt of instance", self.id, " is not Vector2-like: ", vec2);
     if (!vec2.inBoundingBox(this.topLeftCoords, this.boundingBoxDimens)) {
       return false;
     }
     return _children[_activeKey].getCharAt(Vector2.subtract(vec2, this.topLeftCoords));
   };
   
-  this.getPixelDataAt = function(vec2) {
-    // TODO: Verify that vec2 is Vector2
+  self.getPixelDataAt = function(vec2) {
+    LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ConfigurationLayer getPixelDataAt of instance", self.id, " is not Vector2-like: ", vec2);
     if (vec2.inBoundingBox(_children[_activeKey].topLeftCoords, _children[_activeKey].boundingBoxDimens)) {
       let childPixelData = _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
       childPixelData.pushEventModule(this[EventModule.type]);
@@ -90,9 +99,15 @@ function ConfigurationLayer(children, data) {
     return new PixelData();
   }
     
-  this.copy = function() {
-    // TODO: Format data better. Use internal values, not parameter. 
-    return new ConfigurationLayer(_children, data);
+  self.copy = function() {
+    return new ConfigurationLayer(_children, {
+      topLeftCoords: self.topLeftCoords,
+      priority: self.priority,
+      events: self.events,
+      formatting: self.formatting,
+      defaultKey: _defaultKey,
+      activeKey: _activeKey
+    });
   }
   
   this.initializeModule = function(moduleType) {

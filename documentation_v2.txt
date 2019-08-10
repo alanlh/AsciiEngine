@@ -205,7 +205,8 @@ Vector2:
   A pair of two numbers. Immutable after being formed (no setters)
   Methods: 
     constructor(x, y): Constructs Vector2 from two integers. Defaults to 0. Error logged if non-integer. 
-    public Vector2 copy();
+    public Vector2 copy(): Creates a copy of the Vector2-like object
+    public Vector2 createFrom(): Creates a copy of the Vector2-like object, or returns new Vector2(0, 0) if not Vector2-like. 
     const int x: x value. Getter only.
     const int y: y value. Getter only. 
     public bool inBoundingBox(topLeftCoords, boundingBoxDimens): Returns true if the vector is in the bounding box
@@ -216,6 +217,7 @@ Vector2:
     public static const Vector2 takeTopLeft(v1, v2): Returns a Vector2 taking the minimum of the x,y coordinates. 
     public static const Vector2 takeBottomRight(v1, v2): Returns a Vector2 taking the maximum of the x,y coordinates. 
     public static const bool isInteger(Vector2 v): Checks to make sure other.x and other.y are integers. 
+    public static const bool verify(Vector2-like v): Returns true if v can be interpreted as a Vector2. 
     
 LOGGING:
   A simple wrapper around console.log/warn/error/assert. 

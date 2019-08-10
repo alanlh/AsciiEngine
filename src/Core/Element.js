@@ -28,14 +28,12 @@ function Element(data) {
     }
   });
   
-  // TODO: Is there a better way?
   LOGGING.ASSERT(!("topLeftCoords" in data) || Vector2.isInteger(data.topLeftCoords), 
     "Layer constructor parameter data.topLeftCoords has non-integer coordinates.",
     "Value: ", data.topLeftCoords
   );
-  let topLeftCoords = data.topLeftCoords ? Vector2.copy(data.topLeftCoords) : new Vector2(0, 0);
   Object.defineProperty(this, "topLeftCoords", {
-    value: topLeftCoords
+    value: Vector2.createFrom(data.topLeftCoords)
   });
   
   // TODO: Validate priority to be a number. 
@@ -72,6 +70,7 @@ Element.prototype.copy = function() {
   );
 };
 
+// Overriden by Elements that have children.
 Element.prototype.setConfiguration = function() {
   // Intentionally do nothing.
 }

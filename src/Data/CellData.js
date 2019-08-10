@@ -6,14 +6,17 @@
   coords: coordinates of the cell in the Scene.
 */
 function CellData(domReference, coords) {
-  // TODO: Object.define. 
   this.domElement = domReference;
+  LOGGING.ASSERT(Vector2.verifyInteger(coords) && Vector2.isInteger(coords),
+    "CellData parameter coords is not Vector2-like or does not contain integer values: ", coords
+  );
   this.coords = Vector2.copy(coords);
   this.activeEvents = {};
+
+  Object.seal(this);
 }
 
 CellData.prototype.addEventListener = function(eventType, handler) {
-  // TODO: Make this safe.
   if (this.activeEvents[eventType]) {
     this.removeEventListener(eventType);
   }
