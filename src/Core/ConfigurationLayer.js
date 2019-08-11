@@ -92,11 +92,13 @@ function ConfigurationLayer(children, data) {
     LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ConfigurationLayer getPixelDataAt of instance", self.id, " is not Vector2-like: ", vec2);
     if (Vector2.inBoundingBox(vec2, _children[_activeKey].topLeftCoords, _children[_activeKey].boundingBoxDimens)) {
       let childPixelData = _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
-      childPixelData.pushEventModule(this[EventModule.type]);
-      childPixelData.pushFormattingModule(this[FormattingModule.type]);
-      return childPixelData;
+      if (!childPixelData.isTransparent()) {
+        childPixelData.pushEventModule(this[EventModule.type]);
+        childPixelData.pushFormattingModule(this[FormattingModule.type]);
+        return childPixelData;
+      }
     }
-    return new PixelData();
+    return PixelData.Empty;
   }
     
   self.copy = function() {

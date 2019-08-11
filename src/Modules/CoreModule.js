@@ -40,7 +40,6 @@ Object.defineProperty(CoreModule, "type", {
   value: "CORE"
 });
 
-
 Object.defineProperty(BaseModule, CoreModule.type, {
   value: CoreModule.prototype.constructor
 });

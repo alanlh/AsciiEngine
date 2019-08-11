@@ -76,7 +76,7 @@ function ContainerLayer(children, data) {
         }
       }
     }
-    return new PixelData();
+    return PixelData.Empty;
   }
     
   self.copy = function() {

@@ -24,7 +24,7 @@ Vector2.copy = function(other) {
 Vector2.copyAsInteger = function(other) {
   // TODO: Round x, y to integer if not already. 
   LOGGING.ASSERT(Vector2.verify(other), "Vector2.copy method parameter other is not a Vector2-like: ", other);
-  return {x: other.x, y: other.y};
+  return Vector2.create(other.x, other.y);
 }
 
 Vector2.add = function(v1, v2) {
@@ -61,11 +61,10 @@ Vector2.inBoundingBox = function(vec2, topLeftCoords, boundingBoxDimens) {
   LOGGING.ASSERT(Vector2.verify(vec2), "Vector2.takeBottomRight method parameter vec2 is not Vector2-like: ", vec2);
   LOGGING.ASSERT(Vector2.verify(topLeftCoords), "Vector2.takeBottomRight method parameter topLeftCoords is not Vector2-like: ", topLeftCoords);
   LOGGING.ASSERT(Vector2.verify(boundingBoxDimens), "Vector2.takeBottomRight method parameter boundingBoxDimens is not Vector2-like: ", boundingBoxDimens);
-  let bottomRight = Vector2.add(topLeftCoords, boundingBoxDimens);
   return vec2.x >= topLeftCoords.x
-    && vec2.x < bottomRight.x
+    && vec2.x < topLeftCoords.x + boundingBoxDimens.x
     && vec2.y >= topLeftCoords.y
-    && vec2.y < bottomRight.y;
+    && vec2.y < topLeftCoords.y + boundingBoxDimens.y;
 }
 
 Vector2.isInteger = function(v) {

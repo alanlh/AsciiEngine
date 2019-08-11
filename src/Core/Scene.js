@@ -313,9 +313,10 @@ function Scene(data) {
   let getUpdatedCell = function(coord) {
     LOGGING.PERFORMANCE.START("Scene.getUpdatedCell", 2);
     
-    let topPixelData = new PixelData();
+    let topPixelData = PixelData.Empty;
     let topPriority = Infinity;
     for (let id in _elementData) {
+      // TODO: Sort _elementData by id, so that can immediately exit if find a valid PixelData
       let element = _elementData[id];
       if (!Vector2.inBoundingBox(coord, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
         continue;

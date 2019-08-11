@@ -143,7 +143,7 @@ TextLayer.prototype.getPixelDataAt = function(vec2) {
   if (x + rowStart + 1 >= nextRow) {
     // Empty coordinates. Not wrong given bounding box, but no characters. 
     LOGGING.DEBUG("TextLayer.getPixelDataAt: Empty coordinates.");
-    return new PixelData();
+    return PixelData.Empty;
   }
   // Everything above this is copied from getCharAt
   let c = this.text.charAt(rowStart + x);
@@ -151,7 +151,7 @@ TextLayer.prototype.getPixelDataAt = function(vec2) {
   // TODO: Handle leadingSpaceIgnored
   if (c == ' ' && this.spaceIsTransparent) {
     LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning space, transparent.");
-    return new PixelData();
+    return PixelData.Empty;
   }
 
   if (c == ' ' && !this.spaceIsTransparent && this.spaceHasFormatting) {
@@ -194,5 +194,5 @@ TextLayer.prototype.getPixelDataAt = function(vec2) {
     });
   }
   LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning default");
-  return new PixelData();
+  return PixelData.Empty;
 }

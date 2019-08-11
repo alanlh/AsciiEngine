@@ -43,9 +43,8 @@ Object.defineProperty(FormattingModule, "type", {
   value: "FORMATTING"
 });
 
-FormattingModule.EmptyModule = function() {
-  return new FormattingModule({});
-}
+FormattingModule.EmptyModule = new FormattingModule({});
+Object.freeze(FormattingModule);
 
 Object.defineProperty(BaseModule, FormattingModule.type, {
   value: FormattingModule.prototype.constructor

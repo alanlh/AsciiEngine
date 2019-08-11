@@ -34,7 +34,7 @@ function PixelData(data) {
   });
 
   Object.defineProperty(this, "baseFormattingModule", {
-    value: data.formatting || FormattingModule.EmptyModule()
+    value: data.formatting || FormattingModule.EmptyModule
   })
   
   self.pushFormattingModule = function(newFormattingModule) {
@@ -50,7 +50,7 @@ function PixelData(data) {
           enumerable: true,
           writable: true
         });
-      } else if (!_formattingDataReferences[key].set) {
+      } else if (!_formattingDataReferences[key].set && newFormattingModule.properties[key].set) {
         _formattingDataReferences[key] = newFormattingModule.properties[key];
       }
     }
@@ -62,12 +62,9 @@ function PixelData(data) {
   }
   
   const _eventDataReferences = {};
-  // TODO: Is this used? Maybe only need _eventDataReferences
-  let _eventModules = [];
   // Push initial event data, if any. 
   if (data.eventModule) {
     // TODO: Need better check. 
-    _eventModules.push(data.eventModule);
     for (let key in data.eventModule.events) {
       Object.defineProperty(_eventDataReferences, eventData.handlerKey, {
         value: eventData,
@@ -75,7 +72,8 @@ function PixelData(data) {
       });
     }
   }
-    
+  
+  // TODO: Add baseEventsModule property instead?
   Object.defineProperty(this, "events", {
     value: _eventDataReferences
   });
@@ -85,9 +83,7 @@ function PixelData(data) {
     if (!newModule) {
       return;
     }
-    // TODO: Remove? Events may not be initialized?
     LOGGING.ASSERT(newModule, "PixelData.pushEventModule parameter newModule is false: ", newModule);
-    _eventModules.push(newModule);
     // TODO: Use Object.defineProperty on this.events for each new event.
     for (let key in newModule.events) {
       let eventData = newModule.events[key];
@@ -106,6 +102,9 @@ function PixelData(data) {
     value: data.id
   });
 }
+
+PixelData.Empty = new PixelData();
+Object.freeze(PixelData.Empty);
 
 PixelData.prototype.isTransparent = function() {
   return !this.markedAsOpaque && this.char === ' ' && this.baseFormattingModule.hasInvisibleFormatting();
