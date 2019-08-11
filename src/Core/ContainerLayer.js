@@ -7,8 +7,8 @@ function ContainerLayer(children, data) {
   // TODO: Since ContainerLayers are immutable, store a reference for each coordinate to the corresponding child. 
   // TODO: Verify children is Array. 
   const _children = [];
-  let topLeft = new Vector2(0, 0);
-  let bottomRight = new Vector2(0, 0);
+  let topLeft = Vector2.default();
+  let bottomRight = Vector2.default();
   LOGGING.LOG("ContainerLayer constructor parameter children has length: ", children.length);
   for (let i = 0; i < children.length; i ++) {
     let child = children[i];
@@ -67,7 +67,7 @@ function ContainerLayer(children, data) {
   this.getPixelDataAt = function(vec2) {
     LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ContainerLayer getPixelDataAt of instance", self.id, " is not Vector2-like: ", vec2);
     for (let i = this.size - 1; i >= 0; i --) {
-      if (vec2.inBoundingBox(_children[i].topLeftCoords, _children[i].boundingBoxDimens)) {
+      if (Vector2.inBoundingBox(vec2, _children[i].topLeftCoords, _children[i].boundingBoxDimens)) {
         let childPixelData = _children[i].getPixelDataAt(Vector2.subtract(vec2, _children[i].topLeftCoords));
         if (!childPixelData.isTransparent()) {
           childPixelData.pushEventModule(this[EventModule.type]);

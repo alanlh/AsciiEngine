@@ -6,8 +6,8 @@ function ConfigurationLayer(children, data) {
 
   // TODO: Verify childrn is an Element.
   const _children = {};
-  let topLeft = new Vector2(0, 0);
-  let bottomRight = new Vector2(0, 0);
+  let topLeft = Vector2.default();
+  let bottomRight = Vector2.default();
   for (let key in children) {
     // TODO: Verify key is string. 
     let child = children[key];
@@ -82,7 +82,7 @@ function ConfigurationLayer(children, data) {
   
   self.getCharAt = function(vec2) {
     LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ConfigurationLayer getCharAt of instance", self.id, " is not Vector2-like: ", vec2);
-    if (!vec2.inBoundingBox(this.topLeftCoords, this.boundingBoxDimens)) {
+    if (!Vector2.inBoundingBox(vec2, this.topLeftCoords, this.boundingBoxDimens)) {
       return false;
     }
     return _children[_activeKey].getCharAt(Vector2.subtract(vec2, this.topLeftCoords));
@@ -90,7 +90,7 @@ function ConfigurationLayer(children, data) {
   
   self.getPixelDataAt = function(vec2) {
     LOGGING.ASSERT(Vector2.verifyInteger(vec2), "ConfigurationLayer getPixelDataAt of instance", self.id, " is not Vector2-like: ", vec2);
-    if (vec2.inBoundingBox(_children[_activeKey].topLeftCoords, _children[_activeKey].boundingBoxDimens)) {
+    if (Vector2.inBoundingBox(vec2, _children[_activeKey].topLeftCoords, _children[_activeKey].boundingBoxDimens)) {
       let childPixelData = _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
       childPixelData.pushEventModule(this[EventModule.type]);
       childPixelData.pushFormattingModule(this[FormattingModule.type]);

@@ -9,7 +9,7 @@ const LOGGING = {
     PERFORMANCE: false,
   },
   ASSERT: function(statement) {
-    if (!statement && LOGGING.STATUS.ERROR) {
+    if (LOGGING.STATUS.ERROR && !statement) {
       let message = Array.prototype.slice.call(arguments, 1);
       console.error.apply(console, message);
     }

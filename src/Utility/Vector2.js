@@ -1,69 +1,71 @@
 "use strict";
-function Vector2(x, y) {
-  // TODO: Check if x and y are integers. 
-  // TODO: Round if x, y aren't integers. (?)
-  Object.defineProperty(this, "x", {
-    value: x
-  });
-  Object.defineProperty(this, "y", {
-    value: y
-  });
+const Vector2 = {};
+
+Vector2.create = function(x, y) {
+  return Object.freeze({x: x, y: y});
+}
+
+Vector2.default = function() {
+  return Vector2.create(0, 0);
 }
 
 Vector2.createFrom = function(other) {
   if (!Vector2.verify(other)) {
-    return new Vector2(0, 0);
+    return Vector2.create(0, 0);
   }
   return Vector2.copy(other);
 }
 
 Vector2.copy = function(other) {
   LOGGING.ASSERT(Vector2.verify(other), "Vector2.copy method parameter other is not a Vector2-like: ", other);
-  return new Vector2(other.x, other.y);
+  return Vector2.create(other.x, other.y);
 }
 
 Vector2.copyAsInteger = function(other) {
   // TODO: Round x, y to integer if not already. 
   LOGGING.ASSERT(Vector2.verify(other), "Vector2.copy method parameter other is not a Vector2-like: ", other);
-  return new Vector2(other.x, other.y);
+  return {x: other.x, y: other.y};
 }
 
 Vector2.add = function(v1, v2) {
   LOGGING.ASSERT(Vector2.verify(v1), "Vector2.add method parameter v1 is not Vector2-like: ", v1);
   LOGGING.ASSERT(Vector2.verify(v2), "Vector2.add method parameter v2 is not Vector2-like: ", v2);
-  return new Vector2(v1.x + v2.x, v1.y + v2.y);
+  return Vector2.create(v1.x + v2.x, v1.y + v2.y);
 }
 
 Vector2.subtract = function(v1, v2) {
   LOGGING.ASSERT(Vector2.verify(v1), "Vector2.subtract method parameter v1 is not Vector2-like: ", v1);
   LOGGING.ASSERT(Vector2.verify(v2), "Vector2.subtract method parameter v2 is not Vector2-like: ", v2);
-  return new Vector2(v1.x - v2.x, v1.y - v2.y);
+  return Vector2.create(v1.x - v2.x, v1.y - v2.y);
 }
 
 Vector2.dot = function(v1, v2) {
   LOGGING.ASSERT(Vector2.verify(v1), "Vector2.dot method parameter v1 is not Vector2-like: ", v1);
   LOGGING.ASSERT(Vector2.verify(v2), "Vector2.dot method parameter v2 is not Vector2-like: ", v2);
-  return new Vector2(v1.x * v2.x, v1.y * v2.y);
+  return Vector2.create(v1.x * v2.x, v1.y * v2.y);
 }
 
 Vector2.takeTopLeft = function(v1, v2) {
   LOGGING.ASSERT(Vector2.verify(v1), "Vector2.takeTopLeft method parameter v1 is not Vector2-like: ", v1);
   LOGGING.ASSERT(Vector2.verify(v2), "Vector2.takeTopLeft method parameter v2 is not Vector2-like: ", v2);
-  return new Vector2(Math.min(v1.x, v2.x), Math.min(v1.y, v2.y));
+  return Vector2.create(Math.min(v1.x, v2.x), Math.min(v1.y, v2.y));
 }
 
 Vector2.takeBottomRight = function(v1, v2) {
   LOGGING.ASSERT(Vector2.verify(v1), "Vector2.takeBottomRight method parameter v1 is not Vector2-like: ", v1);
   LOGGING.ASSERT(Vector2.verify(v2), "Vector2.takeBottomRight method parameter v2 is not Vector2-like: ", v2);
-  return new Vector2(Math.max(v1.x, v2.x), Math.max(v1.y, v2.y));
+  return Vector2.create(Math.max(v1.x, v2.x), Math.max(v1.y, v2.y));
 }
 
-Vector2.prototype.inBoundingBox = function(topLeftCoords, boundingBoxDimens) {
+Vector2.inBoundingBox = function(vec2, topLeftCoords, boundingBoxDimens) {
+  LOGGING.ASSERT(Vector2.verify(vec2), "Vector2.takeBottomRight method parameter vec2 is not Vector2-like: ", vec2);
+  LOGGING.ASSERT(Vector2.verify(topLeftCoords), "Vector2.takeBottomRight method parameter topLeftCoords is not Vector2-like: ", topLeftCoords);
+  LOGGING.ASSERT(Vector2.verify(boundingBoxDimens), "Vector2.takeBottomRight method parameter boundingBoxDimens is not Vector2-like: ", boundingBoxDimens);
   let bottomRight = Vector2.add(topLeftCoords, boundingBoxDimens);
-  return this.x >= topLeftCoords.x
-    && this.x < bottomRight.x
-    && this.y >= topLeftCoords.y
-    && this.y < bottomRight.y;
+  return vec2.x >= topLeftCoords.x
+    && vec2.x < bottomRight.x
+    && vec2.y >= topLeftCoords.y
+    && vec2.y < bottomRight.y;
 }
 
 Vector2.isInteger = function(v) {
@@ -79,3 +81,5 @@ Vector2.verify = function(v) {
 Vector2.verifyInteger = function(v) {
   return Vector2.verify(v) && Vector2.isInteger(v);
 }
+
+Object.freeze(Vector2);

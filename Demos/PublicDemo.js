@@ -12,7 +12,7 @@ window.onload = async function() {
 
 function helloWorld2() {
   let helloText = new TextLayer("Hello\nWorld!", {
-    topLeftCoords: new Vector2(0, 0),
+    topLeftCoords: {x: 0, y: 0},
     priority: 0,
     fontWeight: "bold"
   });
@@ -28,7 +28,7 @@ function helloWorld2() {
         backgroundColor: "red"
       },
       setAsBlank: '.',
-      topLeftCoords: new Vector2(1, 0)
+      topLeftCoords: {x: 1, y: 0}
     }
   );
   
@@ -38,7 +38,7 @@ function helloWorld2() {
     "|\n",
     {
       priority: 10,
-      topLeftCoords: new Vector2(3, 4)
+      topLeftCoords: {x: 3, y: 4}
     }
   );
   
@@ -48,7 +48,7 @@ function helloWorld2() {
     "/",
     {
       priority: 10,
-      topLeftCoords: new Vector2(2, 4)
+      topLeftCoords: {x: 2, y: 4}
     }
   );
   
@@ -58,7 +58,7 @@ function helloWorld2() {
     "/",
     {
       priority: 10,
-      topLeftCoords: new Vector2(1, 4)
+      topLeftCoords: {x: 1, y: 4}
     }
   );
   
@@ -67,7 +67,7 @@ function helloWorld2() {
     "_/\n",
     {
       priority: 10,
-      topLeftCoords: new Vector2(0, 4)
+      topLeftCoords: {x: 0, y: 4}
     }
   );
   
@@ -75,7 +75,7 @@ function helloWorld2() {
     [balloon, balloonStem],
     {
       priority: 0,
-      topLeftCoords: new Vector2(0, 0),
+      topLeftCoords: {x: 0, y: 0},
       events: {
         click: "balloonMove"
       },
@@ -89,7 +89,7 @@ function helloWorld2() {
     [balloon, balloonStem],
     {
       priority: 0,
-      topLeftCoords: new Vector2(0, 0),
+      topLeftCoords: {x: 0, y: 0},
     }
   );
   
@@ -97,7 +97,7 @@ function helloWorld2() {
     [balloon, balloonStemTilted1],
     {
       priority: 10,
-      topLeftCoords: new Vector2(0, 0)
+      topLeftCoords: {x: 0, y: 0}
     }
   );
   
@@ -105,7 +105,7 @@ function helloWorld2() {
     [balloon, balloonStemTilted2],
     {
       priority: 10,
-      topLeftCoords: new Vector2(0, 0)
+      topLeftCoords: {x: 0, y: 0}
     }
   );
   
@@ -113,7 +113,7 @@ function helloWorld2() {
     [balloon, balloonStemTilted3],
     {
       priority: 10,
-      topLeftCoords: new Vector2(0, 0)
+      topLeftCoords: {x: 0, y: 0}
     }
   );
   
@@ -127,7 +127,7 @@ function helloWorld2() {
     },
     {
       priority: 10,
-      topLeftCoords: new Vector2(0, 0),
+      topLeftCoords: {x: 0, y: 0},
       defaultKey: "hold"
     }
   );
@@ -140,7 +140,7 @@ function helloWorld2() {
     " / \\\n",
     {
       priority: 0,
-      topLeftCoords: new Vector2(0, 0)
+      topLeftCoords: {x: 0, y: 0}
     }
   );
   
@@ -152,7 +152,7 @@ function helloWorld2() {
     " / \\\n",
     {
       priority: 0,
-      topLeftCoords: new Vector2(0, 0)
+      topLeftCoords: {x: 0, y: 0}
     }
   );
   
@@ -163,7 +163,7 @@ function helloWorld2() {
     },
     {
       priority: 0,
-      topLeftCoords: new Vector2(0, 0),
+      topLeftCoords: {x: 0, y: 0},
       defaultKey: "hold"
     }
   );
@@ -179,26 +179,26 @@ function helloWorld2() {
         }
         started = true;
         scene.configureElements("balloon", "release");
-        scene.shiftElements("balloon", new Vector2(2, 0));
+        scene.shiftElements("balloon", {x: 2, y: 0});
         scene.render();
         setTimeout(followup, 1000);
         iteration ++;
       }
       let followup = function() {
-        scene.shiftElements("balloon", new Vector2(2, 0));
+        scene.shiftElements("balloon", {x: 2, y: 0});
         if (iteration == 2) {
           scene.configureElements("balloon", "drift");
         } else if (iteration == 4) {
           scene.configureElements("balloon", "far");
         } else if (iteration == 6) {
           scene.configureElements("human", "reach");
-          scene.shiftElements("balloon", new Vector2(0, -1));
+          scene.shiftElements("balloon", {x: 0, y: -1});
         } else if (iteration == 8){
-          scene.shiftElements("balloon", new Vector2(0, -1));
+          scene.shiftElements("balloon", {x: 0, y: -1});
           scene.configureElements("balloon", "away");
         } 
         if (iteration >= 6 && iteration % 2 == 0) {
-          scene.shiftElements("human", new Vector2(1, 0));
+          scene.shiftElements("human", {x: 1, y: 0});
         }
         
         scene.render();
@@ -214,15 +214,15 @@ function helloWorld2() {
     
   let scene = new Scene({
     divId: "hello2",
-    boundingBoxDimens: new Vector2(30, 15),
+    boundingBoxDimens: Vector2.create(30, 15),
     eventHandlers: eventHandlers
   });
   
   scene.addElement("HELLO", helloText);
   scene.addElement("human dynamic", personPhases);
   scene.addElement("balloon dynamic", balloonPhases);
-  scene.moveElements("dynamic", new Vector2(5, 5));
-  scene.shiftElements("balloon", new Vector2(2, -5));
+  scene.moveElements("dynamic", {x: 5, y: 5});
+  scene.shiftElements("balloon", {x: 2, y: -5});
   scene.render();
 }
 
@@ -234,7 +234,7 @@ async function fileParsing() {
   
   let scene = new Scene({
     divId: "parsing",
-    boundingBoxDimens: new Vector2(150, 30)
+    boundingBoxDimens: Vector2.create(150, 30)
   });
     
   scene.addElement("boat", textParseElements["Boat"]);

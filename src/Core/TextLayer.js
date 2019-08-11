@@ -94,7 +94,7 @@ TextLayer.parseTextShape = function(text) {
   
   return {
     text: text,
-    boundingBoxDimens: new Vector2(width, height),
+    boundingBoxDimens: Vector2.create(width, height),
     rowIndices: rowIndices
   }
 }

@@ -11,7 +11,7 @@ function Scene(data) {
   }
   
   let _camera = new CoreModule({
-    topLeftCoords: new Vector2(0, 0)
+    topLeftCoords: Vector2.default()
   });
   
   let _domContainer = document.getElementById(data.divId);
@@ -19,7 +19,10 @@ function Scene(data) {
   LOGGING.ASSERT(_domContainer && (_domContainer.tagName === "PRE" || _domContainer.tagName ==="DIV"),
     "Cannot construct Scene: given DOM element not valid"
   );
-
+  // Remove any existing children that might be attached (just in case)
+  while (_domContainer.lastChild) {
+    _domContainer.removeChild(_domContainer.lastChild);
+  }
   if (_domContainer.tagName === "DIV") {
     let child = document.createElement("pre");
     _domContainer.appendChild(child);
@@ -39,15 +42,14 @@ function Scene(data) {
     rowDomElement.classList.add("scene-" + this.id + "-row");
     for (let x = 0; x < this.boundingBoxDimens.x; x++) {
       let cell = document.createElement("span");
-      let text = document.createTextNode(" ");
-      cell.appendChild(text);
+      cell.textContent = " ";
       cell.classList.add("scene-" + this.id + "-cell")
       cell.classList.add("scene-" + this.id + "-row-" + y);
       cell.classList.add("scene-" + this.id + "-column-" + x);
       cell.classList.add("scene-" + this.id + "-" + y + "-" + x);
       
       rowDomElement.append(cell);
-      _domElementReferences[y].push(new CellData(cell, new Vector2(x, y)));
+      _domElementReferences[y].push(new CellData(cell, Vector2.default()));
       _currentPixelData[y].push(new PixelData());
     }
     _domContainer.append(rowDomElement);
@@ -253,7 +255,7 @@ function Scene(data) {
     // TODO: Get all information, and then update everything at once. 
     for (let y = 0; y < this.boundingBoxDimens.y; y++) {
       for (let x = 0; x < this.boundingBoxDimens.x; x++) {
-        let newPixelData = getUpdatedCell(Vector2.subtract(new Vector2(x, y), _camera.topLeftCoords));
+        let newPixelData = getUpdatedCell(Vector2.subtract(Vector2.create(x, y), _camera.topLeftCoords));
         let currPixelData = _currentPixelData[y][x];
         LOGGING.PERFORMANCE.START("Scene.render: CELL", 2);
         if (PixelData.isEqual(newPixelData, currPixelData)) {
@@ -315,7 +317,7 @@ function Scene(data) {
     let topPriority = Infinity;
     for (let id in _elementData) {
       let element = _elementData[id];
-      if (!coord.inBoundingBox(element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
+      if (!Vector2.inBoundingBox(coord, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
         continue;
       }
       
