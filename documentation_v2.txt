@@ -159,7 +159,7 @@ PixelData:
 FormattingSelection:
   Holds formatting information. Immutable after creation.
   Members:
-    public const string textColor: Default "#000000".
+    public const string color: Default "#000000".
     public const string backgroundColor: Default "transparent".
     public const string fontWeight: E.g. Bold. Default "normal".
     public const string fontStyle: E.g. Italics. Default "normal".

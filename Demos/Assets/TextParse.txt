@@ -4,7 +4,7 @@ BoatBody : Text
   "setAsBlank": ".",
   "formatting": {
     "backgroundColor": "brown",
-    "textColor": "black"
+    "color": "black"
   }
 }
             /----|
@@ -23,7 +23,7 @@ BoatFlag : Text
 {
   "formatting": {
     "backgroundColor": "white",
-    "textColor": "#CCCCCC"
+    "color": "#CCCCCC"
   },
   "topLeftCoords": {
     "x": 5,
@@ -51,7 +51,7 @@ BoatFlag
 SeaBase : Text
 {
   "formatting": {
-    "textColor": "white"
+    "color": "white"
   },
   "spaceIsTransparent": false,
   "spaceHasFormatting": true

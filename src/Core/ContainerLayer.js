@@ -27,7 +27,7 @@ function ContainerLayer(children, data) {
     _children.push(child.copy());
   }
     
-  // TODO: ???
+  // TODO: sort by priority? 
   /**
   _children.sort(function(a, b) {
     return a.priority - b.priority;

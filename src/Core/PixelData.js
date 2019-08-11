@@ -11,26 +11,18 @@ function PixelData(data) {
   // If data.formatting is a FormattingSelection object, then keep.
   // Otherwise, create a new FormattingSelection object around it.
   // Same goes for events. 
-  const _formattingDataReferences = {
-    textColor: new FormattingData("textColor", "#000000"),
-    backgroundColor: new FormattingData("backgroundColor", "transparent"),
-    fontStyle: new FormattingData("fontStyle", "normal"),
-    fontWeight: new FormattingData("fontWeight", "normal"),
-    textDecoration: new FormattingData("textDecoration", "normal"),
-    cursor: new FormattingData("cursor", "default")
-  };
+  const _formattingSettings = {};
   if (data.formatting) {
     for (let key in data.formatting.properties) {
-      Object.defineProperty(_formattingDataReferences, key, {
+      Object.defineProperty(_formattingSettings, key, {
         value: data.formatting.properties[key],
         enumerable: true,
-        writable: true
       });
     }
   }
   
   Object.defineProperty(this, "formatting", {
-    value: _formattingDataReferences
+    value: _formattingSettings
   });
 
   Object.defineProperty(this, "baseFormattingModule", {
@@ -44,14 +36,12 @@ function PixelData(data) {
     }
     for (let key in newFormattingModule.properties) {
       // TODO: Better way of handling this? 
-      if (!(key in _formattingDataReferences)) {
-        Object.defineProperty(_formattingDataReferences, key, {
+      if (!(key in _formattingSettings)) {
+        // Only push if the field has not already been specified. 
+        Object.defineProperty(_formattingSettings, key, {
           value: newFormattingModule.properties[key],
           enumerable: true,
-          writable: true
         });
-      } else if (!_formattingDataReferences[key].set && newFormattingModule.properties[key].set) {
-        _formattingDataReferences[key] = newFormattingModule.properties[key];
       }
     }
   }
@@ -104,6 +94,9 @@ function PixelData(data) {
 }
 
 PixelData.Empty = new PixelData();
+PixelData.Empty.pushEventModule = function() {};
+PixelData.Empty.pushFormattingModule = function() {};
+// PixelData.Empty.isTransparent = function() {return true;};
 Object.freeze(PixelData.Empty);
 
 PixelData.prototype.isTransparent = function() {

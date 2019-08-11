@@ -2,29 +2,17 @@
 function FormattingModule(data) {
   BaseModule.call(this, data.layerId, FormattingModule.type);
 
-  this.properties = {
-    textColor: new FormattingData("textColor", "#000000"),
-    backgroundColor: new FormattingData("backgroundColor", "transparent"),
-    fontStyle: new FormattingData("fontStyle", "normal"),
-    fontWeight: new FormattingData("fontWeight", "normal"),
-    textDecoration: new FormattingData("textDecoration", "normal"),
-    cursor: new FormattingData("cursor", "default")
-  }
+  this.properties = {};
 
   for (let key in data.formatting) {
-    if (key in this.properties) {
-      this.properties[key].value = data.formatting[key];
-    } else {
-      this.properties[key] = new FormattingData(key, "");
-      this.properties[key].value = data.formatting[key];
-    }
+    this.properties[key] = data.formatting[key];
   }
 }
 
 FormattingModule.isEqual = function(f1, f2) {
   // TODO: Verify that f1, f2 are FormattingModules
   for (let key1 in f1.properties) {
-    if (!(key1 in f2.properties) || f1.properties[key].value != f2.properties[key].value) {
+    if (!(key1 in f2.properties) || f1.properties[key] != f2.properties[key]) {
       return false;
     }
   }
@@ -44,7 +32,7 @@ Object.defineProperty(FormattingModule, "type", {
 });
 
 FormattingModule.EmptyModule = new FormattingModule({});
-Object.freeze(FormattingModule);
+Object.freeze(FormattingModule.EmptyModule);
 
 Object.defineProperty(BaseModule, FormattingModule.type, {
   value: FormattingModule.prototype.constructor
@@ -55,6 +43,18 @@ FormattingModule.prototype.hasVisibleFormatting = function() {
 }
 
 FormattingModule.prototype.hasInvisibleFormatting = function() {
-  return this.properties.backgroundColor.value === "transparent"
-    && this.properties.textDecoration.value === "normal";
+  return (!this.properties.backgroundColor
+    || this.properties.backgroundColor === "transparent")
+    && (!this.properties.textDecoration
+    || this.properties.textDecoration === "normal");
 }
+
+// Figure out a way to keep this separate for each Scene instance?
+FormattingModule.DEFAULTS = {
+  color: "#000000",
+  backgroundColor: "transparent",
+  fontStyle: "normal",
+  fontWeight: "normal",
+  textDecoration: "normal",
+  cursor: "default"
+};

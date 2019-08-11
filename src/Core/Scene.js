@@ -66,11 +66,16 @@ function Scene(data) {
     layerId: this.id,
     events: data.events
   })
-  
+
+  // Key: Id, Value: Element
   let _elementData = {};
+  // Key: Id, Value: class names
   let _idTags = {};
+  // Key: class names, Value: Member Ids
   let _classMembers = {};
-  
+  // Ids sorted by priority of corresponding element. 
+  let _sortedElementIds = [];
+
   this.addElement = function(classSet, element) {
     LOGGING.PERFORMANCE.START("Scene.addElement", 1);
     // TODO: Validate Inputs
@@ -90,7 +95,22 @@ function Scene(data) {
 
     _elementData[internalElement.id] = internalElement;
     _idTags[internalElement.id] = classSet;
-    
+
+    // Insert into _sortedElementIds for easier access later on.
+    // If two objects have the same priority, behavior is unspecified.
+    // However, current behavior is to make it the last of such elements. 
+    let inserted = false;
+    for (let i = 0; i < _sortedElementIds.length; i ++) {
+      if (_elementData[_sortedElementIds[i]][CoreModule.type].priority > internalElement[CoreModule.type].priority) {
+        _sortedElementIds.splice(i, 0, internalElement.id);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) {
+      _sortedElementIds.push(internalElement.id);
+    }
+
     for (let className of classSet) {
       if (!(className in _classMembers)) {
         _classMembers[className] = new Set();
@@ -104,7 +124,7 @@ function Scene(data) {
     LOGGING.PERFORMANCE.STOP("Scene.addElement");
     return internalElement.id;
   }
-  
+
   let filterElements = function(classSet) {
     LOGGING.PERFORMANCE.START("Scene.filterElements", 1);
     if (typeof classSet === "string") {
@@ -184,7 +204,7 @@ function Scene(data) {
     LOGGING.PERFORMANCE.STOP("Scene.filterElements");
     return candidates;    
   }
-  
+
   this.shiftElements = function(classSet, shift) {
     LOGGING.PERFORMANCE.START("Scene.shiftElements", 1);
     // TODO: Check value of shift
@@ -195,7 +215,7 @@ function Scene(data) {
     }
     LOGGING.PERFORMANCE.STOP("Scene.shiftElements");
   }
-  
+
   this.moveElements = function(classSet, newLocation) {
     LOGGING.PERFORMANCE.START("Scene.moveElements", 1);
     // TODO: Check value of newLocation
@@ -215,6 +235,11 @@ function Scene(data) {
       let element = _elementData[id];
       element[CoreModule.type].priority = newPriority;
     }
+    // Unknown result after sorting, so just use default sort.
+    // TODO: Since all resulting elements have the same priority, find better algorithm?
+    _sortedElementIds.sort(function(a, b) {
+      return a[CoreModule.type].priority - b[CoreModule.type].priority;
+    });
     LOGGING.PERFORMANCE.STOP("Scene.orderElements");
   }
   
@@ -266,14 +291,17 @@ function Scene(data) {
             cell.domElement.textContent = newPixelData.char;
           }
           let cellStyle = cell.domElement.style;
-          // TODO: Use loop to iterate over formatting.          
-          cellStyle.color = newPixelData.formatting.textColor.value;
-          cellStyle.backgroundColor = newPixelData.formatting.backgroundColor.value;
-          cellStyle.fontWeight = newPixelData.formatting.fontWeight.value;
-          cellStyle.fontStyle = newPixelData.formatting.fontStyle.value;
-          cellStyle.textDecoration = newPixelData.formatting.textDecoration.value;
-          cellStyle.cursor = newPixelData.formatting.cursor.value;
-          
+          // First remove existing formatting if not in newPixelData
+          for (let styleKey in currPixelData.formatting) {
+            if (!(styleKey in newPixelData.formatting)) {
+              // If in defaults, set to that. Otherise ""
+              cellStyle[styleKey] = FormattingModule.DEFAULTS[styleKey] || "";
+            }
+          }
+          for (let styleKey in newPixelData.formatting) {
+            cellStyle[styleKey] = newPixelData.formatting[styleKey];
+          }
+
           for (let eventType in currPixelData.events) {
             let oldEventData = currPixelData.events[eventType];
             let newEventData = newPixelData.events[eventType];
@@ -284,10 +312,10 @@ function Scene(data) {
               && newEventData.enabled) {
               // If they belong to the same element, then don't change.
               // Cannot check newPixelData.id, since the event may have originated from a different layer.
-              LOGGING.DEBUG("Keeping the same event listener for: (", x, ", ", y, ")");
+              LOGGING.DEBUG("Scene.render: Keeping the same event listener for: (", x, ", ", y, ")");
             } else {
               // There might be other cases where the handler could be reused, but being safe for now. 
-              LOGGING.DEBUG("Removing event listener from: (", x, ", ", y, ")");
+              LOGGING.DEBUG("Scene.render: Removing event listener from: (", x, ", ", y, ")");
               _eventHandlers.unbindEvent(cell, oldEventData);
             }
           }
@@ -297,7 +325,7 @@ function Scene(data) {
             if (eventData.enabled
               && !eventData.attachedCells.has(cell)) {
               _eventHandlers.bindEvent(cell, eventData);
-              LOGGING.DEBUG("Adding event listener to: (", x, ", ", y, ")");
+              LOGGING.DEBUG("Scene.render: Adding event listener to: (", x, ", ", y, ")");
             }
           }
           
@@ -314,24 +342,23 @@ function Scene(data) {
     LOGGING.PERFORMANCE.START("Scene.getUpdatedCell", 2);
     
     let topPixelData = PixelData.Empty;
-    let topPriority = Infinity;
-    for (let id in _elementData) {
+    let currPriority = 0;
+    for (let i = 0; i < _sortedElementIds.length; i ++) {
       // TODO: Sort _elementData by id, so that can immediately exit if find a valid PixelData
-      let element = _elementData[id];
+      let element = _elementData[_sortedElementIds[i]];
       if (!Vector2.inBoundingBox(coord, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
         continue;
       }
       
-      let priority = element[CoreModule.type].priority;
-      if (priority > topPriority) {
-        continue;
-      }
+      // No need to check priority since elements are sorted. 
+      // The first nonTransparent Element is used. 
+      
       let pixelData = element.getPixelDataAt(Vector2.subtract(coord, element[CoreModule.type].topLeftCoords));
       if (pixelData.isTransparent()) {
         continue;
       }
       topPixelData = pixelData;
-      topPriority = priority;
+      break;
     }
     
     LOGGING.DEBUG_VERBOSE(

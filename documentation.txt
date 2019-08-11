@@ -16,7 +16,7 @@ FrameLayers:
   coords: (x,y) integer pair to determine where the FrameLayer is placed relative to the top left corner of the Frame
     Undefined behavior if negative. 
   formatting: determines how to format the text.
-    Currently supports: textColor, backgroundColor, fontWeight ("bold"), fontStyle ("italics"), and textDecoration ("underline")
+    Currently supports: color, backgroundColor, fontWeight ("bold"), fontStyle ("italics"), and textDecoration ("underline")
   events: See above.
   settings: determines various behavior
     spaceIsTransparent (true): If true, will render the next opaque object instead, or blank white if no objects behind
