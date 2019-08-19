@@ -65,6 +65,9 @@ EventModule.prototype.removeEvent = function(type) {
 }
 
 EventModule.isEqual = function(e1, e2) {
+  if (e1.id !== e2.id) {
+    return false;
+  }
   for (let eventType in e1) {
     if (!(eventType in e2) || !EventData.isEqual(e1[eventType], e2[eventType])) {
       return false;

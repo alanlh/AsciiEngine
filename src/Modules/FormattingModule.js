@@ -11,13 +11,13 @@ function FormattingModule(data) {
 
 FormattingModule.isEqual = function(f1, f2) {
   // TODO: Verify that f1, f2 are FormattingModules
-  for (let key1 in f1.properties) {
-    if (!(key1 in f2.properties) || f1.properties[key] != f2.properties[key]) {
+  for (let key1 in f1) {
+    if (!(key1 in f2) || f1[key1] != f2[key1]) {
       return false;
     }
   }
-  for (let key2 in f2.properties) {
-    if (!(key2 in f1.properties)) {
+  for (let key2 in f2) {
+    if (!(key2 in f1)) {
       return false;
     }
   }

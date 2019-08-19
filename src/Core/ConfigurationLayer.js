@@ -45,12 +45,16 @@ function ConfigurationLayer(children, data) {
   let _defaultKey = data.defaultKey;
   let _activeKey = data.activeKey;
   if (!(data.defaultKey in _children)) {
-    LOGGING.WARN("ConfigurationLayer constructor parameter defaultKey does not exist among child keys: ", defualtKey);
+    if (data.defaultKey) {
+      LOGGING.WARN("ConfigurationLayer constructor parameter defaultKey does not exist among child keys: ", defualtKey);
+    }
     _defaultKey = Object.keys(_children)[0];
   }
   
   if (!(data.activeKey in _children)) {
-    LOGGING.WARN("ConfigurationLayer constructor parameter activeKey does not exist among child keys: ", data.activeKey);
+    if (data.activeKey) {
+      LOGGING.WARN("ConfigurationLayer constructor parameter activeKey does not exist among child keys: ", data.activeKey);
+    }
     _activeKey = _defaultKey;
   }
   
@@ -94,7 +98,7 @@ function ConfigurationLayer(children, data) {
       let childPixelData = _children[_activeKey].getPixelDataAt(Vector2.subtract(vec2, _children[_activeKey].topLeftCoords));
       if (!childPixelData.isTransparent()) {
         childPixelData.pushEventModule(this[EventModule.type]);
-        childPixelData.pushFormattingModule(this[FormattingModule.type]);
+        childPixelData.pushFormattingData(this[FormattingModule.type]);
         return childPixelData;
       }
     }

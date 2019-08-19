@@ -34,24 +34,10 @@ function Scene(data) {
   
   // TODO: Merge these into one object? 
   let _domElementReferences = [];
-  let _currentPixelData = [];
   for (let y = 0; y < this.boundingBoxDimens.y; y ++) {
-    _domElementReferences.push([]);
-    _currentPixelData.push([]);
     let rowDomElement = document.createElement("div");
+    _domElementReferences.push(new RowData(rowDomElement, this.boundingBoxDimens.x));
     rowDomElement.classList.add("scene-" + this.id + "-row");
-    for (let x = 0; x < this.boundingBoxDimens.x; x++) {
-      let cell = document.createElement("span");
-      cell.textContent = " ";
-      cell.classList.add("scene-" + this.id + "-cell")
-      cell.classList.add("scene-" + this.id + "-row-" + y);
-      cell.classList.add("scene-" + this.id + "-column-" + x);
-      cell.classList.add("scene-" + this.id + "-" + y + "-" + x);
-      
-      rowDomElement.append(cell);
-      _domElementReferences[y].push(new CellData(cell, Vector2.default()));
-      _currentPixelData[y].push(new PixelData());
-    }
     _domContainer.append(rowDomElement);
   }
   
@@ -279,73 +265,54 @@ function Scene(data) {
     
     // TODO: Get all information, and then update everything at once. 
     for (let y = 0; y < this.boundingBoxDimens.y; y++) {
+      let prevPixelData = PixelData.Empty;
       for (let x = 0; x < this.boundingBoxDimens.x; x++) {
-        let newPixelData = getUpdatedCell(Vector2.subtract(Vector2.create(x, y), _camera.topLeftCoords));
-        let currPixelData = _currentPixelData[y][x];
-        LOGGING.PERFORMANCE.START("Scene.render: CELL", 2);
-        if (PixelData.isEqual(newPixelData, currPixelData)) {
-          // If nothing changed, don't set anything.
+        LOGGING.PERFORMANCE.START("Scene.render: getUpdatedCell", 2);
+        let newPixelData = PixelData.Empty;
+        if (prevPixelData.canBeExtended) {
+          newPixelData = getUpdatedCell(
+            Vector2.subtract(Vector2.create(x, y), _camera.topLeftCoords),
+            prevPixelData.priority
+          );
         } else {
-          let cell = _domElementReferences[y][x];
-          if (currPixelData.char !== newPixelData.char) {
-            cell.domElement.textContent = newPixelData.char;
-          }
-          let cellStyle = cell.domElement.style;
-          // First remove existing formatting if not in newPixelData
-          for (let styleKey in currPixelData.formatting) {
-            if (!(styleKey in newPixelData.formatting)) {
-              // If in defaults, set to that. Otherise ""
-              cellStyle[styleKey] = FormattingModule.DEFAULTS[styleKey] || "";
-            }
-          }
-          for (let styleKey in newPixelData.formatting) {
-            cellStyle[styleKey] = newPixelData.formatting[styleKey];
-          }
-
-          for (let eventType in currPixelData.events) {
-            let oldEventData = currPixelData.events[eventType];
-            let newEventData = newPixelData.events[eventType];
-            if (eventType in newPixelData.events
-              && oldEventData.eventType == newEventData.eventType
-              && oldEventData.layerId == newEventData.layerId
-              && oldEventData.handlerKey == newEventData.handlerKey
-              && newEventData.enabled) {
-              // If they belong to the same element, then don't change.
-              // Cannot check newPixelData.id, since the event may have originated from a different layer.
-              LOGGING.DEBUG("Scene.render: Keeping the same event listener for: (", x, ", ", y, ")");
-            } else {
-              // There might be other cases where the handler could be reused, but being safe for now. 
-              LOGGING.DEBUG("Scene.render: Removing event listener from: (", x, ", ", y, ")");
-              _eventHandlers.unbindEvent(cell, oldEventData);
-            }
-          }
-          
-          for (let eventType in newPixelData.events) {
-            let eventData = newPixelData.events[eventType];
-            if (eventData.enabled
-              && !eventData.attachedCells.has(cell)) {
-              _eventHandlers.bindEvent(cell, eventData);
-              LOGGING.DEBUG("Scene.render: Adding event listener to: (", x, ", ", y, ")");
-            }
-          }
-          
-          _currentPixelData[y][x] = newPixelData;
+          newPixelData = getUpdatedCell(
+            Vector2.subtract(Vector2.create(x, y), _camera.topLeftCoords),
+            Infinity
+          );
         }
-        LOGGING.PERFORMANCE.STOP("Scene.render: CELL");
+        if (newPixelData.incrementActiveLength()) {
+          // TODO: ASSERT newPixelData should have higher priority than prevPixelData
+          prevPixelData = newPixelData;
+          // TODO: Turn initializeEventHandlers to be a method for EventHandlerModule, not PixelData
+          newPixelData.initializeEventHandlers(_eventHandlers);
+          _domElementReferences[y].updatePixelData(x, newPixelData);
+        } else if (prevPixelData.incrementActiveLength()) {
+          // Do nothing, since prevPixelData should already have been inserted into RowData
+        } else {
+          prevPixelData = PixelData.Empty;
+        }
+        LOGGING.PERFORMANCE.STOP("Scene.render: getUpdatedCell");
       }
+    }
+    for (let y = 0; y < this.boundingBoxDimens.y; y++) {
+      _domElementReferences[y].render();
     }
     
     LOGGING.PERFORMANCE.STOP("Scene.render");
   }
   
-  let getUpdatedCell = function(coord) {
+  let getUpdatedCell = function(coord, maxAllowedPriority) {
     LOGGING.PERFORMANCE.START("Scene.getUpdatedCell", 2);
-    
     let topPixelData = PixelData.Empty;
-    let currPriority = 0;
+    if (maxAllowedPriority === undefined) {
+      maxAllowedPriority = Infinity;
+    }
     for (let i = 0; i < _sortedElementIds.length; i ++) {
       // TODO: Sort _elementData by id, so that can immediately exit if find a valid PixelData
       let element = _elementData[_sortedElementIds[i]];
+      if (element.priority >= maxAllowedPriority) {
+        break;
+      }
       if (!Vector2.inBoundingBox(coord, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
         continue;
       }
@@ -358,9 +325,9 @@ function Scene(data) {
         continue;
       }
       topPixelData = pixelData;
+      topPixelData.priority = element.priority;
       break;
     }
-    
     LOGGING.DEBUG_VERBOSE(
       "Scene.getUpdatedCell at coords: ", coord, " ",
       "found: ", topPixelData

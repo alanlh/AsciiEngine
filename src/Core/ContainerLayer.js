@@ -71,7 +71,7 @@ function ContainerLayer(children, data) {
         let childPixelData = _children[i].getPixelDataAt(Vector2.subtract(vec2, _children[i].topLeftCoords));
         if (!childPixelData.isTransparent()) {
           childPixelData.pushEventModule(this[EventModule.type]);
-          childPixelData.pushFormattingModule(this[FormattingModule.type]);
+          childPixelData.pushFormattingData(this[FormattingModule.type]);
           return childPixelData;
         }
       }

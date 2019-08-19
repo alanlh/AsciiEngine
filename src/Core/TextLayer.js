@@ -120,10 +120,20 @@ TextLayer.prototype.getCharAt = function(vec2) {
     LOGGING.DEBUG("TextLayer.getCharAt: Empty coordinates.");
     return false;
   }
-  
+
   return this.text.charAt(rowStart + x);
 }
 
+TextLayer.prototype.isOpaqueChar = function (c) {
+  // TODO: Handle leading space ignored. 
+  return !(c === ' ' && this.spaceIsTransparent);
+}
+
+TextLayer.prototype.hasFormatting = function(c) {
+  return c !== ' ' || (!this.spaceIsTransparent && this.spaceHasFormatting);
+}
+
+// Returns a PixelData starting at the coordinates given.
 TextLayer.prototype.getPixelDataAt = function(vec2) {
   LOGGING.DEBUG("TextLayer.getPixelDataAt called with parameter vec2: ", vec2);
   let x = vec2.x || 0;
@@ -145,54 +155,47 @@ TextLayer.prototype.getPixelDataAt = function(vec2) {
     LOGGING.DEBUG("TextLayer.getPixelDataAt: Empty coordinates.");
     return PixelData.Empty;
   }
-  // Everything above this is copied from getCharAt
-  let c = this.text.charAt(rowStart + x);
-
-  // TODO: Handle leadingSpaceIgnored
-  if (c == ' ' && this.spaceIsTransparent) {
-    LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning space, transparent.");
+  let startPos = rowStart + x;
+  let startChar = this.text.charAt(startPos);
+  if (!this.isOpaqueChar(startChar)) {
+    LOGGING.DEBUG("TextLayer.getPixelDataAt: Found transparent char: ", startChar, ".");
     return PixelData.Empty;
   }
 
-  if (c == ' ' && !this.spaceIsTransparent && this.spaceHasFormatting) {
-    LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning space, has formatting.");
-    return new PixelData({
-      char: c,
-      formatting: this[FormattingModule.type],
-      events: this[EventModule.type],
-      id: this.id,
-      opaque: true
-    });
+  let startCharHasFormatting = this.hasFormatting(startChar);
+  let endPos = startPos;
+  let currText = "";
+  for (; endPos + 1 < nextRow; endPos ++) {
+    if (!this.isOpaqueChar(this.text.charAt(endPos))
+      || (this.hasFormatting(this.text.charAt(endPos)) !== startCharHasFormatting)
+    ) {
+      // This char has different formatting from startChar. Must end PixelData at this point.
+      break;
+    }
+    // TODO: Check if c is in this.setAsBlank
+    if (this.text.charAt(endPos) === this.setAsBlank) {
+      currText += this.text.substring(startPos, endPos);
+      currText += " ";
+      startPos = endPos + 1;
+    }
   }
-
-  if (c === this.setAsBlank) {
-    LOGGING.DEBUG(
-      "TextLayer.getPixelDataAt: Converting symbol ",
-      this.setAsBlank,
-      " to space."
-    );
-    // TODO: Return default nonModule values if no module? 
+  currText += this.text.substring(startPos, endPos);
+  if (startCharHasFormatting) {
+    LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning PixelData with formatting and text block: ", currText);
     return new PixelData({
-      char: ' ',
-      formatting: this[FormattingModule.type],
-      events: this[EventModule.type],
-      id: this.id,
-      opaque: true
-    });
-  }
-  
-  if (c !== ' ') {
-    LOGGING.DEBUG(
-      "TextLayer.getPixelDataAt: Returning character ",
-      c
-    );
-    return new PixelData({
-      char: c,
+      text: currText,
       formatting: this[FormattingModule.type],
       events: this[EventModule.type],
       id: this.id
     });
+  } else {
+    LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning PixelData without formatting and text block: ", currText);
+    return new PixelData({
+      text: currText,
+      id: this.id
+    });
   }
-  LOGGING.DEBUG("TextLayer.getPixelDataAt: Returning default");
+
+  LOGGING.WARN("TextLayer.getPixelDataAt: Returning default.");
   return PixelData.Empty;
 }

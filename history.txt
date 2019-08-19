@@ -5,6 +5,14 @@ More formatting support
 More Animation/Layers features
 
 History:
+Version 0.6.4 - 2019/8/18
+  Major improvements to rendering algorithm
+  Small bug fixes
+
+Version 0.6.3.3 - 2019/8/11
+  More performance improvements
+  No longer use FormattingData objects. Instead keep default values as static members of FormattingModule. 
+
 Version 0.6.3.2 - 2019/8/10
   Major performance improvements
 
