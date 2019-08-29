@@ -1,6 +1,6 @@
 "use strict";
 function TextLayer(text, data) {
-  LOGGING.PERFORMANCE.START("TextLayer Constructor");
+  LOGGING.PERFORMANCE.START("TextLayer Constructor", 1);
   let self = this;
   LOGGING.ASSERT(data, "TextLayer constructor parameter 'data' is missing or invalid.");
   LOGGING.ASSERT(text, "TextLayer constructor parameter 'text' is missing or invalid.");
@@ -9,7 +9,7 @@ function TextLayer(text, data) {
   let textShapeData = TextLayer.parseTextShape(text);
   LOGGING.DEBUG("TextLayer constructor value textShape: ", textShapeData);
   // TODO: Verify boundingBoxDimens, topLeftCoords
-  BaseLayer.call(this, {
+  BaseLayer.call(self, {
     boundingBoxDimens: textShapeData.boundingBoxDimens,
     topLeftCoords: data.topLeftCoords,
     priority: data.priority,
@@ -18,36 +18,36 @@ function TextLayer(text, data) {
   });
 
   // TODO: Verify that string itself cannot be modified. 
-  Object.defineProperty(this, "text", {
+  Object.defineProperty(self, "text", {
     value: textShapeData.text
   });
 
   // NOTE: Not sure if this should be public or not, even though it can't be changed. 
-  Object.defineProperty(this, "rowIndices", {
+  Object.defineProperty(self, "rowIndices", {
     value: textShapeData.rowIndices
   });
   
   // TODO: Verify data.setAsBlank
-  Object.defineProperty(this, "setAsBlank", {
+  Object.defineProperty(self, "setAsBlank", {
     value: data.setAsBlank || false
   });
   
   // TODO: Verify data.spaceHasFormatting
-  Object.defineProperty(this, "spaceHasFormatting", {
+  Object.defineProperty(self, "spaceHasFormatting", {
     value: !(data.spaceHasFormatting === undefined || !data.spaceHasFormatting)
   });
   
   // TODO: Verify data.spaceIsTransparent
-  Object.defineProperty(this, "spaceIsTransparent", {
+  Object.defineProperty(self, "spaceIsTransparent", {
     value: data.spaceIsTransparent === undefined || data.spaceIsTransparent
   });
   
   // TODO: Verify data.leadingSpaceIgnored
-  Object.defineProperty(this, "leadingSpaceIgnored", {
+  Object.defineProperty(self, "leadingSpaceIgnored", {
     value: data.leadingSpaceIgnored === undefined || data.leadingSpaceIgnored
   });
 
-  this.copy = function() {
+  self.copy = function() {
     // TODO: Improve 
     return new TextLayer(self.text, {
       topLeftCoords: self.topLeftCoords,

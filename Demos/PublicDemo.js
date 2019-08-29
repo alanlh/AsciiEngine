@@ -8,6 +8,7 @@ window.onload = async function() {
   
   helloWorld2();
   await fileParsing();
+  interactiveDialogue();
 }
 
 function helloWorld2() {
@@ -258,4 +259,23 @@ async function fileParsing() {
   }
   
   setTimeout(sail, 1000);
+}
+
+function interactiveDialogue() {
+  let scene = new Scene({
+    divId: "interactiveDialogue",
+    boundingBoxDimens: Vector2.create(50, 15)
+  });
+  
+  let dummyTextStr1 = "  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n";
+  let dummyTextStr2 = "  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n";
+  let dummyTextStr3 = "  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n";
+  let dummyTextStr4 = "  Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n";
+  let dummyText = new TextBox(dummyTextStr1 + dummyTextStr2 + dummyTextStr3 + dummyTextStr4, {
+    boundingBoxDimens: Vector2.create(49, 30)
+  });
+  
+  scene.addElement("lorem", dummyText);
+  
+  scene.render();
 }

@@ -5,6 +5,10 @@ More formatting support
 More Animation/Layers features
 
 History:
+Version 0.7.0 - 2019/8/29
+  Added new TextBox object, which formats text to be displayed within a certain bounding box.
+  Small bug fixes
+
 Version 0.6.4 - 2019/8/18
   Major improvements to rendering algorithm
   Small bug fixes
