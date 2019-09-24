@@ -2,13 +2,31 @@ function GameController() {
   // Do things that can be done before window loads.
   const NEW_GAME_SAVE_DATA = "";
   
-  // References to key components
+  // Handling active events
+  const activeEvents = {
+    
+  };
   
+  const addToEventList = function(event) {
+    // Starts the events, 
+  }
+  
+  const removeFromEventList = function(event) {
+    
+  }
+  
+  // References to key components
   const stateChangeHandler = new StateChangeHandler();
   
   const displayChangeHandler = new DisplayChangeHandler();
   
   const gameControllerInternals = {
+    addEvent: function(event) {
+      addToEventList(event);
+    },
+    removeEvent: function(event) {
+      removeFromEventList(eventName);
+    },
     triggerStateChange: function(stateChangeEvent) {
       stateChangeHandler.handleEvent(stateChangeEvent);
     }, 
@@ -30,9 +48,8 @@ function GameController() {
   
   const startGameInternal = function() {
     loadGame();
+    // Create new game loop event
   }
   
   this.startGame = startGameInternal;
-  
-  
 }
