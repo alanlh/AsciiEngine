@@ -1,0 +1,3 @@
+function Event(origin, type) {
+  
+}
