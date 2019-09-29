@@ -1,26 +1,54 @@
+"use strict";
 class StateBase {
-  constructor(id, persistence, type, childKeys, container, update, notify) {
-    // Using bind because some of these callbacks may be used for multiple states. 
-    this.traits = new StateTraits(id, persistence, type, childKeys, container, 
-      update.bind(this), notify.bind(this));
+  constructor(id, persistence, type, parentKeys, container, update) {
+    // The update parameter should be bound to this object already.
+    this.id = id;
+    this.persistence = persistence;
+    this.type = type;
+    this.parentKeys = parentKeys;
+    this.container = container;
+    
+    this._update = update;
+    
+    this.childKeys = [];
     
     this.status = StateBase.STATUS.NO_STATUS;
+    this.value = StateBase.VALUES.EMPTY_VALUE;
+  }
+  
+  connectToParents() {
+    for (parentKey of this.parentKeys) {
+      this.container.getState(parentKey).requestConnection(this.id);
+    }
+    // OPTIMIZE: delete parentKeys?
+  }
+  
+  requestConnection(id) {
+    this.childKeys[id] = id;
+  }
+  
+  deleteConnection(id) {
+    delete this.childKeys[id];
+  }
+  
+  initializeStatus(status) {
+    // TODO: verify status
+    this.status = status;
+  }
+  
+  initializeValue(value) {
+    this.value = value;
   }
   
   notifyChildren() {
-    for (childKey of this.traits.childKeys) {
-      container.getState(childKey).update(this.traits.id, this.status);
+    for (childKey of this.childKeys) {
+      this.container.getState(childKey).update(this.id, this.status, this.value);
     }
   }
   
-  update(id, status) {
-    if (this.traits.update(id, status)) {
-      this.notifyChildren();
-    }
-  }
-  
-  notify(eventType) {
-    if (this.traits.notify(eventType)) {
+  update(id, status, value) {
+    // id and status are of the parent node
+    if (this._update(id, status, value)) {
       this.notifyChildren();
     }
   }
@@ -32,7 +60,7 @@ StateBase.PERSISTENCE = {
   DATA: "Data"
 }
 
-StateBase.PASSIVE_TYPES = {
+StateBase.TYPES = {
   // Data
   NPC_ATTRIBUTES: "Npc Attributes",
   MAP_DATA: "Map Data",
@@ -51,4 +79,12 @@ StateBase.PASSIVE_TYPES = {
 
 StateBase.STATUS = {
   NO_STATUS: "No status"
+}
+
+StateBase.VALUES = {
+  NO_VALUE: Object.freeze({});
+}
+
+StateBase.CALLBACKS = {
+  IGNORE: function() {}
 }

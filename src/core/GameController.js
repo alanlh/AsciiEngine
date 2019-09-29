@@ -1,3 +1,4 @@
+"use strict";
 function GameController() {
   // Do things that can be done before window loads.
   const NEW_GAME_SAVE_DATA = "";
@@ -49,6 +50,8 @@ function GameController() {
   const startGameInternal = function() {
     loadGame();
     // Create new game loop event
+    
+    startRender();
   }
   
   this.startGame = startGameInternal;

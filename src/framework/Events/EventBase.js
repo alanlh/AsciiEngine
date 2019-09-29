@@ -1,3 +1,4 @@
+"use strict";
 function Event(origin, type, callback, repeatInformation) {
   // Needs a name variable. 
 }

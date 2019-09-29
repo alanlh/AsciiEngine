@@ -1,18 +1,22 @@
-const StoryStates = {};
-
-function insertStoryState(newState) {
-  StoryStates[newState.id] = newState;
-};
-
-insertStoryState(
-  new StoryState(
+"use strict";
+const generateStoryStates = function(container) {
+  const StoryStates = {};
+  
+  const generateStoryState = StoryState.createGenerator(container);
+  
+  function insertStoryState(id, storyParents, completionRequirements) {
+    StoryStates[id] = generateStoryState(id, storyParents, completionRequirements);
+  };
+  
+  // id, storyParents, completionRequirements
+  insertStoryState(
     "testId",
     [],
-    [],
-    [
-      function() {
-        
-      }
-    ]
-  )
-);
+    {
+      
+    }
+  );
+
+
+  return StoryStates;
+}

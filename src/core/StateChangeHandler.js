@@ -1,3 +1,4 @@
+"use strict";
 function StateChangeHandler() {
   // DATA FIELDS
   let gameController;
@@ -11,10 +12,13 @@ function StateChangeHandler() {
     
   };
   
-  const states = loadStates();
+  const states = loadStates(this);
   
+  this.getState = function(id) {
+    return states[id];
+  }
   
-  this.loadStates = function(saveStates) {
+  this.initializeStates = function(saveStates) {
     
   }
   

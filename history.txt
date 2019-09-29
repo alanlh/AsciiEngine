@@ -1,3 +1,6 @@
+9/21-9/29/19
+Created outline of code
+Made progress structuring state objects and operations.
 
 
 09/21/19
