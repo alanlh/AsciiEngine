@@ -1,3 +1,11 @@
+class StoryState {
+  constructor(id, persistence, type, parentKeys, childKeys, container) {
+    super(id, persistence, type, parentKeys, childKeys, container);
+    
+  }
+
+}
+
 function StoryState(id, children, parents, completionRequirements) {
   this.id = id;
   this.children = children;
