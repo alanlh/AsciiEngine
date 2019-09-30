@@ -60,40 +60,6 @@ StoryState.STATUS = {
   COMPLETED: 2
 }
 
-StoryState.update = function() {
-  if (StoryState.checkReached)
-}
-
-StoryState.checkReached = function() {
-  if (this.status = StoryState.STATUS.UNREACHED) {
-    for (let parent of this.parents) {
-      if (parent.status < StoryState.STATUS.COMPLETED) {
-        return false;
-      }
-    }
-    this.status = StoryState.STATUS.INPROGRESS;
-    return true;
-  }
-  return false;
-}
-
-// Checks if the story node has been completed. Returns true if so.
-StoryState.checkComplete = function() {
-  if (this.status == StoryState.STATUS.INPROGRESS) {
-    for (let callback of this.completionRequirements) {
-      if (!callback(this)) {
-        return false;
-      }
-    }
-    this.status = StoryState.STATUS.COMPLETED;
-    for (let child of this.children) {
-      child.checkReached();
-    }
-    return true;
-  }
-  return false;
-}
-
 StoryState.createGenerator = function(container) {
   return function(id, storyParents, completionRequirements) {
     return new StoryState(

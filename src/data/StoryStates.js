@@ -10,10 +10,22 @@ const generateStoryStates = function(container) {
   
   // id, storyParents, completionRequirements
   insertStoryState(
-    "testId",
-    [],
+    "TEMPLATE",
+    ["TemplateParent"],
     {
-      
+      "TemplateCompletionReq": function(status, value) {
+        return true;
+      }
+    }
+  );
+  
+  insertStoryState(
+    "openingCinematic",
+    [/** NONE **/],
+    {
+      "openingCinematicScene.Frame": function(status, value) {
+        return value.frameNumber == value.frameCount;
+      }
     }
   );
 
