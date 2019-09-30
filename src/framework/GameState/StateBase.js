@@ -1,6 +1,6 @@
 "use strict";
 class StateBase {
-  constructor(id, persistence, type, parentKeys, container, update) {
+  constructor(id, persistence, type, parentKeys, container, update, notify) {
     // The update parameter should be bound to this object already.
     this.id = id;
     this.persistence = persistence;
@@ -8,12 +8,14 @@ class StateBase {
     this.parentKeys = parentKeys;
     this.container = container;
     
-    this._update = update;
+    this._update = update; // For updates from fixed sources
+    this._notify = notify; // For events where the source doesn't matter
     
     this.childKeys = [];
     
     this.status = StateBase.STATUS.NO_STATUS;
     this.value = StateBase.VALUES.EMPTY_VALUE;
+    this.mutable = this.persistence !== StateBase.PERSISTENCE.DATA; // Default value.
   }
   
   connectToParents() {
@@ -48,7 +50,13 @@ class StateBase {
   
   update(id, status, value) {
     // id and status are of the parent node
-    if (this._update(id, status, value)) {
+    if (this.mutable && this._update(id, status, value)) {
+      this.notifyChildren();
+    }
+  }
+  
+  notify(eventData) {
+    if (this.mutable && this._notify(eventData)) {
       this.notifyChildren();
     }
   }

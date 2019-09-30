@@ -1,9 +1,10 @@
 "use strict";
 class StoryState {
-  constructor(id, persistence, type, container, storyParents, completionRequirements) {
+  constructor(id, container, storyParents, completionRequirements) {
     
-    super(id, persistence, type, storyParents.concat(completionRequirements.keys()), container, 
-      this._handleUpdate);
+    super(id, StateBase.PERSISTENCE.PASSIVE, StateBase.TYPES.STORY, 
+      storyParents.concat(completionRequirements.keys()), container, 
+      this._handleUpdate, StateBase.CALLBACKS.IGNORE);
     
     this.completeParents = {};
     this.remainingParents = storyParents.length;
@@ -44,6 +45,7 @@ class StoryState {
             
             if (this.remainingRequirements == 0) {
               this.status = StoryState.STATUS.COMPLETED;
+              this.mutable = false;
               return true;
             }
           }
@@ -64,8 +66,6 @@ StoryState.createGenerator = function(container) {
   return function(id, storyParents, completionRequirements) {
     return new StoryState(
         id,
-        StateBase.PERSISTENCE.PASSIVE,
-        StateBase.TYPES.STORY,
         container, 
         storyParents,
         completionRequirements

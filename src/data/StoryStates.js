@@ -5,7 +5,7 @@ const generateStoryStates = function(container) {
   const generateStoryState = StoryState.createGenerator(container);
   
   function insertStoryState(id, storyParents, completionRequirements) {
-    StoryStates[id] = generateStoryState(id, storyParents, completionRequirements);
+    StoryStates[id] = new StoryState(id, container, storyParents, completionRequirements);
   };
   
   // id, storyParents, completionRequirements
