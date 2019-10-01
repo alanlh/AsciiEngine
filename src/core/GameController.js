@@ -25,7 +25,7 @@ function GameController() {
     addEvent: function(event) {
       addToEventList(event);
     },
-    removeEvent: function(event) {
+    removeEvent: function(eventName) {
       removeFromEventList(eventName);
     },
     triggerStateChange: function(stateChangeEvent) {

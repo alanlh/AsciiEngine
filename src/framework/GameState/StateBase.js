@@ -16,13 +16,26 @@ class StateBase {
     this.status = StateBase.STATUS.NO_STATUS;
     this.value = StateBase.VALUES.EMPTY_VALUE;
     this.mutable = this.persistence !== StateBase.PERSISTENCE.DATA; // Default value.
+    this.connectedToParents = false;
   }
   
   connectToParents() {
-    for (parentKey of this.parentKeys) {
-      this.container.getState(parentKey).requestConnection(this.id);
+    if (!this.connectedToParents) {
+      for (parentKey of this.parentKeys) {
+        this.container.getState(parentKey).requestConnection(this.id);
+      }
     }
+    this.connectedToParents = true;
     // OPTIMIZE: delete parentKeys?
+  }
+  
+  disconnectFromParents() {
+    if (this.connectedToParents) {
+      for (parentKey of this.parentKeys) {
+        this.container.getState(parentKey).deleteConnection(this.id);
+      }
+    }
+    this.connectedToParents = false;
   }
   
   requestConnection(id) {
@@ -94,5 +107,11 @@ StateBase.VALUES = {
 }
 
 StateBase.CALLBACKS = {
-  IGNORE: function() {}
+  IGNORE: function() {},
+  FOREACH_UPDATE: function(id, status, value) {
+    return this._update[id].call(this, status, value);
+  },
+  FOREACH_NOTIFY: function(eventData) {
+    return this._notify[eventData.origin].call(this, eventData);
+  }
 }

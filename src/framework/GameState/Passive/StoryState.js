@@ -39,13 +39,14 @@ class StoryState {
     } else if (this.status == StoryState.STATUS.INPROGRESS) {
       if (id in this.completionRequirements) {
         if (!this.requirementCompleted[id]) {
-          if (this.completionRequirements(status, value)) {
+          if (this.completionRequirements[id](status, value)) {
             this.requirementCompleted[id] = true;
             this.remainingRequirements --;
             
             if (this.remainingRequirements == 0) {
               this.status = StoryState.STATUS.COMPLETED;
               this.mutable = false;
+              this.disconnectFromParents();
               return true;
             }
           }
@@ -60,15 +61,4 @@ StoryState.STATUS = {
   UNREACHED: 0,
   INPROGRESS: 1,
   COMPLETED: 2
-}
-
-StoryState.createGenerator = function(container) {
-  return function(id, storyParents, completionRequirements) {
-    return new StoryState(
-        id,
-        container, 
-        storyParents,
-        completionRequirements
-      );
-  };
 }
