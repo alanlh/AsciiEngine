@@ -8,3 +8,9 @@ function unionIntoFirst(first, second, alertIfSameKey) {
     }
   }
 }
+
+function insertWithKey(container, keyName, objectsArray) {
+  for (let object of objectsArray) {
+    container[object[keyName]] = object;
+  }
+}

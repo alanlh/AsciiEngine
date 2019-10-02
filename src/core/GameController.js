@@ -22,8 +22,8 @@ function GameController() {
   const displayChangeHandler = new DisplayChangeHandler();
   
   const gameControllerInternals = {
-    addEvent: function(event) {
-      addToEventList(event);
+    addEvent: function(eventData) {
+      addToEventList(eventData);
     },
     removeEvent: function(eventName) {
       removeFromEventList(eventName);
@@ -31,13 +31,30 @@ function GameController() {
     triggerStateChange: function(stateChangeEvent) {
       stateChangeHandler.handleEvent(stateChangeEvent);
     }, 
-    triggerDisplayChange: function(displayChangeEvent) {
+    requestDisplayChange: function(displayChangeEvent) {
       displayChangeHandler.handleEvent(displayChangeEvent);
     }
   };
   
   stateChangeHandler.initializeController(gameControllerInternals);
   displayChangeHandler.initializeController(gameControllerInternals);
+  
+  // Handling callbacks
+  // TODO: ??????????????
+  const TICKS_PER_SEC = 8;
+  const MILLI_PER_TICK = 1000 / TICKS_PER_SEC;
+  const convertToTicks = function(milliTime) {
+    return Math.ceil(time / MILLI_PER_TICK);
+  }
+  
+  const regularGameLoops = {};
+  insertWithKey(regularGameLoops, "intervalTime", [
+    new GameLoopCallbacks(gameControllerInternals, 2000)),
+    new GameLoopCallbacks(gameControllerInternals, 1000)),
+    new GameLoopCallbacks(gameControllerInternals, 500)),
+    new GameLoopCallbacks(gameControllerInternals, 250)),
+    new GameLoopCallbacks(gameControllerInternals, 125)),
+  ]);
   
   const loadGame = function(saveData) {
     if (!saveData) {
