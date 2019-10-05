@@ -28,6 +28,11 @@ class EventManager {
       this[timing].stop();
     }
   }
+  
+  switchSpeed() {
+    // TODO: Implement by having multiple EventManager.TIMING values, and just swapping?
+    // Will also need to target GameLoopCallbacks. Maybe do a stopAll, and then a startAll?
+  }
 }
 
 EventManager.TIMINGS = {
@@ -35,7 +40,7 @@ EventManager.TIMINGS = {
   FASTER: 250,
   FAST: 500,
   NORMAL: 1000,
-  SLOW: 2000,  
+  SLOW: 2000,
 }
 
 Object.freeze(EventManager.TIMINGS);

@@ -55,7 +55,7 @@ function StateChangeHandler() {
   this.addEventToQueue = function(stateChangeEvent) {
     actionQueue.push(actionQueue);
     if (actionQueue.size == 1) {
-      // Assumption is that if size > 1, then handleEvents is in the call stack somewhere above. 
+      // Assumption is that if size > 1, then handleEvents is in the call stack somewhere above.
       this.handleEvents();
     }
   }
@@ -67,6 +67,8 @@ function StateChangeHandler() {
       for (let relevantStateId in relevantStateIds) {
         this.getState(relevantStateId).notify(eventData);
       }
+      
+      // Do not dequeue until we are finished handling it
       actionQueue.dequeue(1);
     }
     

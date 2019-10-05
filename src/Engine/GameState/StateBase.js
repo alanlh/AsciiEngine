@@ -21,6 +21,7 @@ class StateBase {
     this.connectedToParents = false;
   }
   
+  // Message board is for events.
   connectToMessageBoard() {
     this.container.messageBoard.requestSignUp(this.id, this.eventListenKeys);
   }
@@ -29,6 +30,7 @@ class StateBase {
     this.container.messageBoard.dropOutAll(this.id);
   }
   
+  // Parents is for other states.
   connectToParents() {
     if (!this.connectedToParents) {
       for (parentKey of this.parentKeys) {
@@ -57,7 +59,7 @@ class StateBase {
   }
   
   initializeStatus(status) {
-    // TODO: verify status
+    // TODO: verify status?
     this.status = status;
   }
   
@@ -138,6 +140,6 @@ StateBase.CALLBACKS = {
 }
 
 // TODO: is this necessary?
-const NullState = new StateBase("NULL", StateBase.PERSISTENCE.DATA, 
+const NullState = new StateBase("NULL_STATE", StateBase.PERSISTENCE.DATA, 
   StateBase.TYPES.OTHER, [], [], undefined, 
   StateBase.CALLBACKS.IGNORE, StateBase.CALLBACKS.IGNORE);
