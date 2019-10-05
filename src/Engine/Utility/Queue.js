@@ -14,7 +14,7 @@ class Queue {
   
   // Removes n (default 1) elements. Returns the top one.
   dequeue(n) {
-    let front = this.front();
+    let front = this.front;
     if (n === undefined) {
       n = 1;
     }
@@ -38,13 +38,13 @@ class Queue {
     return front;
   }
   
-  front() {
+  get front() {
     if (this._size > 0) {
       return this._storage[this._currIdx];
     }
   }
   
-  back() {
+  get back() {
     if (this._size > 0) {
       return this._storage[this._storage.length - 1];
     }
@@ -59,5 +59,9 @@ class Queue {
   
   get size() {
     return this._size;
+  }
+  
+  get empty() {
+    return this.size == 0;
   }
 }

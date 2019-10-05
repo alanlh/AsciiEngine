@@ -1,6 +1,6 @@
 "use strict";
 class StateBase {
-  constructor(id, persistence, type, parentKeys, container, update, notify) {
+  constructor(id, persistence, type, parentKeys, eventKeys, container, update, notify) {
     // The update parameter should be bound to this object already.
     this.id = id;
     this.persistence = persistence;
@@ -13,10 +13,20 @@ class StateBase {
     
     this.childKeys = [];
     
+    this.eventListenKeys = eventKeys;
+    
     this.status = StateBase.STATUS.NO_STATUS;
     this.value = StateBase.VALUES.EMPTY_VALUE;
     this.mutable = this.persistence !== StateBase.PERSISTENCE.DATA; // Default value.
     this.connectedToParents = false;
+  }
+  
+  connectToMessageBoard() {
+    this.container.messageBoard.requestSignUp(this.id, this.eventListenKeys);
+  }
+  
+  disconnectFromMessageBoard() {
+    this.container.messageBoard.dropOutAll(this.id);
   }
   
   connectToParents() {
@@ -73,6 +83,10 @@ class StateBase {
       this.notifyChildren();
     }
   }
+  
+  onReady() {
+    // A base method for what to do when everything has been loaded.
+  }
 }
 
 StateBase.PERSISTENCE = {
@@ -96,22 +110,34 @@ StateBase.TYPES = {
   QUEST_PLAYER: "Quest Player",
   QUEST_NPC: "Quest NPC",
   QUEST_DOODAD: "Quest Doodad"
+  
+  OTHER: "Other"
 }
 
 StateBase.STATUS = {
-  NO_STATUS: "No status"
+  NO_STATUS: "No status",
 }
 
 StateBase.VALUES = {
   NO_VALUE: Object.freeze({});
 }
 
+StateBase.ACTIVE = {
+  FALSE: false,
+  TRUE: true
+}
+
 StateBase.CALLBACKS = {
   IGNORE: function() {},
-  FOREACH_UPDATE: function(id, status, value) {
+  MATCH_UPDATE: function(id, status, value) {
     return this._update[id].call(this, status, value);
   },
-  FOREACH_NOTIFY: function(eventData) {
+  MATCH_NOTIFY: function(eventData) {
     return this._notify[eventData.origin].call(this, eventData);
   }
 }
+
+// TODO: is this necessary?
+const NullState = new StateBase("NULL", StateBase.PERSISTENCE.DATA, 
+  StateBase.TYPES.OTHER, [], [], undefined, 
+  StateBase.CALLBACKS.IGNORE, StateBase.CALLBACKS.IGNORE);

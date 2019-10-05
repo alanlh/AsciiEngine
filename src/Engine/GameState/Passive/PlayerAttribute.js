@@ -1,12 +1,20 @@
 class PlayerAttribute extends StateBase {
   constructor(id, container, attributeType, defaultValue, update, notify) {
     super(id, StateBase.PERSISTENCE.PASSIVE, StateBase.TYPES.ATTRIBUTE, 
-      update.keys(), container, 
-      StateBase.CALLBACKS.FOREACH_UPDATE.bind(this), 
-      StateBase.CALLBACKS.FOREACH_NOTIFY.bind(this)
+      update.keys(), notify.keys(), container, 
+      StateBase.CALLBACKS.MATCH_UPDATE.bind(this), 
+      StateBase.CALLBACKS.MATCH_NOTIFY.bind(this)
     );
       
     this.value = defaultValue;
+  }
+  
+  onReady() {
+    // Override from StateBase.
+    this.connectToParents();
+    this.connectToMessageBoard();
+    // Only certain traits can be changed by others. 
+    // Should only be limited to actual values, but not rates? (e.g. health, but not health regen rate)
   }
 }
 

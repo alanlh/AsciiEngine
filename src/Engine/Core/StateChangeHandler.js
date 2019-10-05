@@ -1,10 +1,8 @@
 "use strict";
 function StateChangeHandler() {
   // DATA FIELDS
-  let gameController;
-  
-  const UPDATE_TIME_SECS = 0.05;
-  
+  let gameController = undefined;
+    
   this.initializeController = function(gameControllerInternals) {
     gameController = gameControllerInternals;
   }
@@ -20,6 +18,8 @@ function StateChangeHandler() {
     let blankStates = {};
     blankStates = unionIntoFirst(blankStates, generateStoryStates(this), true);
     blankStates = unionIntoFirst(blankStates, generatePlayerAttributes(this), true);
+    
+    return blankStates;
   };
   
   const passiveStates = loadPassiveStates(this);
@@ -41,24 +41,34 @@ function StateChangeHandler() {
     LOGGING.ERROR("State ", id, " not found.");
   }
   
+  this.messageBoard = new MessageBoard();
+  
   this.initializeStates = function(saveStates) {
     
   }
   
   // Handling events
   
-  // let actionQueue = [];
+  let actionQueue = new Queue();
   // let lastUpdateTime = performance.now();
   
-  this.handleEvent = function(stateChangeEvent) {
-    // actionQueue.push(stateChangeEvent);
-    
-    // Check lastRenderTime. If enough time passed, evalutate.
-    // let currentTime = performance.now();
-    // if (!stateChangeEvent.evaluatedImmediately || currentTime < lastUpdateTime + UPDATE_TIME_SECS) {
-    //   return;
-    // }
-    
+  this.addEventToQueue = function(stateChangeEvent) {
+    actionQueue.push(actionQueue);
+    if (actionQueue.size == 1) {
+      // Assumption is that if size > 1, then handleEvents is in the call stack somewhere above. 
+      this.handleEvents();
+    }
+  }
+  
+  this.handleEvents = function() {
+    while (!actionQueue.empty) {
+      let eventData = actionQueue.front;
+      let relevantStateIds = this.messageBoard.getSignUpList(eventData.actionName);
+      for (let relevantStateId in relevantStateIds) {
+        this.getState(relevantStateId).notify(eventData);
+      }
+      actionQueue.dequeue(1);
+    }
     
   }
 }

@@ -3,8 +3,8 @@ class StoryState {
   constructor(id, container, storyParents, completionRequirements) {
     
     super(id, StateBase.PERSISTENCE.PASSIVE, StateBase.TYPES.STORY, 
-      storyParents.concat(completionRequirements.keys()), container, 
-      this._handleUpdate, StateBase.CALLBACKS.IGNORE);
+      storyParents, completionRequirements.keys(), container, 
+      this._handleUpdate, this._handleNotify);
     
     this.completeParents = {};
     this.remainingParents = storyParents.length;
@@ -12,6 +12,7 @@ class StoryState {
       this.completeParents[storyParentKey] = false;
     }
     
+    this.completionRequirements = completionRequirements;
     this.remainingRequirements = 0;
     this.requirementCompleted = {};
     for (let key in completionRequirements) {
@@ -32,21 +33,29 @@ class StoryState {
           
           if (this.incompleteParentCount == 0) {
             this.status = StoryState.STATUS.INPROGRESS;
+            this.disconnectFromParents();
+            this.connectToMessageBoard();
             return true;
           }
         }
       }
-    } else if (this.status == StoryState.STATUS.INPROGRESS) {
+    }
+    return false;
+  }
+  
+  _handleNotify(eventData) {
+    if (this.status == StoryState.STATUS.INPROGRESS) {
       if (id in this.completionRequirements) {
         if (!this.requirementCompleted[id]) {
-          if (this.completionRequirements[id](status, value)) {
+          // i.e. check to make sure eventData is relevant and make sure requirement not already completed.
+          if (this.completionRequirements[id](eventData)) {
             this.requirementCompleted[id] = true;
             this.remainingRequirements --;
             
             if (this.remainingRequirements == 0) {
               this.status = StoryState.STATUS.COMPLETED;
               this.mutable = false;
-              this.disconnectFromParents();
+              this.disconnectFromMessageBoard();
               return true;
             }
           }
