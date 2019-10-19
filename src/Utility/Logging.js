@@ -1,6 +1,15 @@
 "use strict";
 const LOGGING = {
+  _CALL_MAPS: {
+    ASSERT: console.assert,
+    ERROR: console.error,
+    WARN: console.warn,
+    LOG: console.log,
+    DEBUG: console.debug,
+    DEBUG_VERBOSE: console.debug
+  },
   STATUS: {
+    ASSERT: true,
     ERROR: true,
     WARN: true,
     LOG: false,
@@ -8,43 +17,7 @@ const LOGGING = {
     DEBUG_VERBOSE: false,
     PERFORMANCE: false,
   },
-  ASSERT: function(statement) {
-    if (LOGGING.STATUS.ERROR && !statement) {
-      let message = Array.prototype.slice.call(arguments, 1);
-      console.error.apply(console, message);
-    }
-  },
-  ERROR: function() {
-    if (LOGGING.STATUS.ERROR) {
-      let message = Array.prototype.slice.call(arguments, '');
-      console.error.apply(console, message);
-    }
-  },
-  WARN: function() {
-    if (LOGGING.STATUS.WARN) {
-      let message = Array.prototype.slice.call(arguments, '');
-      console.warn.apply(console, message);
-    }
-  },
-  LOG: function() {
-    if (LOGGING.STATUS.LOG) {
-      let message = Array.prototype.slice.call(arguments, '');
-      console.log.apply(console, message);
-    }
-  },
-  DEBUG: function() {
-    if (LOGGING.STATUS.DEBUG) {
-      let message = Array.prototype.slice.call(arguments, '');
-      console.debug.apply(console, message);
-    }
-  },
-  DEBUG_VERBOSE: function() {
-    if (LOGGING.STATUS.DEBUG_VERBOSE) {
-      // Debugging information, but for heavily repeated messages (e.g. rendering)
-      let message = Array.prototype.slice.call(arguments, '');
-      console.debug.apply(console, message);
-    }
-  },
+  IGNORE: function() {return;},
   PERFORMANCE: (function() {
     let time = {};
     let levels = {};
@@ -91,5 +64,15 @@ const LOGGING = {
   })(),
 };
 
+for (let logType in LOGGING._CALL_MAPS) {
+  Object.defineProperty(LOGGING, logType, {
+    get: function() {
+      if (LOGGING.STATUS[logType]) {
+        return LOGGING._CALL_MAPS[logType];
+      }
+      return LOGGING.IGNORE;
+    },
+  });
+}
 Object.seal(LOGGING.STATUS);
 Object.freeze(LOGGING);
