@@ -7,16 +7,10 @@ const LOGGING = {
     WARN: console.warn,
     LOG: console.log,
     DEBUG: console.debug,
-    DEBUG_VERBOSE: console.debug
+    DEBUG_VERBOSE: console.debug,
   },
   STATUS: {
-    ASSERT: true,
-    ERROR: true,
-    WARN: true,
-    LOG: false,
-    DEBUG: false,
-    DEBUG_VERBOSE: false,
-    PERFORMANCE: false,
+    PERFORMANCE: false
   },
   IGNORE: function() {return;},
   PERFORMANCE: (function() {
@@ -32,7 +26,7 @@ const LOGGING = {
     return {
       START: function(key, level) {
         // TODO: Make sure level is a number. 
-        if (level == undefined || level <= performanceLevel) {
+        if (LOGGING.STATUS.PERFORMANCE && level == undefined || level <= performanceLevel) {
           time[key] = performance.now();
           if (level != undefined) {
             levels[key] = level;
@@ -41,7 +35,7 @@ const LOGGING = {
       },
       STOP: function(key) {
         // TODO: Keep safe if performance level changes. 
-        if (LOGGING.PERFORMANCE && levels[key] != undefined && levels[key] <= performanceLevel) {
+        if (LOGGING.STATUS.PERFORMANCE && levels[key] != undefined && levels[key] <= performanceLevel) {
           let duration = performance.now() - time[key];
           if (key) {
             console.log("Performance: ", key, ": ", duration);
@@ -66,14 +60,26 @@ const LOGGING = {
 };
 
 for (let logType in LOGGING._CALL_MAPS) {
-  Object.defineProperty(LOGGING, logType, {
+  Object.defineProperty(LOGGING.STATUS, logType, {
     get: function() {
-      if (LOGGING.STATUS[logType]) {
-        return LOGGING._CALL_MAPS[logType];
+      return undefined;
+    },
+    set: function(status) {
+      if (status) {
+        LOGGING[logType] = LOGGING._CALL_MAPS[logType];
+      } else {
+        LOGGING[logType] = LOGGING.IGNORE;
       }
-      return LOGGING.IGNORE;
     },
   });
 }
+
+LOGGING.STATUS.ASSERT = true;
+LOGGING.STATUS.ERROR = true;
+LOGGING.STATUS.WARN = true;
+LOGGING.STATUS.LOG = false;
+LOGGING.STATUS.DEBUG = false;
+LOGGING.STATUS.DEBUG_VERBOSE = false;
+
 Object.seal(LOGGING.STATUS);
-Object.freeze(LOGGING);
+Object.seal(LOGGING);
