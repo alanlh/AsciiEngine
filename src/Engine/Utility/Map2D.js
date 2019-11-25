@@ -5,7 +5,7 @@ class Map2D {
     this._size = 0;
   }
   
-  insert(vec2, id) {
+  insert(id, vec2) {
     if (!vec2.x in this._data) {
       this._data[vec2.x] = {};
     }
@@ -26,16 +26,20 @@ class Map2D {
   }
   
   get(vec2) {
-    if (vec2.x in this._data && vec2.y in this._data[x]) {
+    if (this.contains(vec2)) {
       return this._data[x][y];
     }
   }
   
-  remove(vec2) {
+  removePoint(vec2) {
     if (!this.contains(vec2)) {
       return false;
     }
-    this._idMap[this._data[vec2.x][vec2.y]].remove(vec2);
+    let correspondingId = this._data[vec2.x][vec2.y];
+    this._idMap[correspondingId].remove(vec2);
+    if (this._idMap[correspondingId].size == 0) {
+      delete this._idMap[correspondingId];
+    }
     delete this._data[vec2.x][vec2.y];
     this.size --;
     for (let key in this._data[vec2.x]) {
@@ -44,6 +48,23 @@ class Map2D {
     }
     delete this._data[vec2.x];
     return true;
+  }
+  
+  removeId(id) {
+    if (id in this._idMap) {
+      for (let pt of this._idMap[id]) {
+        if (this.contains(pt)) {
+          delete this._data[vec2.x][vec2.y];
+          this.size --;
+          if (this._data[vec2.x].length == 0) {
+            delete this._data[vec2.x];
+          }
+        }
+      }
+      let idVecs = this._idMap[id];
+      delete this._idMap[id];
+      return idVecs;
+    }
   }
   
   clear() {
@@ -58,15 +79,14 @@ class Map2D {
   }
   
   unionWith(other) {
-    for (let x in other_.data) {
+    for (let x in other.data) {
       if (!(x in this._data)) {
         this._data[x] = {};
       }
-      for (let y in other_.data) {
+      for (let y in other.data) {
         if (!(y in this._data)) {
           // Only union elements that aren't already in the map.
-          this._data[x][y] = other._data[x][y];
-          this._size ++;
+          this.insert(other.data[x][y], {x: x, y: y});
         }
       }
     }

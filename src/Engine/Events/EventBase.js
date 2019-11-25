@@ -1,12 +1,13 @@
 "use strict";
 class EventBase {
-  constructor(id, type, controller, data, callback, repeatInformation) {
+  constructor(id, eventClass, type, controller, data, callback, repeatInformation) {
     // Needs a name variable. 
     this.id = id;
+    this.class = eventClass; // State Change or Display Change? 
     this.type = type;
     this.controller = controller;
     this.data = data; // Data format depends on what type of event
-    this.callback = callback.bind(this);
+    this.callback = callback;
     this.repeatInformation = EventBase.createRepeatInformation(repeatInformation);
     
     this.paused = false;

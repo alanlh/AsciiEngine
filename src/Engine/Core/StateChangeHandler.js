@@ -5,6 +5,7 @@ function StateChangeHandler() {
     
   this.initializeController = function(gameControllerInternals) {
     gameController = gameControllerInternals;
+    this.addEvent = gameController.addEvent;
   }
   
   // States
@@ -16,8 +17,8 @@ function StateChangeHandler() {
   
   const loadPassiveStates = function(this) {
     let blankStates = {};
-    blankStates = unionIntoFirst(blankStates, generateStoryStates(this), true);
-    blankStates = unionIntoFirst(blankStates, generatePlayerAttributes(this), true);
+    blankStates = UtilityMethods.unionIntoFirst(blankStates, generateStoryStates(this), true);
+    blankStates = UtilityMethods.unionIntoFirst(blankStates, generatePlayerAttributes(this), true);
     
     return blankStates;
   };
@@ -39,6 +40,16 @@ function StateChangeHandler() {
       return activeStateManager.get(id);
     }
     LOGGING.ERROR("State ", id, " not found.");
+  }
+  
+  this.addEvent = undefined;
+  
+  this.addActiveState = function(newActiveState) {
+    activeStateManager.create(newActiveState);
+  }
+  
+  this.removeActiveState = function(activeStateId) {
+    activeStateManager.remove(activeStateId);
   }
   
   this.messageBoard = new MessageBoard();

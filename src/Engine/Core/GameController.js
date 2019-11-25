@@ -9,12 +9,15 @@ function GameController() {
   const displayChangeHandler = new DisplayChangeHandler();
   
   const gameControllerInternals = {
-    triggerStateChange: function(stateChangeEvent) {
-      stateChangeHandler.addEventToQueue(stateChangeEvent);
-    }, 
-    requestDisplayChange: function(displayChangeEvent) {
-      displayChangeHandler.handleEvent(displayChangeEvent);
-    }
+    triggerEvent: function(event) {
+      if (event.class = EventBase.STATE_CHANGE_EVENT) {
+        stateChangeHandler.addEventToQueue(stateChangeEvent);
+      } else if (event.class = EventBase.DISPLAY_CHANGE_EVENT) {
+        displayChangeHandler.handleEvent(displayChangeEvent);
+      } else {
+        LOGGING.WARN("Event class not recognized, " event);
+      }
+    },
   };
   
   stateChangeHandler.initializeController(gameControllerInternals);

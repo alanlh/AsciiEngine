@@ -17,6 +17,14 @@ class Set2D {
     return (vec2.x in this._data && vec2.y in this._data[vec2.x]);
   }
   
+  *[Symbol.iterator]() {
+    for (let x in this._data) {
+      for (let y of this._data[x]) {
+        yield {x: x, y: y};
+      }
+    }
+  }
+  
   copy(other) {
     this.clear();
     this.unionWith(other);

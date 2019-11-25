@@ -25,6 +25,12 @@ let UtilityMethods = {
       }
     }
     return true;
+  },
+  generateRandom: function() {
+    return Math.random();
+  },
+  generateRandomInt: function(a, b) {
+    return a + Math.floor(Math.random() * (b - a));
   }
 };
 

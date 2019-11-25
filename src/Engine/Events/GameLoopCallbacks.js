@@ -28,7 +28,7 @@ class GameLoopCallbacks {
   fire() {
     for (let callbackId in this.collection) {
       let eventData = this.collection[callbackId];
-      this.controller.triggerStateChange(eventData);
+      this.controller.triggerEvent(eventData);
       // Check if eventData is repeating, etc. If not remove. 
     }
   }

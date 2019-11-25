@@ -17,7 +17,7 @@ class StateBase {
     
     this.status = StateBase.STATUS.NO_STATUS;
     this.value = StateBase.VALUES.EMPTY_VALUE;
-    this.mutable = this.persistence !== StateBase.PERSISTENCE.DATA; // Default value.
+    this.mutable = this.persistence !== StateBase.PERSISTENCE.DATA; // TODO: is this needed
     this.connectedToParents = false;
   }
   
@@ -86,6 +86,10 @@ class StateBase {
     }
   }
   
+  emitEvent(eventData) {
+    this.container.addEvent(eventData);
+  }
+  
   onReady() {
     // A base method for what to do when everything has been loaded.
   }
@@ -100,15 +104,16 @@ StateBase.PERSISTENCE = {
 StateBase.TYPES = {
   // Data
   NPC_ATTRIBUTES: "Npc Attributes",
-  MAP_DATA: "Map Data",
+  QUEST_DATA: "Quest Data",
   
   // Passive
   STORY: "Story"
   ATTRIBUTE: "Player Attribute",
-  DATA: "Game Data",
+  DATA: "Game Data", // Things like current active screen, current location, etc. 
   MISC: "Miscellaneous",
   
   // Active
+  QUEST_MANAGER: "Quest Manager", // Manages all the other quest-related states. Handles things like collision detection
   QUEST_PLAYER: "Quest Player",
   QUEST_NPC: "Quest NPC",
   QUEST_DOODAD: "Quest Doodad"
