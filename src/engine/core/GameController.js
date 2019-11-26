@@ -1,14 +1,25 @@
 "use strict";
-class GameController {
-  constructor() {
+(function() {
+  let game = (function() {
     let messageBoard = new MessageBoard();
-    
-    // Create all components
-    
-    // Loop Manager
-  }
   
-  takeInMessage(message) {
-    // For testing purposes.
-  }
-}
+    let components = loadAllComponents();
+    
+    let gameOngoing = false;
+    
+    return {
+      start(): function() {
+        for (let component in components) {
+          component.init();
+        }
+        
+        gameOngoing = true;
+      }, 
+      takeInMessage: function(origin, tags, body) {
+        messageBoard.post(new Message(origin, tags, body));
+      }
+    }
+  })();
+  
+  game.start();
+})();

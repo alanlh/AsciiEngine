@@ -2,7 +2,9 @@ class MessageBoard {
   constructor() {
     this.channelSubscribers = {}; // Maps channels to their subscribers
     this.subscriptions = {}; // Maps ids to set of subscriptions
-    this.receivers = {}; // Maps each id to where it receives messages. 
+    this.receivers = {}; // Maps each id to where it receives messages.
+    
+    this.messageQueue = new Queue();
   }
   
   getAllChannels() {
@@ -85,19 +87,29 @@ class MessageBoard {
     delete this.receivers[id]
   }
   
-  // Posts message to all Ids who have signed for any of the channels in 
+  // Posts message to all ids who have signed for the channel/tag.
   post(message) {
-    // TODO: Is there a more efficient way to do this (without creating new Set object)?
-    let combinedIds = new Set();
-    for (let tag of message.tags) {
-      if (tag in this.channelSubscribers) {
-        for (let id of this.channelSubscribers[tag]) {
-          combinedIds.add(id);
+    this.messageQueue.enqueue(message);
+    if (this.messageQueue.size > 0) {
+      // There are already messages in the queue, 
+      // which means we are already handling stuff
+      return;
+    }
+    // TODO: Consider flushing queue only in certain types of events.
+    // TODO: Consider making messages handled much slower, 8 or 12. 
+    // TODO: Does this method actually work?
+    while (this.messageQueue.size > 0) {
+      let currMessage = this.messageQueue.front;
+      
+      currMessage.log(LOGGING.LOG);
+      
+      if (currMessage.tag in this.channelSubscribers) {
+        for (let id of this.channelSubscribers[currMessage.tag]) {
+          this.receivers[id](message);
         }
       }
-    }
-    for (let id of combinedIds) {
-      this.receivers[id](message);
+      
+      this.messageQueue.dequeue();
     }
   }
 }
