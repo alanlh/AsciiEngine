@@ -5,6 +5,22 @@ class MessageBoard {
     this.receivers = {}; // Maps each id to where it receives messages.
     
     this.messageQueue = new Queue();
+    
+    this.keepMessageHistory = false;
+    this.messageHistory = [];
+  }
+  
+  setMessageHistory(truth) {
+    if (truth) {
+      this.keepMessageHistory = true;
+    } else {
+      this.keepMessageHistory = false;
+    }
+  }
+  
+  flushMessageHistory() {
+    LOGGING.LOG(this.messageHistory);
+    this.messageHistory = [];
   }
   
   getAllChannels() {
@@ -84,13 +100,17 @@ class MessageBoard {
         delete this.channelSubscribers[channel];
       }
     }
-    delete this.receivers[id]
+    delete this.receivers[id];
   }
   
   // Posts message to all ids who have signed for the channel/tag.
   post(message) {
     this.messageQueue.enqueue(message);
-    if (this.messageQueue.size > 0) {
+    if (this.keepMessageHistory) {
+      this.messageHistory.push(message);
+    }
+    // TODO: Verify if correct. Originally 0...?
+    if (this.messageQueue.size > 1) {
       // There are already messages in the queue, 
       // which means we are already handling stuff
       return;

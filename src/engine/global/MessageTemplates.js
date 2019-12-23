@@ -16,7 +16,7 @@ const MessageTemplate = {
       {
         key: key, // Used by 
         measureBySeconds: measureBySeconds,
-        count: count
+        duration: duration
       }
     )
   },

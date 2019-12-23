@@ -1,6 +1,7 @@
 "use strict";
 // TODO: Maybe switch to Heap implementation? For normal Queue as well if we don't need arbitrary access
 // Current implementation inserts into the middle of array, which is bad.
+// TODO: Switch name to Heap...? 
 function SortedQueue extends Queue {
   constructor(sorter) {
     super();
