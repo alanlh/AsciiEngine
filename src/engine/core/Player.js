@@ -19,19 +19,12 @@ class Player extends ComponentBase {
   }
   
   init() {
-    this.messageBoard.signup(this.id, this.receiveMessage);
-    
-    this.messageBoard.subscribe(this.id, [
+    super.init({
       // Attacked
       // Resource Update
       // Item Update
-    ]);
-    
-    // Anything else that needs to be done?
-  }
-  
-  receiveMessage(message) {
-    // TODO:
-    
+    })
+    // TODO: Anything else that needs to be done?
+    // Default values, etc. 
   }
 }

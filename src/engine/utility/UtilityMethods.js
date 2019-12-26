@@ -30,8 +30,11 @@ let UtilityMethods = {
     for (let key in defaultArgs) {
       if (key in passedArgs) {
         defaultArgs[key] = passedArgs[key];
+      } else if (defaultArgs[key] == undefined) {
+        LOGGING.WARN("Argument ", key, " is not passed in: ", passedArgs);
       }
     }
+    return defaultArgs;
   }
   generateRandom: function() {
     return Math.random();

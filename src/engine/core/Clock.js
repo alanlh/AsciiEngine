@@ -12,21 +12,20 @@ class Clock extends MessageBoard {
   }
   
   init() {
-    this.messageBoard.signup(this.id, this.receiveMessage);
-    
-    this.messageBoard.subscribe(this.id, [
-      MessageTags.GameStatus,
-      MessageTags.SpeedChange,
-      MessageTags.TimerRequest
-    ]);
+    super.init({
+      // Game Play/Pause
+      // TODO: Implement. Mostly necessary for testing? 
+      MessageTags.GameStatus: UtilityMethods.IGNORE,
+      // TODO: Speed change. Maybe?
+      MessageTags.SpeedChange: UtilityMethods.IGNORE,
+      MessageTags.TimerRequest: this.handleTimerRequest
+    });
     
     this.start();
   }
   
   receiveMessage(message) {
     if (message.tag === MessageTags.GameStatus) {
-      // Game Play/Pause
-      // TODO: Implement. Mostly necessary for testing? 
     } else if (message.tag === MessageTags.SpeedChange) {
       // TODO: Speed change. Maybe?
     } else if (message.tag === MessageTags.TimerRequest) {

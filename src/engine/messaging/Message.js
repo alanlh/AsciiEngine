@@ -1,5 +1,5 @@
 class Message {
-  constructor(origin, tags, body) {
+  constructor(origin, tag, body) {
     // TODO: Create deep copies.
     this.origin = origin;
     this.tag = tag;
