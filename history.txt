@@ -1,0 +1,10 @@
+10/1/19
+Started progress on game loop
+
+9/21-9/30/19
+Created outline of code
+Made progress structuring state objects and operations.
+
+
+09/21/19
+Broke ground. Started with StoryState.js.
