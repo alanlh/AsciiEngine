@@ -37,7 +37,7 @@ function Scene(data) {
   for (let y = 0; y < this.boundingBoxDimens.y; y ++) {
     let rowDomElement = document.createElement("div");
     _domElementReferences.push(new RowData(rowDomElement, this.boundingBoxDimens.x));
-    rowDomElement.classList.add("scene-" + this.id + "-row");
+    //rowDomElement.classList.add("scene-" + this.id + "-row");
     _domContainer.append(rowDomElement);
   }
   
