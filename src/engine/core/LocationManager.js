@@ -11,8 +11,8 @@ class LocationManager extends ComponentBase {
       // TODO: ???
       // Mainly player inputs...
       // TODO: ClockTick not needed, since individual screens have access to message board? 
-      MessageTags.ClockTick: UtilityMethods.IGNORE,
-      MessageTags.ChangeActiveScreen: UtilityMethods.IGNORE
+      [MessageTags.ClockTick]: UtilityMethods.IGNORE,
+      [MessageTags.ChangeActiveScreen]: UtilityMethods.IGNORE
     });
     
     this.loadPersistentScreens();

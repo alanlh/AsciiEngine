@@ -1,42 +1,33 @@
-class Clock extends MessageBoard {
-  constructor(messageBoard, cyclesPerRealSecond, cyclesPerFrame) {
-    super("CLOCK", messageBoard);
+class Clock extends ComponentBase {
+  constructor(messageBoard) {
+    super(ComponentNames.Clock, messageBoard);
     this.cycles = 0;
     this.intervalId = -1;
     this.playing = false;
     
-    this.cyclesPerRealSecond = cyclesPerRealSecond;
-    this.cyclesPerFrame = cyclesPerFrame;
+    // TODO: Change this to init. 
+    this.parameters.cyclesPerRealSecond = 8; // Default Value
+    this.parameters.cyclesPerFrame = 1; // TODO: What is this doing?
     
-    this.timers = new sortedQueue(msg => {return msg.body.alertCycle});
+    this.timers = new SortedQueue(msg => {return msg.body.alertCycle});
   }
   
   init() {
     super.init({
       // Game Play/Pause
-      // TODO: Implement. Mostly necessary for testing? 
-      MessageTags.GameStatus: UtilityMethods.IGNORE,
+      // TODO: Implement. Mostly necessary for testing?
+      [MessageTags.GameStatus]: UtilityMethods.IGNORE,
       // TODO: Speed change. Maybe?
-      MessageTags.SpeedChange: UtilityMethods.IGNORE,
-      MessageTags.TimerRequest: this.handleTimerRequest
+      [MessageTags.SpeedChange]: UtilityMethods.IGNORE,
+      [MessageTags.TimerRequest]: this.handleTimerRequest
     });
     
     this.start();
   }
   
-  receiveMessage(message) {
-    if (message.tag === MessageTags.GameStatus) {
-    } else if (message.tag === MessageTags.SpeedChange) {
-      // TODO: Speed change. Maybe?
-    } else if (message.tag === MessageTags.TimerRequest) {
-      this.handleTimerRequest(message);
-    } else {
-      this.ERROR_MessageNotRecognized(message);
-    }
-  }
-  
   start() {
-    this.intervalId = window.setInterval(this.postTick, this.cyclesPerRealSecond);
+    // TODO: Replace with lambda?
+    this.intervalId = window.setInterval(this.postTick.bind(this), 1000 / this.parameters.cyclesPerRealSecond);
     this.playing = true;
   }
   
@@ -50,18 +41,18 @@ class Clock extends MessageBoard {
     // Not handling integer overflow.
     // Would need to leave it running for 2-3 years for it to start breaking.
     this.cycles += 1;
-    
     this.messageBoard.post(new Message(
       this.id,
       MessageTags.ClockTick, 
       {
         cycleNumber: this.cycles,
-        seconds: Math.floor(this.cycles / this.cyclesPerFrame),
-        remainder: (this.cycles % this.cyclesPerFrame)
+        seconds: Math.floor(this.cycles / this.parameters.cyclesPerRealSecond),
+        remainder: (this.cycles % this.parameters.cyclesPerRealSecond)
       }
     ));
     
-    while (sortedQueue.front.body.alertCycle <= this.cycles) {
+    while (this.timers.size > 0 && 
+      this.timers.front.body.alertCycle <= this.cycles) {
       // TODO: Check if ever less than.
       this.messageBoard.post(this.timers.dequeue());
     }

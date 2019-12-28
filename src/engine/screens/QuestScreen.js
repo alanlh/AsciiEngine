@@ -3,8 +3,8 @@ class QuestScreen extends ScreenBase {
     super(name, type, manager, settings);
     
     this.settings = UtilityMethods.initializeArgs({
-      "background": undefined
-      "boundingBox": Vector2.create(0, 0);
+      "background": undefined,
+      "boundingBox": Vector2.create(0, 0)
     }, settings);
     
     // Quests need to support collision detection. 

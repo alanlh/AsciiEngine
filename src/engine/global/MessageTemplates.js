@@ -5,18 +5,19 @@ const MessageTemplate = {
   /** Timer and game state related **/
   // TODO: Move this somewhere else
   GameState: {
-    PAUSED = 0,
-    PLAYING = 1,
+    PAUSED: 0,
+    PLAYING: 1
   },
   
-  TimerRequest: function(component, key, measureBySeconds, count) {
+  TimerRequest: function(component, key, measureBySeconds, count, callback) {
     return new Message(
       component.id, // Use the id to determine what to send back. 
       MessageTags.TimerRequest,
       {
         key: key, // Used by 
         measureBySeconds: measureBySeconds,
-        duration: duration
+        duration: duration,
+        callback: callback
       }
     )
   },

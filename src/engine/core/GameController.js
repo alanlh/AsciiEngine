@@ -1,25 +1,54 @@
 "use strict";
-(function() {
-  let game = (function() {
+class GameController {
+  constructor(divId) {
     let messageBoard = new MessageBoard();
-  
-    let components = loadAllComponents();
+    
+    let clock = new Clock(messageBoard);
+    console.log(clock);
+    let display = new Display(messageBoard);
+    let locationManager = new LocationManager(messageBoard);
+    
+    let components = UtilityMethods.insertWithKey(
+      {}, "id", 
+      [clock, display, locationManager]
+    );
     
     let gameOngoing = false;
-    
-    return {
-      start(): function() {
-        for (let component in components) {
-          component.init();
-        }
-        
-        gameOngoing = true;
-      }, 
-      takeInMessage: function(origin, tags, body) {
-        messageBoard.post(new Message(origin, tags, body));
+    // TODO: Object.defineProperty
+    this.start = function() {
+      for (let componentId in components) {
+        components[componentId].init();
       }
-    }
-  })();
-  
-  game.start();
-})();
+      
+      gameOngoing = true;
+    };
+    
+    // TODO: Object.defineProperty
+    this.loadComponent = function(component) {
+      
+    };
+
+    this.takeInMessage = function(origin, tags, body) {
+      // Mainly for testing.
+      messageBoard.post(new Message(origin, tags, body));
+    };
+    
+    this.loadConfig = function(configValues) {
+      for (let componentKey in configValues) {
+        components[componentKey].applyParameters(configValues[componentKey]);
+      }
+    };
+    
+    this.loadSpriteData = function(spriteDataFile) {
+      
+    };
+    
+    this.loadStoryData = function(storyData) {
+      
+    };
+    
+    this.loadSave = function(saveData) {
+      
+    };
+  }
+}

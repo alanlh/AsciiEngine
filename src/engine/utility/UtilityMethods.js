@@ -15,6 +15,7 @@ let UtilityMethods = {
     for (let object of objectsArray) {
       container[object[keyName]] = object;
     }
+    return container;
   },
   checkForKeys: function(object, keys, returnCopy, logMethod) {
     logMethod = logMethod || UtilityMethods.IGNORE;
@@ -35,7 +36,7 @@ let UtilityMethods = {
       }
     }
     return defaultArgs;
-  }
+  },
   generateRandom: function() {
     return Math.random();
   },

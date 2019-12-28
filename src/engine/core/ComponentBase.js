@@ -3,22 +3,35 @@ class ComponentBase {
     this.id = id;
     this.messageBoard = messageBoard;
     this.messageHandlers = undefined;
+    // Settings that should be kept constant throughout the game.
+    // TODO: Keep track of accepted keys, so that applyParameters only sets those.
+    this.parameters = {};
   }
   
   // Data that loads after the game has started
   init(messageHandlers) {
-    this.messageBoard.signup(this.id, this.receiveMessage);
+    // TODO: Replace with lambda function?
+    this.messageBoard.signup(this.id, this.receiveMessage.bind(this));
     this.messageBoard.subscribe(this.id, Object.keys(messageHandlers));
-    this.messageHandlers = messageHandlers;    
+    this.messageHandlers = messageHandlers;
   }
   
   receiveMessage(message) {
     if (message.tag in this.messageHandlers) {
-      this.messageHandlers[message.tag](message);
+      // TODO: Find a way to avoid .call, performance?
+      // Is it better to replace this with a class lambda function?
+      // https://stackoverflow.com/questions/31362292/how-to-use-arrow-functions-public-class-fields-as-class-methods
+      // https://medium.com/@charpeni/arrow-functions-in-class-properties-might-not-be-as-great-as-we-think-3b3551c440b1
+      this.messageHandlers[message.tag].call(this, message);
     } else {
-      // TODO: Figure out whether "this" returns the base or derived object
-      // Is it okay to just print the ID?
+      // "this" is the derived object.
       LOGGING.ERROR("Message ", message, " is not recognized by ", this);
+    }
+  }
+  
+  applyParameters(params) {
+    for (let key in params) {
+      this.parameters[key] = params[key];
     }
   }
   

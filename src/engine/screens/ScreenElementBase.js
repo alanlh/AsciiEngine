@@ -33,38 +33,32 @@ class ScreenElementBase {
       topLeft: x, y coordinates within the sceen. Up to display to offset by screen x, y.
       stateKey: The key which to set the AsciiEngine element.
       visible: true or false.
-      Remove: True if should remove. Otherwise shouldn't even be present.
+      shouldRemove: True if should remove. Otherwise shouldn't even be present.
     **/
     
-    // TODO: This will need to be overridden in DataHolders, since text may change arbitrarily.
-    
+    // TODO: This should be overridden in DataHolders, since text may change arbitrarily.
     let renderDetails = {};
     if (!this.renderedBefore) {
       renderDetails.firstRender = this.spriteId;
       this.renderedBefore = true;
     }
-    
     if (this.topLeftChanged) {
       renderDetails.topLeft = Vector2.copy(this.topLeft);
       this.topLeftChanged = false;
     }
-    
     if (this.stateChanged) {
       renderDetails.stateKey = this.state;
       this.stateChanged = false;
     }
-    
     if (this.visibilityChanged) {
       renderDetails.visible = this.visible;
       this.visibilityChanged = false;
     }
-    
     if (this.markedForRemoval) {
       renderDetails.shouldRemove = true;
       // This field is to let the screen know this element should be removed.
       this.removed = true;
     }
-    
     return renderDetails;
   }
 }

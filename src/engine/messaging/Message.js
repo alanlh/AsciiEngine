@@ -9,6 +9,6 @@ class Message {
   }
   
   log(loggingMethod) {
-    loggingMethod("Origin: ", origin, "\nTag: ", tag, "\nBody: ", body);
+    loggingMethod("Origin: ", this.origin, "\nTag: ", this.tag, "\nBody: ", this.body);
   }
 }

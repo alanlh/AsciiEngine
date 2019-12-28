@@ -1,4 +1,11 @@
 "use strict";
+// TODO: Move this to some centralized location?
+const ComponentNames = {
+  Clock: "CLOCK",
+  Display: "DISPLAY",
+  Locationmanager: "LOCATION_MANAGER",
+}
+
 const MessageTags = {
   // A single place to organize all these...
   ClockTick: "CLOCK_TICK", // Timer --> All
@@ -10,5 +17,4 @@ const MessageTags = {
   
   BLANK: "BLANK"
 }
-
 Object.freeze(MessageTags);
