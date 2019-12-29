@@ -1,33 +1,65 @@
 <html>
   <head>
-    <script src="src/Utility/Logging.js"></script>
-    <script src="src/Utility/Vector2.js"></script>
-    <script src="src/Utility/Parse.js"></script>
+    <script src="src/utility/Logging.js"></script>
+    <script src="src/utility/Vector2.js"></script>
+    <script src="src/utility/Parse.js"></script>
+    <script src="src/utility/Set2D.js"></script>
+    <script src="src/utility/Map2D.js"></script>
+    <script src="src/utility/CollisionDetector.js"></script>
+    <script src="src/utility/Queue.js"></script>
+    <script src="src/utility/SortedQueue.js"></script>
+    <script src="src/utility/UtilityMethods.js"></script>
+
+    <script src="src/graphics/modules/BaseModule.js"></script>
+    <script src="src/graphics/modules/EventModule.js"></script>
+    <script src="src/graphics/modules/EventHandlerModule.js"></script>
+    <script src="src/graphics/modules/CoreModule.js"></script>
+    <script src="src/graphics/modules/FormattingModule.js"></script>
     
-    <script src="src/Modules/BaseModule.js"></script>
-    <script src="src/Modules/EventModule.js"></script>
-    <script src="src/Modules/EventHandlerModule.js"></script>
-    <script src="src/Modules/CoreModule.js"></script>
-    <script src="src/Modules/FormattingModule.js"></script>
+    <script src="src/graphics/data/EventData.js"></script>
+    <script src="src/graphics/data/CellData.js"></script>
+    <script src="src/graphics/data/RowData.js"></script>
+    <script src="src/graphics/data/PixelData.js"></script>
     
-    <script src="src/Data/EventData.js"></script>
-    <script src="src/Data/CellData.js"></script>
-    <script src="src/Data/RowData.js"></script>
-    <script src="src/Data/PixelData.js"></script>
+    <script src="src/graphics/core/Layer.js"></script>
+    <script src="src/graphics/core/Element.js"></script>
+    <script src="src/graphics/core/ContainerLayer.js"></script>
+    <script src="src/graphics/core/ConfigurationLayer.js"></script>
+    <script src="src/graphics/core/BaseLayer.js"></script>
+    <script src="src/graphics/core/Scene.js"></script>
+    <script src="src/graphics/core/TextLayer.js"></script>
+    <script src="src/graphics/core/TextBox.js"></script>
+
+    <script src="src/engine/global/GlobalNames.js"></script>
+    <script src="src/engine/global/MessageTemplates.js"></script>
+
+    <script src="src/engine/messaging/Message.js"></script>
+    <script src="src/engine/messaging/MessageBoard.js"></script>
+    <script src="src/engine/messaging/PersistentData.js"></script>
+
+    <script src="src/engine/core/GameController.js"></script>
+    <script src="src/engine/core/ComponentBase.js"></script>
+    <script src="src/engine/core/Display.js"></script>
+    <script src="src/engine/core/Clock.js"></script>
+    <script src="src/engine/core/DataRetriever.js"></script>
+    <script src="src/engine/core/LocationManager.js"></script>
+
+    <script src="src/engine/screens/ScreenBase.js"></script>
+    <script src="src/engine/screens/ScreenElementBase.js"></script>
+    <script src="src/engine/screens/DataHolder.js"></script>
+    <script src="src/engine/screens/MenuScreen.js"></script>
+    <script src="src/engine/screens/QuestElement.js"></script>
+    <script src="src/engine/screens/QuestScreen.js"></script>
     
-    <script src="src/Core/Layer.js"></script>
-    <script src="src/Core/Element.js"></script>
-    <script src="src/Core/ContainerLayer.js"></script>
-    <script src="src/Core/ConfigurationLayer.js"></script>
-    <script src="src/Core/BaseLayer.js"></script>
-    <script src="src/Core/Scene.js"></script>
-    <script src="src/Core/TextLayer.js"></script>
-    <script src="src/Core/TextBox.js"></script>
+    <script src="demo/graphics/PublicDemo.js"></script>
+    <link rel="stylesheet" href="demo/graphics/PublicDemo.css">
     
-    <script src="Demos/PublicDemo.js"></script>
-    <link rel="stylesheet" href="Demos/PublicDemo.css">
+    <script src="demo/engine/config.js"></script>
+    <script src="demo/engine/demo_main.js"></script>
   </head>
   <body>
+    
+    
     <h3>Text and HTML objects</h3>
     <div id="interactiveDialogue"></div>
     <h3>File Parsing Example</h3>

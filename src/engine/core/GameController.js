@@ -4,7 +4,6 @@ class GameController {
     let messageBoard = new MessageBoard();
     
     let clock = new Clock(messageBoard);
-    console.log(clock);
     let display = new Display(messageBoard);
     let locationManager = new LocationManager(messageBoard);
     

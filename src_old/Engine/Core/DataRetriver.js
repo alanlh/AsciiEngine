@@ -1,5 +1,0 @@
-class DataRetriever {
-  
-}
-
-DataRetriever.EMPTY = "";
