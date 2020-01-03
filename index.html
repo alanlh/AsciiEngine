@@ -2,6 +2,7 @@
   <head>
     <script src="src/utility/Logging.js"></script>
     <script src="src/utility/Vector2.js"></script>
+    <script src="src/utility/BoundingBox.js"></script>
     <script src="src/utility/Parse.js"></script>
     <script src="src/utility/Set2D.js"></script>
     <script src="src/utility/Map2D.js"></script>
@@ -37,29 +38,30 @@
     <script src="src/engine/messaging/MessageBoard.js"></script>
     <script src="src/engine/messaging/PersistentData.js"></script>
 
-    <script src="src/engine/core/GameController.js"></script>
     <script src="src/engine/core/ComponentBase.js"></script>
     <script src="src/engine/core/Display.js"></script>
     <script src="src/engine/core/Clock.js"></script>
     <script src="src/engine/core/DataRetriever.js"></script>
     <script src="src/engine/core/LocationManager.js"></script>
+    <script src="src/engine/core/StoryManager.js"></script>
+    <script src="src/engine/core/GameController.js"></script>
 
-    <script src="src/engine/screens/ScreenBase.js"></script>
-    <script src="src/engine/screens/ScreenElementBase.js"></script>
-    <script src="src/engine/screens/DataHolder.js"></script>
-    <script src="src/engine/screens/MenuScreen.js"></script>
-    <script src="src/engine/screens/QuestElement.js"></script>
-    <script src="src/engine/screens/QuestScreen.js"></script>
+    <script src="src/engine/panels/PanelBase.js"></script>
+    <script src="src/engine/panels/PanelElementBase.js"></script>
+    <script src="src/engine/panels/DataHolder.js"></script>
+    <script src="src/engine/panels/MenuPanel.js"></script>
+    <script src="src/engine/panels/QuestElement.js"></script>
+    <script src="src/engine/panels/QuestPanel.js"></script>
     
     <script src="demo/graphics/PublicDemo.js"></script>
     <link rel="stylesheet" href="demo/graphics/PublicDemo.css">
     
     <script src="demo/engine/config.js"></script>
-    <script src="demo/engine/demo_main.js"></script>
+    <script src="demo/engine/demo.js"></script>
   </head>
   <body>
-    
-    
+    <h3>Engine Demo 1</h3>
+    <div id="engine1"></div>
     <h3>Text and HTML objects</h3>
     <div id="interactiveDialogue"></div>
     <h3>File Parsing Example</h3>

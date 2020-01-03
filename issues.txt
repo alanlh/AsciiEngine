@@ -11,7 +11,7 @@ Efficient way of rendering w/o iterating through all Elements?
 Figure out which rendering systems to support.
 Optimization in rendering. Two solutions:
   [COMPLETED] Store which pixels are changed and only update/access those.
-  Treat each line as a single element, unless the formatting varies, to reduce the number of elements.
+  [COMPLETED] Treat each line as a single element, unless the formatting varies, to reduce the number of elements.
   Update all elements at once, instead of per cell.
   Not sure if relevant, but check to be different before setting first. 
 Optimization in event handling.

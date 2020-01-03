@@ -1,5 +1,5 @@
 "use strict";
-window.onload = async function() {
+window.addEventListener("load", async function() {
   LOGGING.STATUS.DEBUG_VERBOSE = false;
   LOGGING.STATUS.DEBUG = false;
   LOGGING.STATUS.LOG = false;
@@ -9,7 +9,7 @@ window.onload = async function() {
   helloWorld2();
   await fileParsing();
   interactiveDialogue();
-}
+})
 
 function helloWorld2() {
   let helloText = new TextLayer("Hello\nWorld!", {
@@ -228,7 +228,7 @@ function helloWorld2() {
 }
 
 async function fileParsing() {
-  let textParseElements = await Parse.readDataFromFile("Demos/Assets/TextParse.txt");
+  let textParseElements = await Parse.readDataFromFile("demo/graphics/Assets/TextParse.txt");
   if (!textParseElements) {
     return;
   }
@@ -253,7 +253,7 @@ async function fileParsing() {
     }
     scene.render();
     iteration ++;
-    if (iteration < 100) {
+    if (iteration < 10) {
       setTimeout(sail, 1000);
     }
   }

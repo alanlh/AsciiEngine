@@ -1,7 +1,9 @@
-class ScreenBase extends ComponentBase {
+class PanelBase extends ComponentBase {
   constructor(name, type, manager, settings) {
     /** Only one of each should exist at any time **/
-    super(this, manager.messageBoard);
+    // TODO: Use UtilityMethods.generateId or not?
+    // The same should not be used more than once at any given time.
+    super(name, manager.messageBoard);
     /**
       Quest, Menu, Map, Location
       TODO: Is this needed????
@@ -11,9 +13,11 @@ class ScreenBase extends ComponentBase {
     
     this.baseSettings = UtilityMethods.initializeArgs({
       "displaySize": undefined, /** By default, ignore? **/
+      "topLeft": Vector2.create(0, 0),
     }, settings);
     
     this.elements = {};
+    this.currentlyActive = false;
   }
   
   init(messageHandlers) {
@@ -28,9 +32,14 @@ class ScreenBase extends ComponentBase {
   }
   
   sendRenderRequest() {
-    let renderBody = {};
+    // TODO: Remove element if shouldRemove is marked true.
+    let renderBody = {
+      elements: {},
+      screenId: this.id,
+      sceneId: this.parameters.sceneId,
+    };
     for (let key in this.elements) {
-      renderBody[key] = this.elements[key].getRenderDetails();
+      renderBody[elements][key] = this.elements[key].getRenderDetails();
     }
     
     this.messageBoard.post(new Message(
@@ -38,5 +47,11 @@ class ScreenBase extends ComponentBase {
       MessageTags.UpdateCurrentScreen,
       renderBody
     ));
+  }
+  
+  destroy() {
+    super.destroy();
+    this.currentlyActive = false;
+    // TODO: Send message to Display to remove?
   }
 }

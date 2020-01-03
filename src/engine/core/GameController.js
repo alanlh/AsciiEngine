@@ -16,7 +16,7 @@ class GameController {
     // TODO: Object.defineProperty
     this.start = function() {
       for (let componentId in components) {
-        components[componentId].init();
+        components[componentId].init({});
       }
       
       gameOngoing = true;
@@ -43,7 +43,8 @@ class GameController {
     };
     
     this.loadStoryData = function(storyData) {
-      
+      let storyManager = new StoryManager(messageBoard);
+      UtilityMethods.insertWithKey(components, "id", [storyManager]);
     };
     
     this.loadSave = function(saveData) {

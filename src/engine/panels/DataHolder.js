@@ -1,6 +1,6 @@
-class DataHolder extends ScreenElementBase {
+class DataHolder extends PanelElementBase {
   constructor(name, type, settings) {
-    super(name, ScreenElementBase.DataHolder, undefined /**TODO: New text box every time**/, settings);
+    super(name, PanelElementBase.DataHolder, undefined /**TODO: New text box every time**/, settings);
     
     this.settings = UtilityMethods.initializeArgs({
       "defaultValue": undefined,

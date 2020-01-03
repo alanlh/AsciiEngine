@@ -42,7 +42,14 @@ let UtilityMethods = {
   },
   generateRandomInt: function(a, b) {
     return a + Math.floor(Math.random() * (b - a));
-  }
+  },
+  // TODO: Make this safe by using Object.defineProperty. 
+  generateId: (function() {
+    let currNum = 1;
+    return function(name) {
+      return name + "_" + (currNum ++);
+    }
+  })(),
 };
 
 Object.freeze(UtilityMethods);

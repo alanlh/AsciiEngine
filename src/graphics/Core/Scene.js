@@ -51,7 +51,7 @@ function Scene(data) {
   let _events = new EventModule({
     layerId: this.id,
     events: data.events
-  })
+  });
 
   // Key: Id, Value: Element
   let _elementData = {};
@@ -61,6 +61,8 @@ function Scene(data) {
   let _classMembers = {};
   // Ids sorted by priority of corresponding element. 
   let _sortedElementIds = [];
+  // Key: Id, Value: A bounding box.
+  let _elementSceneBoundaries = {};
 
   this.addElement = function(classSet, element) {
     LOGGING.PERFORMANCE.START("Scene.addElement", 1);
@@ -84,7 +86,8 @@ function Scene(data) {
 
     // Insert into _sortedElementIds for easier access later on.
     // If two objects have the same priority, behavior is unspecified.
-    // However, current behavior is to make it the last of such elements. 
+    // However, current behavior is to make it the last of such elements.
+    // TODO: Replace with linked list. 
     let inserted = false;
     for (let i = 0; i < _sortedElementIds.length; i ++) {
       if (_elementData[_sortedElementIds[i]][CoreModule.type].priority > internalElement[CoreModule.type].priority) {
@@ -96,6 +99,8 @@ function Scene(data) {
     if (!inserted) {
       _sortedElementIds.push(internalElement.id);
     }
+
+    _elementSceneBoundaries[internalElement.id] = BoundingBox.create(Vector2.default(), this.boundingBoxDimens);
 
     for (let className of classSet) {
       if (!(className in _classMembers)) {
@@ -166,6 +171,7 @@ function Scene(data) {
         continue;
       }
       if (candidates.size == 0) {
+        // Set initial candidates to the classMembers of the first name.
         // NOTE: This will never be empty after the initial iteration, because filtered.size == 0. 
         candidates = _classMembers[className];
         continue;
@@ -191,6 +197,26 @@ function Scene(data) {
     return candidates;    
   }
 
+  this.removeElements = function(classSet) {
+    LOGGING.PERFORMANCE.START("Scene.setInternalBoundary", 1);
+    // TODO: Change remove to return true if something changed, or false if nothing was changed. 
+    // Log if returned false
+    let relevantElements = filterElements(classSet);
+    for (let idToRemove of relevantElements) {
+      delete _elementData[idToRemove];
+      _sortedElementIds.splice(_sortedElementIds.indexOf(idToRemove), 1);
+      delete _elementSceneBoundaries[idToRemove];
+      for (let className of _idTags[idToRemove]) {
+        _classMembers[className].delete(idToRemove);
+        if (_classMembers[className].size === 0) {
+          delete _classMembers[className];
+        }
+      }
+      delete _idTags[idToRemove];
+    }
+    LOGGING.PERFORMANCE.STOP("Scene.setInternalBoundary");
+  }
+  
   this.shiftElements = function(classSet, shift) {
     LOGGING.PERFORMANCE.START("Scene.shiftElements", 1);
     // TODO: Check value of shift
@@ -240,6 +266,31 @@ function Scene(data) {
       element.setConfiguration(configuration);
     }
     LOGGING.PERFORMANCE.STOP("Scene.configureElements");
+  }
+  
+  this.setVisibility = function(classSet, visibility) {
+    LOGGING.PERFORMANCE.START("Scene.setVisibility", 1);
+    // TODO: Check value of visibility
+    // TODO: Change setVisibility to return true if something changed, or false if nothing was changed. 
+    // Log if returned false
+    let relevantElements = filterElements(classSet);
+    for (let id of relevantElements) {
+      let element = _elementData[id];
+      element[CoreModule.type].visible = visibility;
+    }
+    LOGGING.PERFORMANCE.STOP("Scene.setVisibility");
+  }
+  
+  this.setInternalBoundary = function(classSet, boundingBox) {
+    LOGGING.PERFORMANCE.START("Scene.setInternalBoundary", 1);
+    // TODO: Check value of visibility
+    // TODO: Change setInternalBoundary to return true if something changed, or false if nothing was changed. 
+    // Log if returned false
+    let relevantElements = filterElements(classSet);
+    for (let id of relevantElements) {
+      _elementSceneBoundaries[id] = BoundingBox.copy(boundingBox);
+    }
+    LOGGING.PERFORMANCE.STOP("Scene.setInternalBoundary");
   }
   
   // TODO: Should this be an option? If so, how to implement? 
@@ -313,6 +364,15 @@ function Scene(data) {
       if (element.priority >= maxAllowedPriority) {
         break;
       }
+      
+      if (!element[CoreModule.type].visible) {
+        continue;
+      }
+      
+      if (!BoundingBox.inBoundingBox(_elementSceneBoundaries[_sortedElementIds[i]], coord)) {
+        continue;
+      }
+      
       if (!Vector2.inBoundingBox(coord, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
         continue;
       }

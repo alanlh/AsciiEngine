@@ -1,4 +1,4 @@
-class QuestElement extends ScreenElementBase {
+class QuestElement extends PanelElementBase {
   constructor(name, type, renderSpriteId, settings) {
     super(name, type, renderSpriteId, settings);
     

@@ -1,6 +1,6 @@
-class ScreenElementBase {
+class PanelElementBase {
   constructor(name, type, renderSpriteId, settings) {
-    this.id = ScreenElementBase.generateId(name); 
+    this.id = UtilityMethods.generateId(name); 
     
     this.type = type;
     this.renderSpriteId = renderSpriteId;
@@ -39,23 +39,23 @@ class ScreenElementBase {
     // TODO: This should be overridden in DataHolders, since text may change arbitrarily.
     let renderDetails = {};
     if (!this.renderedBefore) {
-      renderDetails.firstRender = this.spriteId;
+      renderDetails[RenderElementChanges.firstRender] = this.spriteId;
       this.renderedBefore = true;
     }
     if (this.topLeftChanged) {
-      renderDetails.topLeft = Vector2.copy(this.topLeft);
+      renderDetails[RenderElementChanges.topLeft] = Vector2.copy(this.topLeft);
       this.topLeftChanged = false;
     }
     if (this.stateChanged) {
-      renderDetails.stateKey = this.state;
+      renderDetails[RenderElementChanges.stateKey] = this.state;
       this.stateChanged = false;
     }
     if (this.visibilityChanged) {
-      renderDetails.visible = this.visible;
+      renderDetails[RenderElementChanges.visible] = this.visible;
       this.visibilityChanged = false;
     }
     if (this.markedForRemoval) {
-      renderDetails.shouldRemove = true;
+      renderDetails[RenderElementChanges.shouldRemove] = true;
       // This field is to let the screen know this element should be removed.
       this.removed = true;
     }
@@ -63,14 +63,7 @@ class ScreenElementBase {
   }
 }
 
-// TODO: Make this safe by using Object.defineProperty. 
-ScreenElementBase.generateId = (function() {
-  let currNum = 1;
-  return function(name) {
-    return name + "_" + (currNum ++);
-  }
-})();
-
-ScreenElementBase.types = {
-  "DataHolder": "DATA_HOLDER"
+// TODO: Move this to GlobalNames?
+PanelElementBase.types = {
+  DataHolder: "DATA_HOLDER"
 }

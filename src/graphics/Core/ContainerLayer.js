@@ -19,6 +19,7 @@ function ContainerLayer(children, data) {
       );
     }
     // TODO: Verify child status.
+    // TODO: Replace with BoundingBox union.
     topLeft = Vector2.takeTopLeft(topLeft, child.topLeftCoords);
     bottomRight = Vector2.takeBottomRight(bottomRight, 
       Vector2.add(child.topLeftCoords, child.boundingBoxDimens)

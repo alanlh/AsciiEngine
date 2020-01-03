@@ -31,6 +31,18 @@ function CoreModule(data) {
       // TODO: Mark this as changed. 
     }
   });
+  
+  let visible = data.visible !== false;
+  Object.defineProperty(this, "visible", {
+    get: function() {
+      return visible;
+    },
+    set: function(newVisibility) {
+      // TODO: Check value of newVisibility
+      visible = newVisibility;
+      // TODO: Mark as changed
+    }
+  });
 }
 
 CoreModule.prototype = Object.create(BaseModule.prototype);

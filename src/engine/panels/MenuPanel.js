@@ -1,4 +1,4 @@
-class MenuScreen extends ScreenBase {
+class MenuPanel extends PanelBase {
   constructor(name, type, manager, settings) {
     super(name, type, manager, settings);
     

@@ -1,6 +1,6 @@
 class LocationManager extends ComponentBase {
   constructor(messageBoard) {
-    super("LOCATION_MANAGEER", messageBoard);
+    super(ComponentNames.LocationManager, messageBoard);
     
     this.activeLocation = undefined;
     // TODO: Always keep player menu active.
@@ -12,7 +12,7 @@ class LocationManager extends ComponentBase {
       // Mainly player inputs...
       // TODO: ClockTick not needed, since individual screens have access to message board? 
       [MessageTags.ClockTick]: UtilityMethods.IGNORE,
-      [MessageTags.ChangeActiveScreen]: UtilityMethods.IGNORE
+      [MessageTags.ChangeActiveScreen]: UtilityMethods.IGNORE,
     });
     
     this.loadPersistentScreens();
