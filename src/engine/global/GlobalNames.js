@@ -3,7 +3,7 @@
 const ComponentNames = {
   Clock: "CLOCK",
   Display: "DISPLAY",
-  LocationManager: "LOCATION_MANAGER",
+  PanelManager: "PANEL_MANAGER",
   StoryManager: "STORY_MANAGER",
 }
 
@@ -14,7 +14,7 @@ const MessageTags = {
   SpeedChange: "SPEED_CHANGE", // 
   TimerRequest: "TIMER_REQUEST", // Any component --> Clock
   TimerAlarm: "TIMER_ALARM", // Timer --> All (but should be ignored by most)
-  ChangeActiveScreen: "CHANGE_ACTIVE_SCREEN", // Input --> LocationManager
+  ChangeActiveScreen: "CHANGE_ACTIVE_SCREEN", // Input --> PanelManager
   
   BLANK: "BLANK"
 }

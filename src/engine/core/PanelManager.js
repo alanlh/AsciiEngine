@@ -1,6 +1,6 @@
-class LocationManager extends ComponentBase {
+class PanelManager extends ComponentBase {
   constructor(messageBoard) {
-    super(ComponentNames.LocationManager, messageBoard);
+    super(ComponentNames.PanelManager, messageBoard);
     
     this.activeLocation = undefined;
     // TODO: Always keep player menu active.

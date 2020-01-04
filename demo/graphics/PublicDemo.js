@@ -253,12 +253,12 @@ async function fileParsing() {
     }
     scene.render();
     iteration ++;
-    if (iteration < 10) {
-      setTimeout(sail, 1000);
+    if (iteration < 50) {
+      setTimeout(sail, 500);
     }
   }
   
-  setTimeout(sail, 1000);
+  setTimeout(sail, 500);
 }
 
 function interactiveDialogue() {

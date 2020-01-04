@@ -5,11 +5,11 @@ class GameController {
     
     let clock = new Clock(messageBoard);
     let display = new Display(messageBoard);
-    let locationManager = new LocationManager(messageBoard);
+    let panelManager = new PanelManager(messageBoard);
     
     let components = UtilityMethods.insertWithKey(
       {}, "id", 
-      [clock, display, locationManager]
+      [clock, display, panelManager]
     );
     
     let gameOngoing = false;

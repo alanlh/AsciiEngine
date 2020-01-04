@@ -11,10 +11,10 @@ class PanelBase extends ComponentBase {
     this.type = type;
     this.manager = manager;
     
-    this.baseSettings = UtilityMethods.initializeArgs({
-      "displaySize": undefined, /** By default, ignore? **/
-      "topLeft": Vector2.create(0, 0),
-    }, settings);
+    UtilityMethods.initializeArgs({
+      displaySize: undefined, /** By default, ignore? **/
+      topLeft: Vector2.create(0, 0),
+    }, this.parameters);
     
     this.elements = {};
     this.currentlyActive = false;

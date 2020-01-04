@@ -198,7 +198,7 @@ function Scene(data) {
   }
 
   this.removeElements = function(classSet) {
-    LOGGING.PERFORMANCE.START("Scene.setInternalBoundary", 1);
+    LOGGING.PERFORMANCE.START("Scene.removeElements", 1);
     // TODO: Change remove to return true if something changed, or false if nothing was changed. 
     // Log if returned false
     let relevantElements = filterElements(classSet);
@@ -214,7 +214,7 @@ function Scene(data) {
       }
       delete _idTags[idToRemove];
     }
-    LOGGING.PERFORMANCE.STOP("Scene.setInternalBoundary");
+    LOGGING.PERFORMANCE.STOP("Scene.removeElements");
   }
   
   this.shiftElements = function(classSet, shift) {
@@ -307,7 +307,7 @@ function Scene(data) {
   this.shiftCamera = function(shift) {
     // TODO: Verify shift. 
     LOGGING.PERFORMANCE.START("Scene.shiftCamera", 1);
-    _camera.topLeftCoords = Vector2.subtract(_camera.topLeftCoords, shift);
+    _camera.topLeftCoords = Vector2.add(_camera.topLeftCoords, shift);
     LOGGING.PERFORMANCE.STOP("Scene.shiftCamera");
   }
   
@@ -319,25 +319,31 @@ function Scene(data) {
       let prevPixelData = PixelData.Empty;
       for (let x = 0; x < this.boundingBoxDimens.x; x++) {
         LOGGING.PERFORMANCE.START("Scene.render: getUpdatedCell", 2);
-        let newPixelData = PixelData.Empty;
-        if (prevPixelData.canBeExtended) {
-          newPixelData = getUpdatedCell(
-            Vector2.subtract(Vector2.create(x, y), _camera.topLeftCoords),
-            prevPixelData.priority
-          );
-        } else {
-          newPixelData = getUpdatedCell(
-            Vector2.subtract(Vector2.create(x, y), _camera.topLeftCoords),
-            Infinity
-          );
+        let relativeCoords = Vector2.create(x, y);
+        let absoluteCoords = Vector2.add(relativeCoords, _camera.topLeftCoords);
+        let maxAllowedPriority = Infinity;
+        // TODO: Temporary work around. 
+        // Instead of keeping "topLevelId", keep a tree from each subnode to the root node id.
+        // TODO: REMOVE WHEN DONE.
+        if (prevPixelData.canBeExtended && 
+          BoundingBox.inBoundingBox(_elementSceneBoundaries[prevPixelData.topLevelId], relativeCoords)) {
+          maxAllowedPriority = prevPixelData.priority;
         }
-        if (newPixelData.incrementActiveLength()) {
+        let newPixelData = getUpdatedCell(
+          absoluteCoords, relativeCoords, maxAllowedPriority
+        );
+        // TODO: Optimize scene boundary detection. 
+        if ((newPixelData === PixelData.Empty 
+          || BoundingBox.inBoundingBox(_elementSceneBoundaries[newPixelData.topLevelId], relativeCoords)) 
+          && newPixelData.incrementActiveLength()) {
           // TODO: ASSERT newPixelData should have higher priority than prevPixelData
           prevPixelData = newPixelData;
           // TODO: Turn initializeEventHandlers to be a method for EventHandlerModule, not PixelData
           newPixelData.initializeEventHandlers(_eventHandlers);
           _domElementReferences[y].updatePixelData(x, newPixelData);
-        } else if (prevPixelData.incrementActiveLength()) {
+        } else if ((prevPixelData === PixelData.Empty 
+          || BoundingBox.inBoundingBox(_elementSceneBoundaries[prevPixelData.topLevelId], relativeCoords)) 
+          && prevPixelData.incrementActiveLength()) {
           // Do nothing, since prevPixelData should already have been inserted into RowData
         } else {
           prevPixelData = PixelData.Empty;
@@ -352,7 +358,7 @@ function Scene(data) {
     LOGGING.PERFORMANCE.STOP("Scene.render");
   }
   
-  let getUpdatedCell = function(coord, maxAllowedPriority) {
+  let getUpdatedCell = function(absoluteCoords, relativeCoords, maxAllowedPriority) {
     LOGGING.PERFORMANCE.START("Scene.getUpdatedCell", 2);
     let topPixelData = PixelData.Empty;
     if (maxAllowedPriority === undefined) {
@@ -369,27 +375,29 @@ function Scene(data) {
         continue;
       }
       
-      if (!BoundingBox.inBoundingBox(_elementSceneBoundaries[_sortedElementIds[i]], coord)) {
+      if (!BoundingBox.inBoundingBox(_elementSceneBoundaries[_sortedElementIds[i]], relativeCoords)) {
         continue;
       }
       
-      if (!Vector2.inBoundingBox(coord, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
+      if (!Vector2.inBoundingBox(absoluteCoords, element[CoreModule.type].topLeftCoords, element.boundingBoxDimens)) {
         continue;
       }
       
       // No need to check priority since elements are sorted. 
       // The first nonTransparent Element is used. 
       
-      let pixelData = element.getPixelDataAt(Vector2.subtract(coord, element[CoreModule.type].topLeftCoords));
+      let pixelData = element.getPixelDataAt(Vector2.subtract(absoluteCoords, element[CoreModule.type].topLeftCoords));
       if (pixelData.isTransparent()) {
         continue;
       }
       topPixelData = pixelData;
       topPixelData.priority = element.priority;
+      // TODO: Remove when possible.
+      topPixelData.topLevelId = element.id;
       break;
     }
     LOGGING.DEBUG_VERBOSE(
-      "Scene.getUpdatedCell at coords: ", coord, " ",
+      "Scene.getUpdatedCell at coords: ", absoluteCoords, " ",
       "found: ", topPixelData
     );
     LOGGING.PERFORMANCE.STOP("Scene.getUpdatedCell");
