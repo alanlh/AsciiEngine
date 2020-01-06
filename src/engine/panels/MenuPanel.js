@@ -1,4 +1,4 @@
-class MenuPanel extends PanelBase {
+class MenuPanel extends Panel {
   constructor(name, type, manager, settings) {
     super(name, type, manager, settings);
     

@@ -1,11 +1,12 @@
 "use strict";
 class GameController {
   constructor(divId) {
-    let messageBoard = new MessageBoard();
+    this.messageBoard = new MessageBoard();
+    this.dataRetriever = new DataRetriever();
     
-    let clock = new Clock(messageBoard);
-    let display = new Display(messageBoard);
-    let panelManager = new PanelManager(messageBoard);
+    let clock = new Clock(this);
+    let display = new Display(this);
+    let panelManager = new PanelManager(this);
     
     let components = UtilityMethods.insertWithKey(
       {}, "id", 
@@ -38,12 +39,16 @@ class GameController {
       }
     };
     
+    this.loadData = function(data) {
+      this.dataRetriever.loadData(data);
+    }
+    
     this.loadSpriteData = function(spriteDataFile) {
       
     };
     
     this.loadStoryData = function(storyData) {
-      let storyManager = new StoryManager(messageBoard);
+      let storyManager = new StoryManager(this);
       UtilityMethods.insertWithKey(components, "id", [storyManager]);
     };
     

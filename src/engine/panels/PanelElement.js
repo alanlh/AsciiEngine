@@ -1,29 +1,30 @@
-class PanelElementBase {
-  constructor(name, type, renderSpriteId, settings) {
-    this.id = UtilityMethods.generateId(name); 
+class PanelElement extends ComponentBase {
+  constructor(controller, templateKey) {
+    super(UtilityMethods.generateId(templateKey), controller);
     
-    this.type = type;
-    this.renderSpriteId = renderSpriteId;
-    this.settings = UtilityMethods.initializeArgs({
-      "boundingBox": Vector2.create(0, 0),
-      "fixedLocation": True
-    }, settings);
-    
-    this.container = undefined;
-    this.topLeft = topLeft;
-    this.state = startingState;
+    let templateData = this.dataRetriever.get(templateKey);
+    this.spriteId = templateData.spriteId;
+    // this.renderElement = templateData.renderElement;
+
+    this.topLeft = undefined;
+    this.configuration = undefined;
     
     this.renderedBefore = false;
-    this.topLeftChanged = false;
-    this.stateChanged = false;
+    this.topLeftChanged = true;
+    this.stateChanged = true;
     this.markedForRemoval = false;
     this.removed = false;
   }
   
-  initializeContainer(container, topLeft, startingState) {
-    this.container = container;
+  init() {
+    super.init(Object.assign({
+      
+    }, this.messageHandlers));
+  }
+  
+  initializeContainer(container, topLeft, configuration, visible) {
     this.topLeft = topLeft;
-    this.state = startingState;
+    this.configuration = ""; // TODO: Implement
   }
   
   getRenderDetails() {
@@ -64,6 +65,6 @@ class PanelElementBase {
 }
 
 // TODO: Move this to GlobalNames?
-PanelElementBase.types = {
+PanelElement.types = {
   DataHolder: "DATA_HOLDER"
 }

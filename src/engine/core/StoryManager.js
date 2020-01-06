@@ -1,5 +1,5 @@
 class StoryManager extends ComponentBase {
-  constructor(messageBoard) {
-    super(ComponentNames.StoryManager, messageBoard);
+  constructor(controller) {
+    super(ComponentNames.StoryManager, controller);
   }
 }

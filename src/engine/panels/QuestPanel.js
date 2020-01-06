@@ -1,4 +1,4 @@
-class QuestPanel extends PanelBase {
+class QuestPanel extends Panel {
   constructor(name, type, manager, settings) {
     super(name, type, manager, settings);
     

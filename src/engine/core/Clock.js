@@ -1,6 +1,6 @@
 class Clock extends ComponentBase {
-  constructor(messageBoard) {
-    super(ComponentNames.Clock, messageBoard);
+  constructor(controller) {
+    super(ComponentNames.Clock, controller);
     this.cycles = 0;
     this.intervalId = -1;
     this.playing = false;
@@ -55,6 +55,9 @@ class Clock extends ComponentBase {
       this.timers.front.body.alertCycle <= this.cycles) {
       // TODO: Check if ever less than.
       this.messageBoard.post(this.timers.dequeue());
+    }
+    if (this.parameters.maxCycles > 0 && this.cycles >= this.parameters.maxCycles) {
+      this.stop();
     }
   }
   

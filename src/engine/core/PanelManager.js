@@ -1,9 +1,14 @@
 class PanelManager extends ComponentBase {
-  constructor(messageBoard) {
-    super(ComponentNames.PanelManager, messageBoard);
+  constructor(controller) {
+    super(ComponentNames.PanelManager, controller);
     
     this.activeLocation = undefined;
     // TODO: Always keep player menu active.
+    
+    // Only keep the current one.
+    // If need to switch, ask DataRetriever
+    this.currentScreenId = undefined;
+    this.currentScreen = {};
   }
   
   init() {    
@@ -15,8 +20,19 @@ class PanelManager extends ComponentBase {
       [MessageTags.ChangeActiveScreen]: UtilityMethods.IGNORE,
     });
     
-    this.loadPersistentScreens();
-    // TODO: Figure out current location and load it. Do we load the same thing every time initially?
+    if (this.parameters.startScreen) {
+      let screenTemplateData = this.dataRetriever.get(this.parameters.startScreen);
+      
+      for (let template of screenTemplateData.panels) {
+        let panel = new Panel(this.controller, template.templateKey);
+        this.currentScreen[panel.id] = panel;
+        panel.init();
+      }
+      
+      this.currentScreenId = this.parameters.startScreen;
+    } else {
+      LOGGING.WARN("PanelManager default screen is not defined. Display is blank.");
+    }
   }
   
   loadPersistentScreens() {

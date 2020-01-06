@@ -1,11 +1,23 @@
-class DataRetriever extends ComponentBase {
-  constructor(messageBoard) {
-    super("DATA_RETRIEVER", messageBoard);
-    
+class DataRetriever {
+  constructor() {
     this.data = {};
   }
   
-  loadData() {
+  loadData(data) {
+    for (let newKey in data) {
+      if (newKey in this.data) {
+        LOGGING.WARN("Key ", newKey, "already found in data with value ", this.data[newKey], " Overwriting...");
+      }
+      this.data[newKey] = data[newKey];
+    }
+  }
+  
+  get(key) {
+    if (!(key in this.data)) {
+      LOGGING.WARN("Key ", key, "not found in Data");
+      console.error(this.data);
+    }
     
+    return this.data[key];
   }
 }

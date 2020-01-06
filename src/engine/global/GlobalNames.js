@@ -5,6 +5,7 @@ const ComponentNames = {
   Display: "DISPLAY",
   PanelManager: "PANEL_MANAGER",
   StoryManager: "STORY_MANAGER",
+  DataRetriever: "DATA_RETRIEVER",
 }
 
 const MessageTags = {
@@ -15,6 +16,7 @@ const MessageTags = {
   TimerRequest: "TIMER_REQUEST", // Any component --> Clock
   TimerAlarm: "TIMER_ALARM", // Timer --> All (but should be ignored by most)
   ChangeActiveScreen: "CHANGE_ACTIVE_SCREEN", // Input --> PanelManager
+  UpdateCurrentScreen: "UPDATE_CURRENT_SCREEN", // Panels/PanelManager --> Display
   
   BLANK: "BLANK"
 }
@@ -29,7 +31,7 @@ const MessageTags = {
 **/
 
 const RenderElementChanges = {
-  firstrender: "FIRST_RENDER", // Add a new element to the scene.
+  firstRender: "FIRST_RENDER", // Add a new element to the scene.
   topLeft: "TOP_LEFT", // Specify the top left coordinate
   stateKey: "STATE_KEY", // Specify the state key.
   visible: "VISIBLE", // Toggle the visibility to the specified value.

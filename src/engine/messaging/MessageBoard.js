@@ -125,7 +125,7 @@ class MessageBoard {
       
       if (currMessage.tag in this.channelSubscribers) {
         for (let id of this.channelSubscribers[currMessage.tag]) {
-          this.receivers[id](message);
+          this.receivers[id](currMessage);
         }
       }
       

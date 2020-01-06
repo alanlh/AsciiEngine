@@ -253,7 +253,7 @@ async function fileParsing() {
     }
     scene.render();
     iteration ++;
-    if (iteration < 50) {
+    if (iteration < 10) {
       setTimeout(sail, 500);
     }
   }

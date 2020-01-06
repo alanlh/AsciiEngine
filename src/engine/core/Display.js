@@ -1,6 +1,6 @@
 class Display extends ComponentBase {
-  constructor(messageBoard) {
-    super(ComponentNames.Display, messageBoard);
+  constructor(controller) {
+    super(ComponentNames.Display, controller);
     
     // this.display = new AsciiEngine.Scene();
     // Keep track of each individual panel, use AsciiEngine classes to keep track of everything.
@@ -16,6 +16,7 @@ class Display extends ComponentBase {
       // Quest events
       [MessageTags.UpdateCurrentScreen]: this.updateCurrentScreen,
       [MessageTags.ChangeActiveScreen]: this.changeActiveScreen,
+      [MessageTags.ClockTick]: this.render,
     });
     
     for (let sceneKey in this.parameters.scenes) {
@@ -39,9 +40,9 @@ class Display extends ComponentBase {
       if (RenderElementChanges.firstRender in changes) {
         // TODO: FIGURE OUT HOW TO GET AN ELEMENT.
         let spriteId = changes[RenderElementChanges.firstRender];
-        let sceneElement = undefined; // TODO: Convert spriteId to Scene Element....
+        let sceneElement = this.dataRetriever.get(spriteId);
         let elementId = scene.addElement([message.body.sceneId, key], sceneElement);
-        // TODO: Check against duplicates. There should be none if inheriting from PanelElementBase
+        // TODO: Check against duplicates. There should be none if inheriting from PanelElement
         this.elementMappings[key] = elementId;
       }
       if (RenderElementChanges.visible in changes) {
@@ -59,5 +60,11 @@ class Display extends ComponentBase {
   
   changeActiveScreen(message) {
     
+  }
+  
+  render(message) {
+    for (let sceneKey in this.scenes) {
+      this.scenes[sceneKey].render();
+    }
   }
 }

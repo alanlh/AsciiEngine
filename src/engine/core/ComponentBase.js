@@ -1,7 +1,9 @@
 class ComponentBase {
-  constructor(id, messageBoard) {
+  constructor(id, controller) {
     this.id = id;
-    this.messageBoard = messageBoard;
+    this.controller = controller;
+    this.messageBoard = controller.messageBoard;
+    this.dataRetriever = controller.dataRetriever;
     this.messageHandlers = undefined;
     // Settings that should be kept constant throughout the game.
     // TODO: Keep track of accepted keys, so that applyParameters only sets those.
