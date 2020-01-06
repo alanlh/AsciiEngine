@@ -15,7 +15,6 @@ class DataRetriever {
   get(key) {
     if (!(key in this.data)) {
       LOGGING.WARN("Key ", key, "not found in Data");
-      console.error(this.data);
     }
     
     return this.data[key];

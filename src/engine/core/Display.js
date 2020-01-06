@@ -38,7 +38,6 @@ class Display extends ComponentBase {
         continue;
       }
       if (RenderElementChanges.firstRender in changes) {
-        // TODO: FIGURE OUT HOW TO GET AN ELEMENT.
         let spriteId = changes[RenderElementChanges.firstRender];
         let sceneElement = this.dataRetriever.get(spriteId);
         let elementId = scene.addElement([message.body.sceneId, key], sceneElement);
@@ -52,9 +51,12 @@ class Display extends ComponentBase {
       if (RenderElementChanges.topLeft in changes) {
         scene.moveElements(this.elementMappings[key], changes[RenderElementChanges.topLeft]);
       }
-      if (RenderElementChanges.stateChanged in changes) {
-        scene.configureElements(this.elementMappings[key], changes[RenderElementChanges.stateChanged]);
+      if (RenderElementChanges.stateKey in changes) {
+        scene.configureElements(this.elementMappings[key], changes[RenderElementChanges.stateKey]);
       }
+      if (RenderElementChanges.priority in changes) {
+        scene.orderElements(this.elementMappings[key], changes[RenderElementChanges.priority]);
+      } 
     }
   }
   

@@ -27,11 +27,11 @@ let UtilityMethods = {
     }
     return true;
   },
-  initializeArgs: function(defaultArgs, passedArgs) {
+  initializeArgs: function(defaultArgs, passedArgs, logIfMissing) {
     for (let key in defaultArgs) {
       if (key in passedArgs) {
         defaultArgs[key] = passedArgs[key];
-      } else if (defaultArgs[key] == undefined) {
+      } else if (defaultArgs[key] == undefined && logIfMissing) {
         LOGGING.WARN("Argument ", key, " is not passed in: ", passedArgs);
       }
     }

@@ -5,26 +5,29 @@ class PanelElement extends ComponentBase {
     let templateData = this.dataRetriever.get(templateKey);
     this.spriteId = templateData.spriteId;
     // this.renderElement = templateData.renderElement;
-
-    this.topLeft = undefined;
-    this.configuration = undefined;
     
     this.renderedBefore = false;
     this.topLeftChanged = true;
     this.stateChanged = true;
+    this.priorityChanged = true;
+    this.visibilityChanged = true;
     this.markedForRemoval = false;
     this.removed = false;
+    
+    // TODO: HANDLE MESSAGEHANDLERS FROM TEMPLATEDATA.
   }
   
-  init() {
+  init(parameters) {
     super.init(Object.assign({
-      
+      // TODO: Should anything belong here? Most should be user specified...
     }, this.messageHandlers));
-  }
-  
-  initializeContainer(container, topLeft, configuration, visible) {
-    this.topLeft = topLeft;
-    this.configuration = ""; // TODO: Implement
+    
+    this.parameters = UtilityMethods.initializeArgs({
+      topLeft: Vector2.create(0, 0),
+      state: "",
+      visible: true,
+      priority: 0
+    }, parameters);
   }
   
   getRenderDetails() {
@@ -44,16 +47,20 @@ class PanelElement extends ComponentBase {
       this.renderedBefore = true;
     }
     if (this.topLeftChanged) {
-      renderDetails[RenderElementChanges.topLeft] = Vector2.copy(this.topLeft);
+      renderDetails[RenderElementChanges.topLeft] = this.parameters.topLeft;
       this.topLeftChanged = false;
     }
     if (this.stateChanged) {
-      renderDetails[RenderElementChanges.stateKey] = this.state;
+      renderDetails[RenderElementChanges.stateKey] = this.parameters.state;
       this.stateChanged = false;
     }
     if (this.visibilityChanged) {
-      renderDetails[RenderElementChanges.visible] = this.visible;
+      renderDetails[RenderElementChanges.visible] = this.parameters.visible;
       this.visibilityChanged = false;
+    }
+    if (this.priorityChanged) {
+      renderDetails[RenderElementChanges.priority] = this.parameters.priority;
+      this.priorityChanged = false;
     }
     if (this.markedForRemoval) {
       renderDetails[RenderElementChanges.shouldRemove] = true;

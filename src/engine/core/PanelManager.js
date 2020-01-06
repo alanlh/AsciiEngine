@@ -25,8 +25,11 @@ class PanelManager extends ComponentBase {
       
       for (let template of screenTemplateData.panels) {
         let panel = new Panel(this.controller, template.templateKey);
+        panel.init({
+          topLevelPanel: true,
+          topLeft: template.topLeft || Vector2.default(),
+        });
         this.currentScreen[panel.id] = panel;
-        panel.init();
       }
       
       this.currentScreenId = this.parameters.startScreen;

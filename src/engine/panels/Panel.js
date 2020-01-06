@@ -5,50 +5,88 @@ class Panel extends ComponentBase {
     let templateData = this.dataRetriever.get(templateKey);
     this.panels = {};
     this.elements = {};
-    this.topLeftCoords = {};
-    for (let subpanel of templateData.panels) {
-      let panel = new Panel(this.controller, subpanel.templateKey);
-      this.panels[panel.id] = panel;
-      this.topLeftCoords[panel.id] = subpanel.topLeft;
-      subpanel.init();
+    for (let panelTemplate of templateData.panels) {
+      this.placePanel(panelTemplate.templateKey, panelTemplate);
     }
     
     for (let elementTemplate of templateData.elements) {
-      let element = new PanelElement(this.controller, elementTemplate.templateKey);
-      this.elements[element.id] = element;
-      this.elements[element.id].initializeContainer(this, elementTemplate.topLeft);
-      this.topLeftCoords[element.id] = elementTemplate.topLeft;
-      element.init();
+      this.placeElement(elementTemplate.templateKey, elementTemplate);
     }
     
     this.messageHandlers = templateKey.messageHandlers || {};
     
-    this.parameters = {};
-    this.parameters.sceneId = templateData.sceneId;
+    this.parameters = {
+      sceneId: templateData.sceneId,
+      topLevelPanel: false,
+      topLeft: Vector2.default(),
+    };
+
+    // TODO: HANDLE MESSAGEHANDLERS FROM TEMPLATEDATA.
   }
   
-  init() {
-    super.init(Object.assign({
-      [MessageTags.ClockTick]: this.sendRenderRequest,
-    }, this.messageHandlers));
+  init(parameters) {
+    this.parameters = UtilityMethods.initializeArgs(this.parameters, parameters);
+    if (this.parameters.topLevelPanel) {
+      super.init(Object.assign({
+        [MessageTags.ClockTick]: this.sendRenderRequest,
+      }, this.messageHandlers));
+    } else {
+      super.init(this.messageHandlers);
+    }
   }
   
-  placeElement(element, topLeft, startingState) {
+  placeElement(elementTemplateKey, parameters) {
     // Element id should always be unique, due to generateId method.
+    let element = new PanelElement(this.controller, elementTemplateKey);
     this.elements[element.id] = element;
-    element.initializeContainer(this, topLeft, startingState, visible);
+    element.init(parameters);
+    return element.id;
+  }
+  
+  removeElement(elementId) {
+    // TODO: 
+  }
+  
+  placePanel(panelTemplateKey, parameters) {
+    let panel = new Panel(this.controller, panelTemplateKey);
+    this.panels[panel.id] = panel;
+    panel.init(parameters);
+    return panel.id;
+  }
+  
+  removePanel(panelId) {
+    // TODO:
+  }
+  
+  getRenderDetails() {
+    let renderBody = {};
+    for (let key in this.elements) {
+      renderBody[key] = this.elements[key].getRenderDetails();
+    }
+    
+    for (let key in this.panels) {
+      Object.assign(renderBody, this.panels[key].getRenderDetails())
+    }
+    
+    for (let key in renderBody) {
+      if (RenderElementChanges.topLeft in renderBody[key]) {
+        renderBody[key][RenderElementChanges.topLeft] 
+          = Vector2.add(renderBody[key][RenderElementChanges.topLeft], 
+            this.parameters.topLeft);
+      }
+    }
+    return renderBody;
   }
   
   sendRenderRequest() {
     // TODO: Remove element if shouldRemove is marked true.
+    LOGGING.ASSERT(this.parameters.topLevelPanel, 
+      "Lower level panel sending a render request", this.id);
     let renderBody = {
-      elements: {},
+      elements: this.getRenderDetails(),
       screenId: this.id,
       sceneId: this.parameters.sceneId,
     };
-    for (let key in this.elements) {
-      renderBody.elements[key] = this.elements[key].getRenderDetails();
-    }
     
     this.messageBoard.post(new Message(
       this.id,

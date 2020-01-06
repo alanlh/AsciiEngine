@@ -1,27 +1,45 @@
 const demo_1_panels = {
   "main": {
     panels: [{
-      templateKey: "pane"
+      templateKey: "hello_panel"
     }],
   },
-  "pane": {
-    panels: [],
+  "hello_panel": {
+    panels: [{
+      templateKey: "world_panel",
+      topLeft: {x: 8, y: 1},
+    }],
     elements: [{
-      templateKey: "text",
+      templateKey: "hello_text",
       topLeft: {x: 0, y: 0},
     }, {
-      templateKey: "text",
+      templateKey: "hello_text",
       topLeft: {x: 0, y: 5},
     }],
     messageHandlers: {},
     sceneId: "main",
   },
-  "text": {
+  "world_panel": {
+    panels: [],
+    elements: [{
+      templateKey: "world_text",
+      topLeft: {x: 0, y: 0},
+    }, {
+      templateKey: "world_text",
+      topLeft: {x: 0, y: 5},
+    }],
+  },
+  "hello_text": {
     spriteId: "hello",
     renderElement: {},
+  }, 
+  "world_text": {
+    spriteId: "world",
+    renderElement: {},
   },
-}
+};
 
 const demo_1_sprites = {
-  "hello": new TextLayer("Hello", {})
+  "hello": new TextLayer("Hello,", {}),
+  "world": new TextLayer("World", {}),
 };

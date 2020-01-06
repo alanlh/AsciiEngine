@@ -35,6 +35,7 @@ const RenderElementChanges = {
   topLeft: "TOP_LEFT", // Specify the top left coordinate
   stateKey: "STATE_KEY", // Specify the state key.
   visible: "VISIBLE", // Toggle the visibility to the specified value.
+  priority: "PRIORITY",
   shouldRemove: "SHOULD_REMOVE" // If true, remove from scene completely.
 }
 

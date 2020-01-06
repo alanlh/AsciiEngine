@@ -250,7 +250,7 @@ function Scene(data) {
     // Unknown result after sorting, so just use default sort.
     // TODO: Since all resulting elements have the same priority, find better algorithm?
     _sortedElementIds.sort(function(a, b) {
-      return a[CoreModule.type].priority - b[CoreModule.type].priority;
+      return _elementData[a][CoreModule.type].priority - _elementData[b][CoreModule.type].priority;
     });
     LOGGING.PERFORMANCE.STOP("Scene.orderElements");
   }
