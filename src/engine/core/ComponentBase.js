@@ -4,7 +4,7 @@ class ComponentBase {
     this.controller = controller;
     this.messageBoard = controller.messageBoard;
     this.dataRetriever = controller.dataRetriever;
-    this.messageHandlers = undefined;
+    this.messageHandlers = {};
     // Settings that should be kept constant throughout the game.
     // TODO: Keep track of accepted keys, so that applyParameters only sets those.
     this.parameters = {};
@@ -14,8 +14,19 @@ class ComponentBase {
   init(messageHandlers) {
     // TODO: Replace with lambda function?
     this.messageBoard.signup(this.id, this.receiveMessage.bind(this));
+    this.signupMessageHandlers(messageHandlers);
+  }
+  
+  signupMessageHandlers(messageHandlers) {
     this.messageBoard.subscribe(this.id, Object.keys(messageHandlers));
-    this.messageHandlers = messageHandlers;
+    this.messageHandlers = Object.assign(this.messageHandlers, messageHandlers);
+  }
+  
+  removeMessageHandlers(handlerKeys) {
+    this.messageBoard.unsubscribe(this.id, handlerKeys);
+    for (let key of handlerKeys) {
+      delete this.messageHandlers[key];
+    }
   }
   
   receiveMessage(message) {
@@ -38,6 +49,6 @@ class ComponentBase {
   }
   
   destroy() {
-    this.withdraw(this.id);
+    this.messageBoard.withdraw(this.id);
   }
 }

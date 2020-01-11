@@ -7,7 +7,7 @@ const demo_1_config = {
     scenes: {
       "main": {
         name: "engine1",
-        boundingBoxDimens: {x: 80, y: 20},
+        boundingBoxDimens: {x: 40, y: 7},
       },
     },
   },

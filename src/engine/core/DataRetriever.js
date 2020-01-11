@@ -1,6 +1,7 @@
 class DataRetriever {
   constructor() {
     this.data = {};
+    this.panelTemplates = {};
   }
   
   loadData(data) {
@@ -12,11 +13,24 @@ class DataRetriever {
     }
   }
   
+  loadPanelTemplates(data) {
+    for (let template of data) {
+      let newKey = template.parameters.name;
+      if (newKey in this.panelTemplates) {
+        LOGGING.WARN("Key ", newKey, "already found in data with value ", this.panelTemplates[newKey], " Overwriting...");
+      }
+      this.panelTemplates[newKey] = template;
+    }
+  }
+  
   get(key) {
-    if (!(key in this.data)) {
-      LOGGING.WARN("Key ", key, "not found in Data");
+    if (key in this.data) {
+      return this.data[key];
+    }
+    if (key in this.panelTemplates) {
+      return this.panelTemplates[key];
     }
     
-    return this.data[key];
+    LOGGING.WARN("Key ", key, "not found in Data");
   }
 }

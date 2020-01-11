@@ -43,6 +43,10 @@ class GameController {
       this.dataRetriever.loadData(data);
     }
     
+    this.loadPanelTemplates = function(data) {
+      this.dataRetriever.loadPanelTemplates(data);
+    }
+    
     this.loadSpriteData = function(spriteDataFile) {
       
     };

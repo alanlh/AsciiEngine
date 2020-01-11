@@ -1,22 +1,25 @@
 class Panel extends ComponentBase {
-  constructor(controller, templateKey) {
-    super(UtilityMethods.generateId(templateKey), controller);
+  constructor(controller, template) {
+    let templateData = template.parameters;
+    super(UtilityMethods.generateId(templateData.name), controller);
     
-    let templateData = this.dataRetriever.get(templateKey);
     this.panels = {};
     this.elements = {};
-    for (let panelTemplate of templateData.panels) {
-      this.placePanel(panelTemplate.templateKey, panelTemplate);
+    for (let panelPlacement of templateData.panels) {
+      this.placePanel(this.dataRetriever.get(panelPlacement.templateKey), 
+        panelPlacement);
     }
     
-    for (let elementTemplate of templateData.elements) {
-      this.placeElement(elementTemplate.templateKey, elementTemplate);
+    for (let elementPlacement of templateData.elements) {
+      this.placeElement(this.dataRetriever.get(elementPlacement.templateKey), 
+        elementPlacement);
     }
     
-    this.messageHandlers = templateKey.messageHandlers || {};
+    // No need to create a copy because bind
+    this.messageHandlers = templateData.messageHandlers;
     
     this.parameters = {
-      sceneId: templateData.sceneId,
+      sceneId: "",
       topLevelPanel: false,
       topLeft: Vector2.default(),
     };
@@ -26,18 +29,20 @@ class Panel extends ComponentBase {
   
   init(parameters) {
     this.parameters = UtilityMethods.initializeArgs(this.parameters, parameters);
-    if (this.parameters.topLevelPanel) {
-      super.init(Object.assign({
-        [MessageTags.ClockTick]: this.sendRenderRequest,
-      }, this.messageHandlers));
-    } else {
-      super.init(this.messageHandlers);
-    }
+    super.init(this.messageHandlers);
   }
   
-  placeElement(elementTemplateKey, parameters) {
+  indicateTopLevelPanel(parameters) {
+    this.parameters.topLevelPanel = true;
+    this.parameters.sceneId = parameters.sceneId;
+    this.signupMessageHandlers({
+      [MessageTags.ClockTick]: this.sendRenderRequest,
+    })
+  }
+  
+  placeElement(elementTemplate, parameters) {
     // Element id should always be unique, due to generateId method.
-    let element = new PanelElement(this.controller, elementTemplateKey);
+    let element = elementTemplate.instantiate(this.controller);
     this.elements[element.id] = element;
     element.init(parameters);
     return element.id;
@@ -47,8 +52,8 @@ class Panel extends ComponentBase {
     // TODO: 
   }
   
-  placePanel(panelTemplateKey, parameters) {
-    let panel = new Panel(this.controller, panelTemplateKey);
+  placePanel(panelTemplate, parameters) {
+    let panel = panelTemplate.instantiate(this.controller);
     this.panels[panel.id] = panel;
     panel.init(parameters);
     return panel.id;

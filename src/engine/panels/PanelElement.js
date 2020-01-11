@@ -1,8 +1,8 @@
 class PanelElement extends ComponentBase {
-  constructor(controller, templateKey) {
-    super(UtilityMethods.generateId(templateKey), controller);
+  constructor(controller, template) {
+    let templateData = template.parameters;
+    super(UtilityMethods.generateId(templateData.name), controller);
     
-    let templateData = this.dataRetriever.get(templateKey);
     this.spriteId = templateData.spriteId;
     // this.renderElement = templateData.renderElement;
     

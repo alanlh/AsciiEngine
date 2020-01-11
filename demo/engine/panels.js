@@ -1,10 +1,13 @@
-const demo_1_panels = {
-  "main": {
+const demo_1_panels = [
+  new PanelTemplate({
+    name: "main",
     panels: [{
-      templateKey: "hello_panel"
+      templateKey: "hello_panel",
+      sceneId: "main",
     }],
-  },
-  "hello_panel": {
+  }),
+  new PanelTemplate({
+    name: "hello_panel",
     panels: [{
       templateKey: "world_panel",
       topLeft: {x: 8, y: 1},
@@ -17,9 +20,9 @@ const demo_1_panels = {
       topLeft: {x: 0, y: 5},
     }],
     messageHandlers: {},
-    sceneId: "main",
-  },
-  "world_panel": {
+  }),
+  new PanelTemplate({
+    name: "world_panel",
     panels: [],
     elements: [{
       templateKey: "world_text",
@@ -28,16 +31,18 @@ const demo_1_panels = {
       templateKey: "world_text",
       topLeft: {x: 0, y: 5},
     }],
-  },
-  "hello_text": {
+  }),
+  new PanelElementTemplate({
+    name: "hello_text",
     spriteId: "hello",
     renderElement: {},
-  }, 
-  "world_text": {
+  }),
+  new PanelElementTemplate({
+    name: "world_text",
     spriteId: "world",
     renderElement: {},
-  },
-};
+  }),
+]
 
 const demo_1_sprites = {
   "hello": new TextLayer("Hello,", {}),

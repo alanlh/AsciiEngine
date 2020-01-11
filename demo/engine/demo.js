@@ -9,7 +9,7 @@ function demo1() {
   game.loadConfig(demo_1_config);
 
   game.loadData(demo_1_sprites);  
-  game.loadData(demo_1_panels);
+  game.loadPanelTemplates(demo_1_panels);
   
   game.start();
 }

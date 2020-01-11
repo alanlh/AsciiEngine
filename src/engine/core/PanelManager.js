@@ -21,14 +21,14 @@ class PanelManager extends ComponentBase {
     });
     
     if (this.parameters.startScreen) {
-      let screenTemplateData = this.dataRetriever.get(this.parameters.startScreen);
+      let screenTemplateData = this.dataRetriever.get(this.parameters.startScreen).parameters;
       
-      for (let template of screenTemplateData.panels) {
-        let panel = new Panel(this.controller, template.templateKey);
-        panel.init({
-          topLevelPanel: true,
-          topLeft: template.topLeft || Vector2.default(),
-        });
+      // TODO: Move this into a separate method?
+      for (let placementData of screenTemplateData.panels) {
+        let panelTemplate = this.dataRetriever.get(placementData.templateKey);
+        let panel = panelTemplate.instantiate(this.controller);
+        panel.init(placementData);
+        panel.indicateTopLevelPanel(placementData);
         this.currentScreen[panel.id] = panel;
       }
       
