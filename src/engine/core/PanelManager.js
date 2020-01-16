@@ -21,30 +21,28 @@ class PanelManager extends ComponentBase {
     });
     
     if (this.parameters.startScreen) {
-      let screenTemplateData = this.dataRetriever.get(this.parameters.startScreen).parameters;
-      
-      // TODO: Move this into a separate method?
-      for (let placementData of screenTemplateData.panels) {
-        let panelTemplate = this.dataRetriever.get(placementData.templateKey);
-        let panel = panelTemplate.instantiate(this.controller);
-        panel.init(placementData);
-        panel.indicateTopLevelPanel(placementData);
-        this.currentScreen[panel.id] = panel;
-      }
-      
-      this.currentScreenId = this.parameters.startScreen;
+      this.loadActiveScreen(this.parameters.startScreen);
     } else {
       LOGGING.WARN("PanelManager default screen is not defined. Display is blank.");
     }
   }
   
-  loadPersistentScreens() {
-    // Load maps that should always be kept in memory, e.g. main map (no?), inventory, player attributes
-    
-    // Also load permanent menus: Including player status panel (bottom), and a message panel (left).
-  }
-  
   loadActiveScreen(name) {
-    // Load the screen that currently should be displayed.
+    if (this.currentScreenId) {
+      // TODO: Clear existing screen
+    }
+    
+    let screenTemplateData = this.dataRetriever.get(this.parameters.startScreen).parameters;
+    
+    // TODO: Move this into a separate method?
+    for (const placementData of screenTemplateData.panels) {
+      const panelTemplate = this.dataRetriever.get(placementData.templateKey);
+      const panel = panelTemplate.instantiate(this.controller);
+      panel.setRenderSettings(placementData);
+      panel.initTopLevelPanel(placementData);
+      this.currentScreen[panel.id] = panel;
+    }
+    
+    this.currentScreenId = this.parameters.startScreen;
   }
 }

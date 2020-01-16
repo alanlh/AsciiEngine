@@ -44,6 +44,7 @@ class MessageBoard {
   }
   
   signup(id, receiver) {
+    LOGGING.DEBUG_VERBOSE("Component", id, "signing up.");
     if (id in this.receivers) {
       LOGGING.WARN("Id ", id, " is already signed up.");
     }
@@ -62,7 +63,7 @@ class MessageBoard {
         this.channelSubscribers[channel] = new Set();
       }
       if (id in this.channelSubscribers[channel]) {
-        LOGGING.WARN("Channel ", id, " is already signed up for ", channel);
+        LOGGING.DEBUG("Channel ", id, " is already signed up for ", channel);
         continue;
       }
       this.channelSubscribers[channel].add(id);

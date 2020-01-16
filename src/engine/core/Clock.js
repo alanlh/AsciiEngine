@@ -40,7 +40,7 @@ class Clock extends ComponentBase {
   postTick() {
     // Not handling integer overflow.
     // Would need to leave it running for 2-3 years for it to start breaking.
-    this.cycles += 1;
+    LOGGING.PERFORMANCE.START("Game Engine Tick", 0);
     this.messageBoard.post(new Message(
       this.id,
       MessageTags.ClockTick, 
@@ -59,6 +59,8 @@ class Clock extends ComponentBase {
     if (this.parameters.maxCycles > 0 && this.cycles >= this.parameters.maxCycles) {
       this.stop();
     }
+    this.cycles += 1;
+    LOGGING.PERFORMANCE.STOP("Game Engine Tick");
   }
   
   handleTimerRequest(message) {

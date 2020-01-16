@@ -11,23 +11,82 @@ class PanelElement extends ComponentBase {
     this.stateChanged = true;
     this.priorityChanged = true;
     this.visibilityChanged = true;
-    this.markedForRemoval = false;
-    this.removed = false;
     
-    // TODO: HANDLE MESSAGEHANDLERS FROM TEMPLATEDATA.
+    this.parameters = {
+      topLeft: Vector2.create(0, 0),
+      state: "",
+      visible: true,
+      priority: 0,
+    };
+    for (let handlerKey in templateData.messageHandlers) {
+      this.messageHandlers.add(handlerKey, templateData.messageHandlers[handlerKey]);
+    }
   }
   
-  init(parameters) {
+  init(parent) {
     super.init(Object.assign({
       // TODO: Should anything belong here? Most should be user specified...
     }, this.messageHandlers));
     
-    this.parameters = UtilityMethods.initializeArgs({
-      topLeft: Vector2.create(0, 0),
-      state: "",
-      visible: true,
-      priority: 0
-    }, parameters);
+    // TODO: Check value of parent;
+    this.parent = parent;
+  }
+  
+  setRenderSettings(settings) {
+    if (this.initialized) {
+      LOGGING.WARN(
+        "Do not update render settings via setRenderSettings after initialization."
+        + "Set properties directly instead."
+      );
+    }
+    
+    this.parameters = UtilityMethods.initializeArgs(this.parameters, settings);
+  }
+  
+  getParentList() {
+    // Need to make sure parent is initialized
+    let parentList = this.parent.getParentList();
+    parentList.push(this.id);
+    return parentList;
+  }
+
+  // TODO: MAKE SAFE.
+  get topLeft() {
+    return this.parameters.topLeft;
+  }
+
+  set topLeft(newTopLeft) {
+    // TODO: Should the PanelElement be able to change the topLeft coord? 
+    // Trust the user?
+    this.topLeftChanged = true;
+    this.parameters.topLeft = Vector2.copy(newTopLeft);
+  }
+
+  get state() {
+    return this.parameters.state;
+  }
+  
+  set state(newState) {
+    this.stateChanged = true;
+    this.parameters.state = newState;
+  }
+  
+  get priority() {
+    return this.parameters.priority;
+  }
+  
+  set priority(newPriority) {
+    this.priorityChanged = true;
+    this.parameters.priority = newPriority;
+  }
+  
+  get visibility() {
+    return this.parameters.visibility;
+  }
+  
+  set visibility(newVisibility) {
+    this.visibilityChanged = true;
+    this.parameters.visibility = newVisibility;
   }
   
   getRenderDetails() {
@@ -43,7 +102,10 @@ class PanelElement extends ComponentBase {
     // TODO: This should be overridden in DataHolders, since text may change arbitrarily.
     let renderDetails = {};
     if (!this.renderedBefore) {
-      renderDetails[RenderElementChanges.firstRender] = this.spriteId;
+      renderDetails[RenderElementChanges.firstRender] = {
+        spriteId: this.spriteId,
+        parentIds: this.getParentList(),
+      };
       this.renderedBefore = true;
     }
     if (this.topLeftChanged) {
@@ -62,16 +124,6 @@ class PanelElement extends ComponentBase {
       renderDetails[RenderElementChanges.priority] = this.parameters.priority;
       this.priorityChanged = false;
     }
-    if (this.markedForRemoval) {
-      renderDetails[RenderElementChanges.shouldRemove] = true;
-      // This field is to let the screen know this element should be removed.
-      this.removed = true;
-    }
     return renderDetails;
   }
-}
-
-// TODO: Move this to GlobalNames?
-PanelElement.types = {
-  DataHolder: "DATA_HOLDER"
 }
