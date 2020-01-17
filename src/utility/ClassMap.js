@@ -82,6 +82,10 @@ class ClassMap {
     return id in this._idMap;
   }
   
+  hasClass(className) {
+    return className in this._classes;
+  }
+  
   *[Symbol.iterator]() {
     for (const id in this._idMap) {
       yield id;
@@ -128,12 +132,11 @@ class ClassMap {
       return;
     }
     
-    while (this._classes[className].size > 0) {
-      for (const id in this._classes[className]) {
+    while (className in this._classes) {
+      for (const id of this._classes[className]) {
         this.deleteId(id);
         break;
       }
-      this._size --;
     }
   }
 }

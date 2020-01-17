@@ -2,13 +2,9 @@ class Display extends ComponentBase {
   constructor(controller) {
     super(ComponentNames.Display, controller);
     
-    // this.display = new AsciiEngine.Scene();
     // Keep track of each individual panel, use AsciiEngine classes to keep track of everything.
     this.scenes = {};
-    // Separately keep track of mappings from engine Ids to Scene Ids.
-    // Ignore for now. 
-    // TODO: Figure out of this is necessary, since all ids are already passed in.
-    // this.elementMappings = {};
+    this.elementMappings = new ClassMap();
   }
   
   init(configs) {
@@ -36,14 +32,13 @@ class Display extends ComponentBase {
     }
     let scene = this.scenes[message.body.sceneId];
     for (let key in message.body.elements) {
-      // TODO: Ensure that key is a class/element in panel. 
       let changes = message.body.elements[key];
-      if (changes[RenderElementChanges.shouldRemove]) {
+      if (changes[RenderElementChanges.shouldRemove] && 
+        this.elementMappings.hasClass(key)) {
         scene.removeElements(key);
 
-        // TODO:
-        // scene.removeElements(this.elementMappings[key]);
-        // delete this.elementMappings[key];
+        // Panel structure should ensure all deletions are necessary and sufficient.
+        this.elementMappings.deleteClass(key);
         continue;
       }
       if (RenderElementChanges.firstRender in changes) {
@@ -52,9 +47,13 @@ class Display extends ComponentBase {
         let sceneElement = this.dataRetriever.get(spriteId);
         let elementId = scene.addElement(parentIds, sceneElement);
 
-        // TODO: Check against duplicates.
-        // this.elementMappings[key] = elementId;
+        // No point keeping the sceneElement, since a copy is created anyways.
+        this.elementMappings.add(elementId, undefined, parentIds);
       }
+      LOGGING.ASSERT(
+        this.elementMappings.hasClass(key),
+        "Display does not have any elements with class", key
+      );
       if (RenderElementChanges.visible in changes) {
         // Note that other changes must still be handled (i.e. changes while invisible)
         scene.setVisibility(key, changes[RenderElementChanges.visible]);
