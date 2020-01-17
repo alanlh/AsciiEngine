@@ -228,7 +228,7 @@ function helloWorld2() {
 }
 
 async function fileParsing() {
-  let textParseElements = await Parse.readDataFromFile("demo/graphics/Assets/TextParse.txt");
+  let textParseElements = await Parse.readDataFromFile("demo/graphics/assets/text_parse.txt");
   if (!textParseElements) {
     return;
   }
