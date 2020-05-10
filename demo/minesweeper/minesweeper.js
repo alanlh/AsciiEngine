@@ -8,7 +8,7 @@ export default function minesweeper() {
   let systemManager = engine.getSystemManager();
   
   let gl = new AsciiEngine.GL.Instance("minesweeper");
-  gl.init(30, 30);
+  gl.init(20, 15);
   engine.setModule(AsciiEngine.Engine.ModuleSlots.Graphics, gl);
 
   let database = new AsciiEngine.Modules.Database;
@@ -52,5 +52,6 @@ function loadSprites(database) {
   database.add("CellSprite-Mine", mineSprite);
   let mineStyle = new AsciiEngine.GL.SpriteStyle();
   mineStyle.setStyle("backgroundColor", "red");
+  mineStyle.setStyle("color", "white");
   database.add("CellStyle-Mine", mineStyle);
 }

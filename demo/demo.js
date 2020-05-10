@@ -2,7 +2,7 @@ import minesweeper from "./minesweeper/minesweeper.js";
 
 window.onload = function() {
   minesweeper();
-  //hello();
+  hello();
 }
 
 function hello() {

@@ -10,6 +10,7 @@ export default class BoardSystem extends AsciiEngine.System {
     this._mineCount = mineCount;
     
     this._remaining = width * height;
+    this._finished = false;
     
     this._clickLocations = [];
     
@@ -150,19 +151,21 @@ export default class BoardSystem extends AsciiEngine.System {
     if (cellComponent.revealed) {
       return;
     }
+    cellComponent.revealed = true;
     let renderComponent = this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type);
     if (cellComponent.hasMine) {
       // LOSE :(
       renderComponent.spriteNameList[0] = "CellSprite-Mine";
       renderComponent.styleNameList[0] = "CellStyle-Mine";
-      this.lose();
+      if (!this._finished) {
+        this.lose();
+      }
     } else {
       // Reveal number, if 0, recursively reveal all nearby squares.
       this._remaining -= 1;
       cellComponent.revealed = true;
       
       // Change the Sprite to be revealed.
-      console.log(cellComponent.neighboringMines);
       if (cellComponent.neighboringMines === 0) {
         renderComponent.spriteNameList[0] = "CellSprite-Empty";
         renderComponent.styleNameList[0] = "CellStyle-Empty";
@@ -179,13 +182,15 @@ export default class BoardSystem extends AsciiEngine.System {
         renderComponent.spriteNameList[0] = "CellSprite-" + cellComponent.neighboringMines;
         renderComponent.styleNameList[0] = "CellStyle-" + cellComponent.neighboringMines;
       }
-      if (this._remaining === this._mineCount) {
+      if (this._remaining === this._mineCount && !this._finished) {
         this.win();
       }
     }
   }
   
   lose() {
+    alert("You lose");
+    this._finished = true;
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
         this.handleReveal(x, y);
@@ -194,6 +199,7 @@ export default class BoardSystem extends AsciiEngine.System {
   }
   
   win() {
+    this._finished = true;
     alert("You win!");
   }
   
