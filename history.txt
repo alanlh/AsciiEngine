@@ -1,0 +1,134 @@
+History:
+Version 1.0.0 - 2020/5/9
+  Rewrote entire project.
+  Now in a usable state. 
+
+Version 0.10.0 - 2020/1/15
+  Decided to include a full game engine as part of this project
+  Currently support basic rendering, event listeners.
+
+Version 0.7.0 - 2019/8/29
+  Added new TextBox object, which formats text to be displayed within a certain bounding box.
+  Small bug fixes
+
+Version 0.6.4 - 2019/8/18
+  Major improvements to rendering algorithm
+  Small bug fixes
+
+Version 0.6.3.3 - 2019/8/11
+  More performance improvements
+  No longer use FormattingData objects. Instead keep default values as static members of FormattingModule. 
+
+Version 0.6.3.2 - 2019/8/10
+  Major performance improvements
+
+Version 0.6.3.1 - 2019/8/10
+  Fixed TODOs and other code improvements
+
+Version 0.6.3 - 2019/8/4
+  Added file reading support
+  Added a new example
+
+Version 0.6.2 - 2019/7/29
+  Reworked formatting logic. Can now specify formatting for all Elements (similar to events)
+  Modified code structure
+  Bug fixes
+
+Version 0.6.1 - 2019/7/27
+  Preliminary support for events
+  Updated demo (try clicking the balloon)
+  Bug fixes
+
+Version 0.6.0.2 - 2019/7/23
+  Minor changes to make examples accessible on Github pages.
+
+Version 0.6.0.1 - 2019/7/22
+  Refined example
+  Bug fixes
+
+Version 0.6.0 - 2019/7/21
+  Rewrote entire project to be more versatile, moved old code to src_old and SampleProjectOld folder. New code is in src and SampleProject folder. 
+    Previous code will be deleted by next patch. 
+  Implemented basic features in new version:
+    Most data structures for creating and rendering objects (now named Elements)
+    Rendering
+    Formatting
+  Not yet implemented:
+    Events
+    Parsing
+  Added documentation for new structure (incomplete, but more than previously). 
+
+Version 0.4.2 - 2019/6/29
+  Slightly restructured code
+  Added "use strict" to all functions. 
+
+Version 0.4.1 - 2019/6/23
+  Allows frame layers to have multiple formatting options. 
+    Simplifies temporary formatting effects (e.g. bold on hover)
+  Optimizations of event listener handling. 
+  Updated examples. 
+
+Version 0.4 - 2019/6/15
+  Added event listeners support
+    Event handlers are passed in to a scene, with each handler referenced by a name.
+    Listeners can be added at the Scene, Animation, Frame, and FrameLayer levels, but are all executed at the Scene level. 
+    Listeners are passed in as key-value pairs, with the key being the event being listened to
+      and the value being the name of the handler. 
+  Original options values for FrameLayers are renamed to "settings", and are placed within the overall "options" object. See examples. 
+  Modified Animation, Frame, and FrameLayer parameter list. 
+  Added JSON error messages to parsing for easier debugging. 
+  Updated examples. 
+
+
+Version 0.3.3 - 2019/6/1
+  MAJOR: Changed Animation organization to be non-linear, giving greater flexibility.  
+    Frames are now named, and user specifies which frame to switch to.
+    Future updates should make this easier to manage (e.g. linear execution). 
+    Updated examples as well.
+     
+Version 0.3.2.1 - 2019/3/7
+  Minor bug fixes and updates
+
+Version 0.3.2 - 2019/3/1
+  Animations, Frames, and FrameLayers are now reusable.
+    The scene will create and use a deep copy every time an animation is added.
+  Scene method parameters no longer require a "Set" object to be created
+    Can either input as a single string (with space as delimiter) or as array
+  Rendering bug fixes
+
+Version 0.3.1 - 2019/1/30
+  Added a simple but very effective optimization
+  Added a document with test results
+    For two examples, 5x-10x faster
+
+Version 0.3.0 - 2019/1/26
+  Preliminary support for reading ASCII text from files
+  Added more animation functionality
+  Bug fixes
+
+Version 0.2.1 - 2019/1/4
+  Preliminary support for formatting
+
+Version 0.2.0 - 2018/12/30
+  Switched to a more flexible drawing system.
+    Drawing class still works but will no longer be supported.
+  Added preliminary support for animations and multiple layers.
+  Bug fixes
+
+Version 0.1.1.1 - 2018/11/21
+  Drawing lines no longer need to be the same length
+  Slight changes to examples to better illustrate features
+
+Version 0.1.1 - 2018/11/20
+  Added support for different priorities
+  Bug fixes in class filtering, temporary fix to Drawing parsing
+
+Version 0.1.0 - 2018/11/18
+  Basic rendering completed
+  Updated sample project to test demonstrate class system and drawing placement
+  Bug fixes, including Drawing parsing
+
+Version 0.0.1 - 2018/11/18
+  A Scene object generates relevant html nodes on screen.
+  setWidth/setHeight methods work
+  Framework for storing Drawings mostly finished
