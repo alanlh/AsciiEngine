@@ -1,0 +1,3 @@
+class ClockModule extends Module {
+  
+}
