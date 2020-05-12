@@ -1,4 +1,10 @@
 History:
+Version 1.1.0 - 2020/5/11
+  Additional AsciiGl events/styles
+  Updates to minesweeper demo - mostly playable
+  QoL improvements (e.g. no more text selection)
+  Small bug fixes
+
 Version 1.0.0 - 2020/5/9
   Rewrote entire project.
   Now in a usable state. 

@@ -24,7 +24,7 @@ export default function minesweeper() {
   let renderSystem = new AsciiEngine.Systems.AsciiRender("render");
   systemManager.addSystem(renderSystem);
   
-  engine.startLoop(250);
+  engine.startLoop(50);
 }
 
 function loadSprites(database) {
@@ -33,9 +33,19 @@ function loadSprites(database) {
     spaceIsTransparent: false,
   });
   database.add("CellSprite-Empty", emptySprite);
+  
+  let flagSprite = new AsciiEngine.GL.Sprite("F");
+  database.add("CellSprite-Flag", flagSprite);
+  
   let unclickedStyle = new AsciiEngine.GL.SpriteStyle();
-  unclickedStyle.setStyle("backgroundColor", "green");
+  unclickedStyle.setStyle("backgroundColor", "#00BB00");
   database.add("CellStyle-Unrevealed", unclickedStyle);
+  
+  let unclickedHoverStyle = new AsciiEngine.GL.SpriteStyle();
+  unclickedHoverStyle.setStyle("backgroundColor", "#44FF44");
+  unclickedHoverStyle.setStyle("cursor", "pointer");
+  database.add("CellStyle-Unrevealed-Hover", unclickedHoverStyle);
+  
   let emptyStyle = new AsciiEngine.GL.SpriteStyle();
   emptyStyle.setStyle("backgroundColor", "blue")
   database.add("CellStyle-Empty", emptyStyle);

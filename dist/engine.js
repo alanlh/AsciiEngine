@@ -1574,6 +1574,10 @@ var AsciiEngine = (function () {
   SpriteStyle.defaultValues = {
     color: "black",
     backgroundColor: "transparent",
+    fontWeight: "normal",
+    fontStyle: "normal",
+    textDecoration: "none",
+    cursor: "default",
   };
 
   SpriteStyle.setDefaultStyle = function(styleName, value) {
@@ -1925,20 +1929,27 @@ var AsciiEngine = (function () {
      */
     constructor(containerId) {
       console.assert(containerId, "AsciiGL constructor requires a valid HTML element id parameter.");
-      let container = document.getElementById(containerId);
-      console.assert(container, "AsciiGL constructor parameter containerId does not correspond to a valid HTML element.");
+      let outerContainer = document.getElementById(containerId);
+      console.assert(outerContainer, "AsciiGL constructor parameter containerId does not correspond to a valid HTML element.");
       console.assert(
-        (container.tagName === "DIV"),
+        (outerContainer.tagName === "DIV"),
         "Container element must be a DIV"
       );
       
-      while (container.lastChild) {
-        container.removeChild(container.lastChild);
+      while (outerContainer.lastChild) {
+        outerContainer.removeChild(outerContainer.lastChild);
       }
+      
+      outerContainer.style.textAlign = "center";
+      
+      let container = document.createElement("DIV");
       
       container.style.display = "inline-block";
       container.style.fontFamily = "Courier New";
       container.style.fontSize = "1em";
+      container.style.userSelect = "none";
+      
+      outerContainer.appendChild(container);
       
       this._container = container;
       
@@ -1955,7 +1966,7 @@ var AsciiEngine = (function () {
       
       this._drawBuffer = new DrawBuffer();
       
-      this._currMouseOver = null;
+      this._currMouseOver = undefined;
       this._handler = () => {};
     }
     
@@ -1974,7 +1985,7 @@ var AsciiEngine = (function () {
       this._nameBuffers[0] = {};
       this._nameBuffers[1] = {};
       
-      this._container.appendChild(this._domBuffer.getDomElement());    
+      this._container.appendChild(this._domBuffer.getDomElement());
       
       this._setupEventListeners();
       this.render();
@@ -1988,15 +1999,25 @@ var AsciiEngine = (function () {
       // https://www.w3schools.com/jsref/obj_mouseevent.asp
       this._container.addEventListener("mouseenter", (event) => {
         this._handler(event, "mouseentercanvas");
+        let target = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId];
+        this._currMouseOver = target;
+        if (target) {
+          this._handler(event, "mouseenter", this._currMouseOver);
+        }
       });
       
       this._container.addEventListener("mouseleave", (event) => {
-        this._currMouseOver = null;
+        // This should partially alleviate glitches where mousemove isn't triggered after the mouse leaves the canvas.
+        if (this._currMouseOver) {
+          this._handler(event, "mouseleave", this._currMouseOver);
+        }
+        this._currMouseOver = undefined;
         this._handler(event, "mouseleavecanvas");
       });
 
       this._container.addEventListener("mousemove", (event) => {
-        let target = this._nameBuffers[this._activeBufferIdx][event.target.dataset.ascciGlId];
+        let target = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId];
+        
         if (target !== this._currMouseOver) {
           if (this._currMouseOver) {
             this._handler(event, "mouseleave", this._currMouseOver);
@@ -2019,6 +2040,12 @@ var AsciiEngine = (function () {
       
       this._container.addEventListener("click", (event) => {
         this._handler(event, "click", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId]);
+      });
+      
+      this._container.addEventListener("contextmenu", (event) => {
+        // TODO: Perhaps let user customize behavior?
+        event.preventDefault();
+        this._handler(event, "contextmenu", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId]);
       });
     }
     
@@ -2095,7 +2122,6 @@ var AsciiEngine = (function () {
      */
     render() {
       this._domBuffer.bind(this._drawBuffer);
-      
       // NOTE: Intitial tests suggest having only one buffer may be more optimal...
       // If so, move the appendChild line to init.
       // 
@@ -2121,6 +2147,7 @@ var AsciiEngine = (function () {
     MOUSE_DOWN: "mousedown",
     MOUSE_UP: "mouseup",
     CLICK: "click",
+    CONTEXT_MENU: "contextmenu",
   };
 
   Object.freeze(EventTypes);

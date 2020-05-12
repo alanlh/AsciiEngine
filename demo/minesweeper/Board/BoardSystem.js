@@ -92,7 +92,7 @@ export default class BoardSystem extends AsciiEngine.System {
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
         // For each cell, listen for click events
-        mouseModule.subscribe(this.name, this.cells[y][x].id, ["click"]);
+        mouseModule.subscribe(this.name, this.cells[y][x].id, ["click", "mouseenter", "mouseleave", "contextmenu"]);
       }
     }
   }
@@ -137,68 +137,104 @@ export default class BoardSystem extends AsciiEngine.System {
 
     this.getMessageReceiver().handleAll();
     for (let i = 0; i < this._clickLocations.length; i ++) {
-      this.handleReveal(this._clickLocations[i][0], this._clickLocations[i][1]);
+      this.handleClick(...this._clickLocations[i]);
     }
     
     this._clickLocations = [];
   }
   
-  handleReveal(x, y) {
+  handleClick(x, y, isLeftClick) {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return;
     }
     let cellComponent = this.cells[y][x].getComponent(CellComponent.type);
-    if (cellComponent.revealed) {
+
+    let renderComponent = this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type);
+    
+    if (this._finished) {
+      // Do nothing.
       return;
     }
-    cellComponent.revealed = true;
-    let renderComponent = this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type);
-    if (cellComponent.hasMine) {
-      // LOSE :(
-      renderComponent.spriteNameList[0] = "CellSprite-Mine";
-      renderComponent.styleNameList[0] = "CellStyle-Mine";
-      if (!this._finished) {
+    
+    if (isLeftClick) {
+      // Do nothing if already revealed or flagged.
+      if (cellComponent.revealed || cellComponent.flagged) {
+        return;
+      }
+      if (cellComponent.hasMine) {
+        // LOSE
         this.lose();
+        return;
+      }
+      // Otherwise, set to revealed.
+      cellComponent.revealed = true;
+      this._remaining --;
+      this.setToRevealedSprite(cellComponent, renderComponent);
+      if (cellComponent.neighboringMines === 0) {
+        this.handleClick(x + 1, y + 1, true);
+        this.handleClick(x + 1, y, true);
+        this.handleClick(x + 1, y - 1, true);
+        this.handleClick(x, y + 1, true);
+        this.handleClick(x, y - 1, true);
+        this.handleClick(x - 1, y + 1, true);
+        this.handleClick(x - 1, y, true);
+        this.handleClick(x - 1, y - 1, true);
+      }
+      if (this._remaining === this._mineCount) {
+        this.win();
+        return;
       }
     } else {
-      // Reveal number, if 0, recursively reveal all nearby squares.
-      this._remaining -= 1;
-      cellComponent.revealed = true;
-      
-      // Change the Sprite to be revealed.
-      if (cellComponent.neighboringMines === 0) {
-        renderComponent.spriteNameList[0] = "CellSprite-Empty";
-        renderComponent.styleNameList[0] = "CellStyle-Empty";
-        this.handleReveal(x + 1, y + 1);
-        this.handleReveal(x + 1, y);
-        this.handleReveal(x + 1, y - 1);
-        this.handleReveal(x, y + 1);
-        this.handleReveal(x, y - 1);
-        this.handleReveal(x - 1, y + 1);
-        this.handleReveal(x - 1, y);
-        this.handleReveal(x - 1, y - 1);
-      } else {
-        
-        renderComponent.spriteNameList[0] = "CellSprite-" + cellComponent.neighboringMines;
-        renderComponent.styleNameList[0] = "CellStyle-" + cellComponent.neighboringMines;
+      // Do nothing if already revealed.
+      if (cellComponent.revealed) {
+        return;
       }
-      if (this._remaining === this._mineCount && !this._finished) {
-        this.win();
+      // Otherwise, flip the flag.
+      cellComponent.flagged = !cellComponent.flagged;
+      if (cellComponent.flagged) {
+        renderComponent.spriteNameList[0] = "CellSprite-Flag";
+      } else {
+        renderComponent.spriteNameList[0] = "CellSprite-Empty";
       }
     }
   }
   
+  setToRevealedSprite(cellComponent, renderComponent) {
+    if (cellComponent.hasMine) {
+      renderComponent.spriteNameList[0] = "CellSprite-Mine";
+      renderComponent.styleNameList[0] = "CellStyle-Mine";
+    } else if (cellComponent.neighboringMines === 0) {
+      renderComponent.spriteNameList[0] = "CellSprite-Empty";
+      renderComponent.styleNameList[0] = "CellStyle-Empty";
+    } else {
+      // Has neighboring mines.
+      renderComponent.spriteNameList[0] = "CellSprite-" + cellComponent.neighboringMines;
+      renderComponent.styleNameList[0] = "CellStyle-" + cellComponent.neighboringMines;
+    }
+  }
+  
   lose() {
+    if (this._finished) {
+      return;
+    }
     alert("You lose");
     this._finished = true;
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
-        this.handleReveal(x, y);
+        let cellComponent = this.cells[y][x].getComponent(CellComponent.type);
+        this.setToRevealedSprite(
+          cellComponent,
+          this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type)
+        );
+        cellComponent.revealed = true;
       }
     }
   }
   
   win() {
+    if (this._finished) {
+      return;
+    }
     this._finished = true;
     alert("You win!");
   }
@@ -209,14 +245,23 @@ export default class BoardSystem extends AsciiEngine.System {
   }
   
   receiveMessage(tag, body) {
+    let sections = body.target.split("-");
+    let x = parseInt(sections[1]);
+    // We can ignore the ID because parseInt stops after a non-digit.
+    let y = parseInt(sections[2]);
     if (body.type === "click") {
-      let sections = body.target.split("-");
-      // We can ignore the ID because parseInt stops after a non-digit.
-      if (sections[0] === "Cell") {
-        this._clickLocations.push([parseInt(sections[1]), parseInt(sections[2])]);
+      this._clickLocations.push([x, y, true]);
+    } else if (body.type === "mouseenter") {
+      if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
+        this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed-Hover";
       }
+    } else if (body.type === "mouseleave") {
+      if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
+        this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed";
+      }
+    } else if (body.type === "contextmenu") {
+      this._clickLocations.push([x, y, false]);
     }
-    
   }
 }
 

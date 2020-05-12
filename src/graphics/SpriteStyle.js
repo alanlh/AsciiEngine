@@ -98,6 +98,10 @@ export default class SpriteStyle {
 SpriteStyle.defaultValues = {
   color: "black",
   backgroundColor: "transparent",
+  fontWeight: "normal",
+  fontStyle: "normal",
+  textDecoration: "none",
+  cursor: "default",
 }
 
 SpriteStyle.setDefaultStyle = function(styleName, value) {
