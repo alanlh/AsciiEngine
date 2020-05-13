@@ -1,10 +1,10 @@
 import Engine from "../AsciiEngine.js";
-import System from "./System.js";
+import SetSystem from "./SetSystem.js";
 import AsciiRenderModule from "../modules/AsciiRenderModule.js";
 import AsciiRenderComponent from "../components/AsciiRenderComponent.js";
 import PositionComponent from "../components/PositionComponent.js";
 
-export default class AsciiRenderSystem extends System {
+export default class AsciiRenderSystem extends SetSystem {
   constructor(name) {
     super(name);
     // Use the default Set container for all entities.

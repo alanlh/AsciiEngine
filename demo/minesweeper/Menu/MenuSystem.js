@@ -15,11 +15,6 @@ export default class MenuSystem extends AsciiEngine.System {
     let entityManager = this.getEngine().getEntityManager();
     this.getSystemManager().addSystem(new BoardSystem(10, 10, 10));
   }
-  
-  check(entity) {
-    
-  }
-
 }
 
 MenuSystem.type = "Menu";

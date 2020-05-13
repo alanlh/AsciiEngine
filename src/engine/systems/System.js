@@ -12,13 +12,6 @@ export default class System {
     
     this._active = false;
     
-    /**
-     * this.entities maintains the entities relevant to the system. 
-     * It can (should) be overridden in a custom implementation
-     * in a manner that makes sense for the system.
-     */
-    this.entities = new Set();
-    
     this._messageReceiver = new MessageReceiver(this.receiveMessage.bind(this));
   }
   
@@ -103,28 +96,22 @@ export default class System {
    * This method can be overriden to fit an alternative data structure.
    * However, failure to implement this correctly may result in undefined behavior.
    */
-  hasEntity(entity) {
-    return this.entities.has(entity);
-  }
+  hasEntity(entity) {}
   
   /**
-   * Adds the entity to this.entities.
-   * This method can be overridden to fit an alternative data structure. 
+   * Adds the entity to the system.
+   * The implementation should make sense for how the derived system stores its entities.
    */
-  addEntity(entity) {
-    this.entities.add(entity);
-  }
+  addEntity(entity) {}
   
   /**
    * Removes the entity from this.entities.
-   * This method can be overridden to fit an alternative data structure.
-   * 
+   * The implementation should make sense for how the derived system stores its entities.
+   *
    * Any alternate implementation MUST be defined so that the System no longer processes it.
    * Failure to do so may result in undefined behavior.
    */
-  removeEntity(entity) {
-    this.entities.delete(entity);
-  }
+  removeEntity(entity) {}
   
   /**
    * A virtual method Systems can override

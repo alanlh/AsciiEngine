@@ -116,18 +116,6 @@ export default class BoardSystem extends AsciiEngine.System {
   }
   
   /**
-   * Never add entities...
-   */
-  addEntity() {}
-  
-  /**
-   * Should only occur when the BoardSystem is being deleted.
-   * 
-   * In which case, do nothing...
-   */
-  removeEntity() {}
-  
-  /**
    * Do everything in preUpdate, because why not...
    * 
    * Simply handle click events and update the components/render components.

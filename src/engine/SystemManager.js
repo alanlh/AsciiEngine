@@ -80,10 +80,6 @@ export default class SystemManager {
     }
   }
   
-  getMessageBoard() {
-    return this._messageBoard;
-  }
-  
   // ---------- PUBLIC API ---------- //
   
   /**
@@ -104,10 +100,10 @@ export default class SystemManager {
   /**
    * Removes a system specified by the name.
    * 
-   * @param {System} system The system to remove
+   * @param {String} name The name of the system to remove
    * @param {Boolean} delay If true, the System is not removed until the end of the cycle.
    */
-  removeSystem(type, delay) {
+  removeSystem(name, delay) {
     if (name in this._systems) {
       this._systems[name].shutdown();
       delete this._systems[name];
@@ -146,5 +142,9 @@ export default class SystemManager {
       return true;
     }
     return false;
+  }
+  
+  getMessageBoard() {
+    return this._messageBoard;
   }
 }
