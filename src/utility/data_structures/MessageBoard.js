@@ -88,6 +88,7 @@ export default class MessageBoard {
         delete this.channelSubscribers[channel];
       }
     }
+    delete this.subscriptions[id];
     delete this.receivers[id];
   }
   

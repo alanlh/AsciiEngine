@@ -54,13 +54,15 @@ export default class Entity {
    */
   destroy() {
     // First destories all children.
-    for (let child in this._children) {
-      child.destroy();
+    for (let childId in this._children) {
+      this._children[childId].destroy();
     }
     
-    // Remove from parent.
+    // Remove from parent, if have one.
     // TODO: Is there a better way w/o directly accessing properties?
-    delete this._parent._children[this.id];
+    if (this._parent) {
+      delete this._parent._children[this.id];
+    }
     
     if (this.initialized) {
       this._entityManager.notifyDeletion(this);

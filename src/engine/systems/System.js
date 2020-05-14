@@ -29,14 +29,17 @@ export default class System {
     this._engine = systemManager.engine;
     // This should only be accessed in order to directly modify an Entity, rather than component data.
     this._entityManager = this._engine.getEntityManager();
-    
-    this._systemManager.getMessageBoard().signup(this._name, this._messageReceiver);
-    
+    this.getSystemManager().getMessageBoard().signup(this.name, this.getMessageReceiver());
+
     this._active = true;
     
     this.startup();
   }
-  
+ 
+  destroy() {
+    this.shutdown();
+    this.getSystemManager().getMessageBoard().withdraw(this.name);
+  }
   // ---------- PUBLIC API --------- //
   
   getSystemManager() {

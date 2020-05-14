@@ -74,13 +74,15 @@ var AsciiEngine = (function () {
      */
     destroy() {
       // First destories all children.
-      for (let child in this._children) {
-        child.destroy();
+      for (let childId in this._children) {
+        this._children[childId].destroy();
       }
       
-      // Remove from parent.
+      // Remove from parent, if have one.
       // TODO: Is there a better way w/o directly accessing properties?
-      delete this._parent._children[this.id];
+      if (this._parent) {
+        delete this._parent._children[this.id];
+      }
       
       if (this.initialized) {
         this._entityManager.notifyDeletion(this);
@@ -625,13 +627,6 @@ var AsciiEngine = (function () {
       
       this._active = false;
       
-      /**
-       * this.entities maintains the entities relevant to the system. 
-       * It can (should) be overridden in a custom implementation
-       * in a manner that makes sense for the system.
-       */
-      this.entities = new Set();
-      
       this._messageReceiver = new MessageReceiver(this.receiveMessage.bind(this));
     }
     
@@ -649,14 +644,17 @@ var AsciiEngine = (function () {
       this._engine = systemManager.engine;
       // This should only be accessed in order to directly modify an Entity, rather than component data.
       this._entityManager = this._engine.getEntityManager();
-      
-      this._systemManager.getMessageBoard().signup(this._name, this._messageReceiver);
-      
+      this.getSystemManager().getMessageBoard().signup(this.name, this.getMessageReceiver());
+
       this._active = true;
       
       this.startup();
     }
-    
+   
+    destroy() {
+      this.shutdown();
+      this.getSystemManager().getMessageBoard().withdraw(this.name);
+    }
     // ---------- PUBLIC API --------- //
     
     getSystemManager() {
@@ -716,28 +714,22 @@ var AsciiEngine = (function () {
      * This method can be overriden to fit an alternative data structure.
      * However, failure to implement this correctly may result in undefined behavior.
      */
-    hasEntity(entity) {
-      return this.entities.has(entity);
-    }
+    hasEntity(entity) {}
     
     /**
-     * Adds the entity to this.entities.
-     * This method can be overridden to fit an alternative data structure. 
+     * Adds the entity to the system.
+     * The implementation should make sense for how the derived system stores its entities.
      */
-    addEntity(entity) {
-      this.entities.add(entity);
-    }
+    addEntity(entity) {}
     
     /**
      * Removes the entity from this.entities.
-     * This method can be overridden to fit an alternative data structure.
-     * 
+     * The implementation should make sense for how the derived system stores its entities.
+     *
      * Any alternate implementation MUST be defined so that the System no longer processes it.
      * Failure to do so may result in undefined behavior.
      */
-    removeEntity(entity) {
-      this.entities.delete(entity);
-    }
+    removeEntity(entity) {}
     
     /**
      * A virtual method Systems can override
@@ -857,6 +849,7 @@ var AsciiEngine = (function () {
           delete this.channelSubscribers[channel];
         }
       }
+      delete this.subscriptions[id];
       delete this.receivers[id];
     }
     
@@ -951,10 +944,6 @@ var AsciiEngine = (function () {
       }
     }
     
-    getMessageBoard() {
-      return this._messageBoard;
-    }
-    
     // ---------- PUBLIC API ---------- //
     
     /**
@@ -975,12 +964,12 @@ var AsciiEngine = (function () {
     /**
      * Removes a system specified by the name.
      * 
-     * @param {System} system The system to remove
+     * @param {String} name The name of the system to remove
      * @param {Boolean} delay If true, the System is not removed until the end of the cycle.
      */
-    removeSystem(type, delay) {
+    removeSystem(name, delay) {
       if (name in this._systems) {
-        this._systems[name].shutdown();
+        this._systems[name].destroy();
         delete this._systems[name];
       }
     }
@@ -1017,6 +1006,10 @@ var AsciiEngine = (function () {
         return true;
       }
       return false;
+    }
+    
+    getMessageBoard() {
+      return this._messageBoard;
     }
   }
 
@@ -1172,55 +1165,34 @@ var AsciiEngine = (function () {
 
   Object.freeze(Components);
 
-  class AsciiRenderModule {
-    constructor(agl) {
-      this._agl = agl;
-      
-      this._entities = {};
-    }
-    
-    addEntity({
-      name: name,
-      absolutePosition: absolutePosition,
-      spriteList: spriteList,
-      styleList: styleList,
-      relativePositionList: relativePositionList,
-      events: {
-        hover: hoverCallback,
-        click: clickCallback,
-      },
-    } = {
-      name: Utility.generateId("AsciiEngineEntity"),
-      absolutePosition: [0, 0, 0],
-      spriteList: [],
-      styleList: [],
-      relativePositionList: [],
-      events: {
-        hover: () => {},
-        click: () => {},
-      },
-    }) {
-      if (spriteList.length === 0) {
-        return;
+  class SetSystem extends System {
+    /**
+     * An implementation of System that adds uses a Set to store its entities.
+     * 
+     * Should not be instantiated directly.
+     */
+    constructor(name) {
+      super(name);
+      if (this.constructor === SetSystem) {
+        throw new TypeError("SetSystem cannot be instantiated directly!");
       }
-      
-      
+      this.entities = new Set();
     }
     
-    removeEntity(name) {
-      
+    hasEntity(entity) {
+      return this.entities.has(entity);
     }
     
-    shiftEntity(name, shift) {
-      
+    addEntity(entity) {
+      this.entities.add(entity);
     }
-    
-    moveEntity(name, dest) {
-      
+
+    removeEntity(entity) {
+      this.entities.delete(entity);
     }
   }
 
-  class AsciiRenderSystem extends System {
+  class AsciiRenderSystem extends SetSystem {
     constructor(name) {
       super(name);
       // Use the default Set container for all entities.
@@ -1280,6 +1252,7 @@ var AsciiEngine = (function () {
   AsciiRenderSystem.type = "AsciiRenderSystem";
 
   const DefaultSystems = {
+    Set: SetSystem,
     AsciiRender: AsciiRenderSystem,
   };
 
@@ -2249,7 +2222,6 @@ var AsciiEngine = (function () {
   }
 
   const Modules = {
-    AsciiRender: AsciiRenderModule,
     KeyboardInput: KeyboardInputModule,
     AsciiMouseInput: AsciiMouseInputModule,
     Database: Database,

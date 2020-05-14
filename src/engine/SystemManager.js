@@ -105,7 +105,7 @@ export default class SystemManager {
    */
   removeSystem(name, delay) {
     if (name in this._systems) {
-      this._systems[name].shutdown();
+      this._systems[name].destroy();
       delete this._systems[name];
     }
   }

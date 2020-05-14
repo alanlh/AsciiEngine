@@ -1,5 +1,12 @@
 History:
-Version 1.1.0 - 2020/5/11
+
+Version 1.0.2 - 2020/5/13
+  Separated default system implementation into its own class
+    Base class is no longer usable. The same behavior is now defined in the SetSystem class.
+  Minesweeper demo mostly finished
+  Bug fixes
+  
+Version 1.0.1 - 2020/5/11
   Additional AsciiGl events/styles
   Updates to minesweeper demo - mostly playable
   QoL improvements (e.g. no more text selection)

@@ -19,20 +19,22 @@ export default class BoardSystem extends AsciiEngine.System {
       width, height
     ));
     this._board.setComponent(new AsciiEngine.Components.Position(
-      5, 5, 0
+      Math.floor(20 - width / 2), 5, 0
     ));
     this.cells = [];
-    mineCount = 0;
+    let minesNeeded = mineCount;
+    let totalCellsRemaining = this._remaining;
     for (let y = 0; y < height; y ++) {
       this.cells.push([]);
       for (let x = 0; x < width; x ++) {
         let cell = new AsciiEngine.Entity("Cell-" + x + "-" + y);
         let cellComponent = new CellComponent();
         // FOR NOW, choose mines independently at random. Ignore the actual desired amount.
-        if (Math.random() > 0.9) {
+        if (Math.random() <= minesNeeded / totalCellsRemaining) {
           cellComponent.hasMine = true;
-          mineCount += 1;
+          minesNeeded -= 1;
         }
+        totalCellsRemaining -= 1;
         cell.setComponent(cellComponent);
         cell.setComponent(new AsciiEngine.Components.Position(
           x, y
@@ -46,7 +48,7 @@ export default class BoardSystem extends AsciiEngine.System {
         this._board.addChild(this.cells[y][x]);
       }
     }
-    this._mineCount = mineCount;
+    console.assert(minesNeeded === 0, "We need", minesNeeded, "more mines...");
 
     // Compute number of neighboring mines.
     for (let x = 0; x < width; x ++) {
@@ -65,8 +67,6 @@ export default class BoardSystem extends AsciiEngine.System {
         }
       }
     }
-    
-    // Modify the number of 
   }
   
   get width() {
@@ -84,11 +84,11 @@ export default class BoardSystem extends AsciiEngine.System {
   startup() {
     // Entities have been created. Notify the entity manager about it.
     let entityManager = this.getEngine().getEntityManager();
-    let mouseModule = this.getEngine().getModule("mouse");
-    mouseModule.signup(this.name, this.getMessageReceiver());
-    
     // Add board as an entity. This also adds all Cells as an entity as well.
     entityManager.requestAddEntity(this._board);
+
+    let mouseModule = this.getEngine().getModule("mouse");
+    mouseModule.signup(this.name, this.getMessageReceiver());
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
         // For each cell, listen for click events
@@ -99,7 +99,10 @@ export default class BoardSystem extends AsciiEngine.System {
   
   shutdown() {
     let mouseModule = this.getEngine().getModule("mouse");
-    mouseModule.withdraw(this.id);
+    mouseModule.withdraw(this.name);
+    
+    let entityManager = this.getEngine().getEntityManager();
+    entityManager.requestDeleteEntity(this._board);
   }
   
   /**
@@ -122,7 +125,6 @@ export default class BoardSystem extends AsciiEngine.System {
    */
   preUpdate() {
     // TODO: Directly handle in receive message?
-
     this.getMessageReceiver().handleAll();
     for (let i = 0; i < this._clickLocations.length; i ++) {
       this.handleClick(...this._clickLocations[i]);
@@ -205,8 +207,8 @@ export default class BoardSystem extends AsciiEngine.System {
     if (this._finished) {
       return;
     }
-    alert("You lose");
     this._finished = true;
+    this.getSystemManager().getMessageBoard().post("game_end", false);
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
         let cellComponent = this.cells[y][x].getComponent(CellComponent.type);
@@ -224,7 +226,7 @@ export default class BoardSystem extends AsciiEngine.System {
       return;
     }
     this._finished = true;
-    alert("You win!");
+    this.getSystemManager().getMessageBoard().post("game_end", true);
   }
   
   handleFlag(x, y) {

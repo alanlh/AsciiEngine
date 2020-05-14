@@ -8,7 +8,7 @@ export default function minesweeper() {
   let systemManager = engine.getSystemManager();
   
   let gl = new AsciiEngine.GL.Instance("minesweeper");
-  gl.init(20, 15);
+  gl.init(40, 25);
   engine.setModule(AsciiEngine.Engine.ModuleSlots.Graphics, gl);
 
   let database = new AsciiEngine.Modules.Database;
@@ -28,6 +28,53 @@ export default function minesweeper() {
 }
 
 function loadSprites(database) {
+  let titleSprite = new AsciiEngine.GL.Sprite("MINESWEEPER!");
+  database.add("title", titleSprite);
+  
+  let titleStyle = new AsciiEngine.GL.SpriteStyle();
+  titleStyle.setStyle("fontWeight", "bold");
+  database.add("title-style", titleStyle);
+  
+  let easyGameSprite = new AsciiEngine.GL.Sprite(
+    "Easy", {
+    spaceIsTransparent: false,
+  });
+  database.add("easy_game_button", easyGameSprite);
+  
+  let mediumGameSprite = new AsciiEngine.GL.Sprite(
+    "Medium", {
+    spaceIsTransparent: false,
+  });
+  database.add("medium_game_button", mediumGameSprite);
+
+  let hardGameSprite = new AsciiEngine.GL.Sprite(
+    "Hard", {
+    spaceIsTransparent: false,
+  });
+  database.add("hard_game_button", hardGameSprite);
+
+
+  let emptyTextStyle = new AsciiEngine.GL.SpriteStyle();
+  database.add("empty-style", emptyTextStyle);
+  
+  let winsSprite = new AsciiEngine.GL.Sprite("Wins: ", {
+    spaceIsTransparent: false,
+  });
+  database.add("win_header", winsSprite);
+
+  let lossesSprite = new AsciiEngine.GL.Sprite("Losses: ", {
+    spaceIsTransparent: false,
+  });
+  database.add("lose_header", lossesSprite);
+
+  let zeroTextSprite = new AsciiEngine.GL.Sprite("0");
+  database.add("text-0", zeroTextSprite);
+  
+  let buttonStyle = new AsciiEngine.GL.SpriteStyle();
+  buttonStyle.setStyle("backgroundColor", "#CCCCCC");
+  buttonStyle.setStyle("cursor", "pointer");
+  database.add("button-style", buttonStyle);
+  
   // Create sprite for empty block.
   let emptySprite = new AsciiEngine.GL.Sprite(" ", {
     spaceIsTransparent: false,

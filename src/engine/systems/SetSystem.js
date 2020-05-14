@@ -1,3 +1,5 @@
+import System from "./System.js";
+
 export default class SetSystem extends System {
   /**
    * An implementation of System that adds uses a Set to store its entities.
