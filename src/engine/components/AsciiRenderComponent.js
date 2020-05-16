@@ -8,11 +8,6 @@ export default class AsciiRenderComponent extends Component {
     this.spriteNameList = spriteNameList || [];
     this.styleNameList = styleNameList || [];
     this.relativePositionList = relativePositionList || [];
-    
-    /**
-     * This is mutable.
-     */
-    this.visible = [];
   }
 }
 
