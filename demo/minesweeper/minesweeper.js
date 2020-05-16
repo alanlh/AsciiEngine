@@ -11,9 +11,9 @@ export default function minesweeper() {
   gl.init(40, 25);
   engine.setModule(AsciiEngine.Engine.ModuleSlots.Graphics, gl);
 
-  let database = new AsciiEngine.Modules.Database;
-  engine.setModule(AsciiEngine.Engine.ModuleSlots.Database, database);
-  loadSprites(database);
+  let resourceManager = new AsciiEngine.Modules.ResourceManager;
+  engine.setModule(AsciiEngine.Engine.ModuleSlots.ResourceManager, resourceManager);
+  loadSprites(resourceManager);
   
   let mouseInput = new AsciiEngine.Modules.AsciiMouseInput(gl);
   engine.setModule("mouse", mouseInput);
@@ -27,88 +27,88 @@ export default function minesweeper() {
   engine.startLoop(50);
 }
 
-function loadSprites(database) {
+function loadSprites(resourceManager) {
   let titleSprite = new AsciiEngine.GL.Sprite("MINESWEEPER!");
-  database.add("title", titleSprite);
+  resourceManager.add("title", titleSprite);
   
   let titleStyle = new AsciiEngine.GL.SpriteStyle();
   titleStyle.setStyle("fontWeight", "bold");
-  database.add("title-style", titleStyle);
+  resourceManager.add("title-style", titleStyle);
   
   let easyGameSprite = new AsciiEngine.GL.Sprite(
     "Easy", {
     spaceIsTransparent: false,
   });
-  database.add("easy_game_button", easyGameSprite);
+  resourceManager.add("easy_game_button", easyGameSprite);
   
   let mediumGameSprite = new AsciiEngine.GL.Sprite(
     "Medium", {
     spaceIsTransparent: false,
   });
-  database.add("medium_game_button", mediumGameSprite);
+  resourceManager.add("medium_game_button", mediumGameSprite);
 
   let hardGameSprite = new AsciiEngine.GL.Sprite(
     "Hard", {
     spaceIsTransparent: false,
   });
-  database.add("hard_game_button", hardGameSprite);
+  resourceManager.add("hard_game_button", hardGameSprite);
 
 
   let emptyTextStyle = new AsciiEngine.GL.SpriteStyle();
-  database.add("empty-style", emptyTextStyle);
+  resourceManager.add("empty-style", emptyTextStyle);
   
   let winsSprite = new AsciiEngine.GL.Sprite("Wins: ", {
     spaceIsTransparent: false,
   });
-  database.add("win_header", winsSprite);
+  resourceManager.add("win_header", winsSprite);
 
   let lossesSprite = new AsciiEngine.GL.Sprite("Losses: ", {
     spaceIsTransparent: false,
   });
-  database.add("lose_header", lossesSprite);
+  resourceManager.add("lose_header", lossesSprite);
 
   let zeroTextSprite = new AsciiEngine.GL.Sprite("0");
-  database.add("text-0", zeroTextSprite);
+  resourceManager.add("text-0", zeroTextSprite);
   
   let buttonStyle = new AsciiEngine.GL.SpriteStyle();
   buttonStyle.setStyle("backgroundColor", "#CCCCCC");
   buttonStyle.setStyle("cursor", "pointer");
-  database.add("button-style", buttonStyle);
+  resourceManager.add("button-style", buttonStyle);
   
   // Create sprite for empty block.
   let emptySprite = new AsciiEngine.GL.Sprite(" ", {
     spaceIsTransparent: false,
   });
-  database.add("CellSprite-Empty", emptySprite);
+  resourceManager.add("CellSprite-Empty", emptySprite);
   
   let flagSprite = new AsciiEngine.GL.Sprite("F");
-  database.add("CellSprite-Flag", flagSprite);
+  resourceManager.add("CellSprite-Flag", flagSprite);
   
   let unclickedStyle = new AsciiEngine.GL.SpriteStyle();
   unclickedStyle.setStyle("backgroundColor", "#00BB00");
-  database.add("CellStyle-Unrevealed", unclickedStyle);
+  resourceManager.add("CellStyle-Unrevealed", unclickedStyle);
   
   let unclickedHoverStyle = new AsciiEngine.GL.SpriteStyle();
   unclickedHoverStyle.setStyle("backgroundColor", "#44FF44");
   unclickedHoverStyle.setStyle("cursor", "pointer");
-  database.add("CellStyle-Unrevealed-Hover", unclickedHoverStyle);
+  resourceManager.add("CellStyle-Unrevealed-Hover", unclickedHoverStyle);
   
   let emptyStyle = new AsciiEngine.GL.SpriteStyle();
   emptyStyle.setStyle("backgroundColor", "blue")
-  database.add("CellStyle-Empty", emptyStyle);
+  resourceManager.add("CellStyle-Empty", emptyStyle);
   // Create sprites for every block with neighboring mines.
   for (let i = 1; i < 10; i ++) {
     let sprite = new AsciiEngine.GL.Sprite(i.toString());
-    database.add("CellSprite-" + i.toString(), sprite);
+    resourceManager.add("CellSprite-" + i.toString(), sprite);
     let style = new AsciiEngine.GL.SpriteStyle();
     style.setStyle("backgroundColor", "blue");
     style.setStyle("color", "white");
-    database.add("CellStyle-" + i.toString(), style);
+    resourceManager.add("CellStyle-" + i.toString(), style);
   }
   let mineSprite = new AsciiEngine.GL.Sprite("M");
-  database.add("CellSprite-Mine", mineSprite);
+  resourceManager.add("CellSprite-Mine", mineSprite);
   let mineStyle = new AsciiEngine.GL.SpriteStyle();
   mineStyle.setStyle("backgroundColor", "red");
   mineStyle.setStyle("color", "white");
-  database.add("CellStyle-Mine", mineStyle);
+  resourceManager.add("CellStyle-Mine", mineStyle);
 }

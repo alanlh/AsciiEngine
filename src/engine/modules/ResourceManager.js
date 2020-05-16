@@ -1,4 +1,4 @@
-export default class Database {
+export default class ResourceManager {
   constructor() {
     this.data = {};
   }

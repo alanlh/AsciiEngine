@@ -1,11 +1,11 @@
 import KeyboardInputModule from "./KeyboardInputModule.js";
 import AsciiMouseInputModule from "./AsciiMouseInputModule.js";
-import Database from "./Database.js";
+import ResourceManager from "./ResourceManager.js";
 
 const Modules = {
   KeyboardInput: KeyboardInputModule,
   AsciiMouseInput: AsciiMouseInputModule,
-  Database: Database,
+  ResourceManager: ResourceManager,
 }
 
 Object.freeze(Modules);

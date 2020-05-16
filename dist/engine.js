@@ -1108,7 +1108,7 @@ var AsciiEngine = (function () {
 
   Engine.ModuleSlots = {
     Graphics: Symbol("GraphicsLibrary"),
-    Database: Symbol("Database"),
+    ResourceManager: Symbol("ResourceManager"),
   };
 
   Object.freeze(Engine.Modules);
@@ -1214,19 +1214,19 @@ var AsciiEngine = (function () {
      * Only render after the main loop.
      */
     postUpdate() {
-      let database = this.getEngine().getModule(Engine.ModuleSlots.Database);
+      let resourceManager = this.getEngine().getModule(Engine.ModuleSlots.ResourceManager);
       
       for (let entity of this.entities) {
         let renderComponent = entity.getComponent(AsciiRenderComponent.type);
         let entityAbsolutePosition = this.getEntityAbsolutePosition(entity);
         for (let i = 0; i < renderComponent.spriteNameList.length; i ++) {
-          let sprite = database.get(renderComponent.spriteNameList[i]);
+          let sprite = resourceManager.get(renderComponent.spriteNameList[i]);
           let location = [
             entityAbsolutePosition[0] + renderComponent.relativePositionList[i][0],
             entityAbsolutePosition[1] + renderComponent.relativePositionList[i][1],
             entityAbsolutePosition[2] + renderComponent.relativePositionList[i][2],
           ];
-          let style = database.get(renderComponent.styleNameList[i]);
+          let style = resourceManager.get(renderComponent.styleNameList[i]);
           this._asciiGl.draw(sprite, location, style, entity.id);
         }
       }
@@ -2194,7 +2194,7 @@ var AsciiEngine = (function () {
 
   AsciiMouseInputModule.Global = Symbol("Global");
 
-  class Database {
+  class ResourceManager {
     constructor() {
       this.data = {};
     }
@@ -2224,7 +2224,7 @@ var AsciiEngine = (function () {
   const Modules = {
     KeyboardInput: KeyboardInputModule,
     AsciiMouseInput: AsciiMouseInputModule,
-    Database: Database,
+    ResourceManager: ResourceManager,
   };
 
   Object.freeze(Modules);

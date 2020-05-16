@@ -96,7 +96,7 @@ export default class Engine {
 
 Engine.ModuleSlots = {
   Graphics: Symbol("GraphicsLibrary"),
-  Database: Symbol("Database"),
+  ResourceManager: Symbol("ResourceManager"),
 }
 
 Object.freeze(Engine.Modules);
