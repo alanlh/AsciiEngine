@@ -1,8 +1,7 @@
 import AsciiRenderComponent from "./AsciiRenderComponent.js";
 
-export default class AsciiAnimateComponent extends AsciiRenderComponent {
+export default class AsciiAnimateComponent {
   constructor() {
-    super();
     this._name = undefined;
     this._spriteNameList = {};
     this._styleNameList = {};
@@ -50,3 +49,6 @@ export default class AsciiAnimateComponent extends AsciiRenderComponent {
     }
   }
 }
+
+// Utilize the same type so that AsciiRenderSystem recognizes it.
+AsciiAnimateComponent.type = AsciiRenderComponent.type;
