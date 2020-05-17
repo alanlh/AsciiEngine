@@ -1,4 +1,4 @@
-import MessageBoard from "../../utility/data_structures/MessageBoard.js";
+import MessageBoard from "../../utility/MessageBoard.js";
 
 export default class KeyboardInputModule {
   constructor() {

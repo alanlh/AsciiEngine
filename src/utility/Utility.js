@@ -1,18 +1,14 @@
+import AssetLoader from "./AssetLoader.js";
+import Parser from "./Parser.js";
+import MessageBoard from "./MessageBoard.js";
+import MessageReceiver from "./MessageReceiver.js";
+
+// A selection of tools and data structures to export.
 const Utility = {
-  generateId: (function() {
-    let currId = 0;
-    
-    return function(name) {
-      if (name === undefined) {
-        name = "AsciiEngine"
-      }
-      currId ++;
-      return name + "_" + currId;
-    }
-  })(),
-  clamp: function(num, min, max) {
-    return Math.max(min, Math.min(num, max));
-  }
+  Parser: Parser,
+  AssetLoader: AssetLoader,
+  MessageBoard: MessageBoard,
+  MessageReceiver: MessageReceiver,
 }
 
 Object.freeze(Utility);

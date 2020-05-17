@@ -1,4 +1,4 @@
-import MessageReceiver from "../../utility/data_structures/MessageReceiver.js";
+import MessageReceiver from "../../utility/MessageReceiver.js";
 
 export default class System {
   constructor(name) {

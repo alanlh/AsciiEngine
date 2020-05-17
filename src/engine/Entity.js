@@ -1,9 +1,9 @@
-import Utility from "../utility/Utility.js"
+import Functions from "../utility/Functions.js"
 
 export default class Entity {
   constructor(name) {
     this._name = name;
-    this._id = Utility.generateId(this._name);
+    this._id = Functions.generateId(this._name);
     
     this._initialized = false;
     this._entityManager = undefined;

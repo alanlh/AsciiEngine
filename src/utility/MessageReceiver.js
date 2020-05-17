@@ -1,4 +1,4 @@
-import Queue from "./Queue.js";
+import Queue from "./data_structures/Queue.js";
 
 export default class MessageReceiver {
   /**

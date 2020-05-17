@@ -1,5 +1,4 @@
 import Entity from "./Entity.js";
-import Utility from "../utility/Utility.js";
 import Queue from "../utility/data_structures/Queue.js";
 
 /**

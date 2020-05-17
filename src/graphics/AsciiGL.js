@@ -4,7 +4,7 @@ import SpriteBuilder from "./SpriteBuilder.js";
 import DOMBuffer from "./DomBuffer.js";
 import DrawBuffer from "./DrawBuffer.js";
 
-import Utility from "../utility/Utility.js";
+import Functions from "../utility/Functions.js";
 
 class AsciiGLInstance {
   /**
@@ -191,7 +191,7 @@ class AsciiGLInstance {
    * Different sprites may share the same name.
    */
   draw(sprite, location, style, name) {
-    let id = Utility.generateId(name);
+    let id = Functions.generateId(name);
     this._drawBuffer.draw(sprite, location, style, id);
     if (name) {
       this._nameBuffers[this._drawBufferIdx][id] = name;

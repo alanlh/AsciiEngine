@@ -1,6 +1,6 @@
 import System from "./systems/System.js";
 
-import MessageBoard from "../utility/data_structures/MessageBoard.js";
+import MessageBoard from "../utility/MessageBoard.js";
 
 export default class SystemManager {
   constructor(engine) {

@@ -1,7 +1,5 @@
 import SpriteStyle from "./SpriteStyle.js";
 
-import Utility from "../utility/Utility.js";
-
 export default class DrawBuffer {
   constructor() {
     this._width = 0;

@@ -418,25 +418,6 @@ var AsciiGL = (function () {
     }
   }
 
-  const Utility = {
-    generateId: (function() {
-      let currId = 0;
-      
-      return function(name) {
-        if (name === undefined) {
-          name = "AsciiEngine";
-        }
-        currId ++;
-        return name + "_" + currId;
-      }
-    })(),
-    clamp: function(num, min, max) {
-      return Math.max(min, Math.min(num, max));
-    }
-  };
-
-  Object.freeze(Utility);
-
   class DrawBuffer {
     constructor() {
       this._width = 0;
@@ -652,6 +633,25 @@ var AsciiGL = (function () {
     }
   }
 
+  const Functions = {
+    generateId: (function() {
+      let currId = 0;
+      
+      return function(name) {
+        if (name === undefined) {
+          name = "AsciiEngine";
+        }
+        currId ++;
+        return name + "_" + currId;
+      }
+    })(),
+    clamp: function(num, min, max) {
+      return Math.max(min, Math.min(num, max));
+    }
+  };
+
+  Object.freeze(Functions);
+
   class AsciiGLInstance {
     /**
      * Creates a new AsciiGL instance and attaches it to a div and prepares it for use.
@@ -837,7 +837,7 @@ var AsciiGL = (function () {
      * Different sprites may share the same name.
      */
     draw(sprite, location, style, name) {
-      let id = Utility.generateId(name);
+      let id = Functions.generateId(name);
       this._drawBuffer.draw(sprite, location, style, id);
       if (name) {
         this._nameBuffers[this._drawBufferIdx][id] = name;

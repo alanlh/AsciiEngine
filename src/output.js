@@ -5,6 +5,7 @@ import Component from "./engine/components/Component.js";
 import System from "./engine/systems/System.js";
 import Systems from "./engine/systems/DefaultSystems.js";
 import Modules from "./engine/modules/DefaultModules.js";
+import Utility from "./utility/Utility.js";
 
 import AsciiGL from "./graphics/AsciiGL.js";
 
@@ -17,6 +18,7 @@ const AsciiEngine = {
   Systems: Systems,
   Modules: Modules,
   GL: AsciiGL,
+  Utility: Utility,
 }
 
 Object.freeze(AsciiEngine);

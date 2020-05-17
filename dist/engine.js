@@ -1,7 +1,7 @@
 var AsciiEngine = (function () {
   'use strict';
 
-  const Utility = {
+  const Functions = {
     generateId: (function() {
       let currId = 0;
       
@@ -18,12 +18,12 @@ var AsciiEngine = (function () {
     }
   };
 
-  Object.freeze(Utility);
+  Object.freeze(Functions);
 
   class Entity {
     constructor(name) {
       this._name = name;
-      this._id = Utility.generateId(this._name);
+      this._id = Functions.generateId(this._name);
       
       this._initialized = false;
       this._entityManager = undefined;
@@ -2175,7 +2175,7 @@ var AsciiEngine = (function () {
      * Different sprites may share the same name.
      */
     draw(sprite, location, style, name) {
-      let id = Utility.generateId(name);
+      let id = Functions.generateId(name);
       this._drawBuffer.draw(sprite, location, style, id);
       if (name) {
         this._nameBuffers[this._drawBufferIdx][id] = name;
@@ -2323,6 +2323,28 @@ var AsciiEngine = (function () {
 
   Object.freeze(Modules);
 
+  const AssetLoader = {
+    
+  };
+
+  Object.freeze(AssetLoader);
+
+  const Parser = {
+    
+  };
+
+  Object.freeze(Parser);
+
+  // A selection of tools and data structures to export.
+  const Utility = {
+    Parser: Parser,
+    AssetLoader: AssetLoader,
+    MessageBoard: MessageBoard,
+    MessageReceiver: MessageReceiver,
+  };
+
+  Object.freeze(Utility);
+
   const AsciiEngine = {
     Engine: Engine,
     Entity: Entity,
@@ -2332,6 +2354,7 @@ var AsciiEngine = (function () {
     Systems: DefaultSystems,
     Modules: Modules,
     GL: AsciiGL,
+    Utility: Utility,
   };
 
   Object.freeze(AsciiEngine);

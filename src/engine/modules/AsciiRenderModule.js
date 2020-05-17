@@ -1,4 +1,4 @@
-import Utility from "../../utility/Utility.js";
+import Functions from "../../utility/Functions.js";
 
 export default class AsciiRenderModule {
   constructor(agl) {
@@ -18,7 +18,7 @@ export default class AsciiRenderModule {
       click: clickCallback,
     },
   } = {
-    name: Utility.generateId("AsciiEngineEntity"),
+    name: Functions.generateId("AsciiEngineEntity"),
     absolutePosition: [0, 0, 0],
     spriteList: [],
     styleList: [],
