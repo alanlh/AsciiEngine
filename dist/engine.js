@@ -1137,15 +1137,61 @@ var AsciiEngine = (function () {
       this.spriteNameList = spriteNameList || [];
       this.styleNameList = styleNameList || [];
       this.relativePositionList = relativePositionList || [];
-      
-      /**
-       * This is mutable.
-       */
-      this.visible = [];
     }
   }
 
   AsciiRenderComponent.type = "AsciiRender";
+
+  class AsciiAnimateComponent extends AsciiRenderComponent {
+    constructor() {
+      super();
+      this._name = undefined;
+      this._spriteNameList = {};
+      this._styleNameList = {};
+      this._relativePositionList = {};
+    }
+    
+    get currentFrame() {
+      return this._name;
+    }
+    
+    get spriteNameList() {
+      return this._spriteNameList[this.currentFrame];
+    }
+    
+    get styleNameList() {
+      return this._styleNameList[this.currentFrame];
+    }
+    
+    get relativePositionList() {
+      return this._relativePositionList[this.currentFrame];
+    }
+    
+    addFrame(
+      name,
+      spriteNameList,
+      styleNameList,
+      relativePositionList
+    ) {
+      console.assert(
+        spriteNameList.length === styleNameList.length &&
+        spriteNameList.length === relativePositionList.length,
+        "AsciiAnimateComponent inputs must be of the same length"
+      );
+      if (this._name === undefined) {
+        this._name = name;
+      }
+      this._spriteNameList[name] = spriteNameList;
+      this._styleNameList[name] = styleNameList;
+      this._relativePositionList[name] = relativePositionList;
+    }
+    
+    setFrame(name) {
+      if (name in this._spriteNameList) {
+        this._name = name;
+      }
+    }
+  }
 
   class PositionComponent extends Component {
     constructor(x, y, z) {
@@ -1160,6 +1206,7 @@ var AsciiEngine = (function () {
 
   const Components = {
     AsciiRender: AsciiRenderComponent,
+    AsciiAnimate: AsciiAnimateComponent,
     Position: PositionComponent,
   };
 
@@ -1260,9 +1307,56 @@ var AsciiEngine = (function () {
 
   class KeyboardInputModule {
     constructor() {
-      this._messageBoard = new MessageBoard();
+      this._messageBoards = {};
+      
+      for (let eventType in KeyboardInputModule.EventTypes) {
+        let eventName = KeyboardInputModule.EventTypes.eventType;
+        this_messageBoards[eventName] = new MessageBoard();
+        
+        // Use the "key" property of the event as the events to listen for.
+        document.addEventListener(eventName, (event) => {
+          this._messageBoards[eventName].post(event.key, event);
+        });
+      }
+    }
+    
+    signup(id, receiver) {
+      for (let eventType in this._messageBoards) {
+        this._messageBoards[eventType].signup(id, receiver);
+      }
+    }
+    
+    withdraw(id) {
+      for (let eventType in this._messageBoards) {
+        this._messageBoards[eventType].withdraw(id, receiver);
+      }
+    }
+    
+    subscribe(id, target, events) {
+      for (let event of events) {
+        if (event in this._messageBoards) {
+          this._messageBoards[event].subscribe(id, [target]);
+        } else {
+          console.warn("Keyboard event", event, "is not supported");
+        }
+      }
+    }
+    
+    unsubscribe(id, target, events) {
+      for (let event of events) {
+        if (event in this._messageBoards) {
+          this._messageBoards[event].unsubscribe(id, [target]);
+        } else {
+          console.warn("Keyboard event", event, "is not supported");
+        }
+      }
     }
   }
+
+  KeyboardInputModule.EventTypes = {
+    KEY_DOWN: "keydown",
+    KEY_UP: "keyup",
+  };
 
   class Sprite {
     constructor(text, settings) {
