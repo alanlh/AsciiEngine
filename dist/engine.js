@@ -1242,8 +1242,8 @@ var AsciiEngine = (function () {
   }
 
   class MapSystem extends System {
-    constructor() {
-      super();
+    constructor(name) {
+      super(name);
       
       this.entities = {};
     }
@@ -1333,12 +1333,14 @@ var AsciiEngine = (function () {
       this._messageBoards = {};
       
       for (let eventType in KeyboardInputModule.EventTypes) {
-        let eventName = KeyboardInputModule.EventTypes.eventType;
-        this_messageBoards[eventName] = new MessageBoard();
+        let eventName = KeyboardInputModule.EventTypes[eventType];
+        this._messageBoards[eventName] = new MessageBoard();
         
         // Use the "key" property of the event as the events to listen for.
         document.addEventListener(eventName, (event) => {
           this._messageBoards[eventName].post(event.key, event);
+          // "" means listen for all events.
+          this._messageBoards[eventName].post("", event);
         });
       }
     }
@@ -2348,7 +2350,24 @@ var AsciiEngine = (function () {
 
   const AssetLoader = {
     loadFileAsString: async function(filename) {
-      let fileString = await makeRequest(filename);
+      let request = async function(filename) {
+        return new Promise(function(resolve, reject) {
+          let file = new XMLHttpRequest();
+          file.open("GET", filename);
+          file.onreadystatechange = function() {
+            if (file.readyState === 4) {
+              if (file.status === 200 || file.status === 0) {
+                let text = file.responseText;
+                resolve(text);
+              } else {
+                console.error("HTTP Request returned status code: ", file.status);
+              }
+            }
+          };
+          file.send();
+        });
+      };
+      let fileString = await request(filename);
       return fileString;
     },
   };

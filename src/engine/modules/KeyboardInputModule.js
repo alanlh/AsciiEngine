@@ -5,12 +5,14 @@ export default class KeyboardInputModule {
     this._messageBoards = {};
     
     for (let eventType in KeyboardInputModule.EventTypes) {
-      let eventName = KeyboardInputModule.EventTypes.eventType;
-      this_messageBoards[eventName] = new MessageBoard();
+      let eventName = KeyboardInputModule.EventTypes[eventType];
+      this._messageBoards[eventName] = new MessageBoard();
       
       // Use the "key" property of the event as the events to listen for.
       document.addEventListener(eventName, (event) => {
         this._messageBoards[eventName].post(event.key, event);
+        // "" means listen for all events.
+        this._messageBoards[eventName].post("", event);
       });
     }
   }

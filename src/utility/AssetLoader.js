@@ -17,7 +17,7 @@ const AssetLoader = {
         file.send();
       });
     }
-    let fileString = await makeRequest(filename);
+    let fileString = await request(filename);
     return fileString;
   },
 }

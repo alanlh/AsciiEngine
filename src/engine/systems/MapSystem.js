@@ -1,8 +1,8 @@
 import System from "./System.js";
 
 export default class MapSystem extends System {
-  constructor() {
-    super();
+  constructor(name) {
+    super(name);
     
     this.entities = {};
   }
