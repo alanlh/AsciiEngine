@@ -1241,6 +1241,26 @@ var AsciiEngine = (function () {
     }
   }
 
+  class MapSystem extends System {
+    constructor() {
+      super();
+      
+      this.entities = {};
+    }
+    
+    hasEntity(entity) {
+      return entity.id in this.entities;
+    };
+    
+    addEntity(entity) {
+      this.entities[entity.id] = entity;
+    }
+    
+    removeEntity(entity) {
+      delete this.entities[entity.id];
+    }
+  }
+
   class AsciiRenderSystem extends SetSystem {
     constructor(name) {
       super(name);
@@ -1302,6 +1322,7 @@ var AsciiEngine = (function () {
 
   const DefaultSystems = {
     Set: SetSystem,
+    Map: MapSystem,
     AsciiRender: AsciiRenderSystem,
   };
 
