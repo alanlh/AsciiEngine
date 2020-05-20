@@ -1965,8 +1965,8 @@ var AsciiEngine = (function () {
     }
     
     copy(other) {
-      super.copy(other);
       for (let styleName in SpriteStyle.defaultValues) {
+        this._styles[styleName] = other._styles[styleName];
         this._priorities[styleName] = other._priorities[styleName];
       }
       this._frontId = other._frontId;
@@ -1974,8 +1974,8 @@ var AsciiEngine = (function () {
     }
     
     clear() {
-      super.clear();
       for (let styleName in SpriteStyle.defaultValues) {
+        this._styles[styleName] = null;
         this._priorities[styleName] = Number.POSITIVE_INFINITY;
       }
       this._highestPriority = Number.POSITIVE_INFINITY;
