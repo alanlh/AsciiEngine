@@ -1,7 +1,9 @@
+import Component from "./Component.js";
 import AsciiRenderComponent from "./AsciiRenderComponent.js";
 
-export default class AsciiAnimateComponent {
+export default class AsciiAnimateComponent extends Component {
   constructor() {
+    super();
     this._name = undefined;
     this._spriteNameList = {};
     this._styleNameList = {};

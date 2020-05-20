@@ -1142,8 +1142,9 @@ var AsciiEngine = (function () {
 
   AsciiRenderComponent.type = "AsciiRender";
 
-  class AsciiAnimateComponent {
+  class AsciiAnimateComponent extends Component {
     constructor() {
+      super();
       this._name = undefined;
       this._spriteNameList = {};
       this._styleNameList = {};
@@ -2402,8 +2403,8 @@ var AsciiEngine = (function () {
       let sprites = {};
       for (let spriteName in spriteData) {
         sprites[spriteName] = new Sprite(
-          spriteData.text,
-          spriteData.settings,
+          spriteData[spriteName].text,
+          spriteData[spriteName].settings,
         );
       }
       let styleData = json.styles;
@@ -2413,6 +2414,7 @@ var AsciiEngine = (function () {
         for (let style in styleData[styleName]) {
           spriteStyle.setStyle(style, styleData[styleName][style]);
         }
+        styles[styleName] = spriteStyle;
       }
       return {
         sprites: sprites,

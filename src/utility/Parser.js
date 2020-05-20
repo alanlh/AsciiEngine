@@ -30,8 +30,8 @@ const Parser = {
     let sprites = {};
     for (let spriteName in spriteData) {
       sprites[spriteName] = new Sprite(
-        spriteData.text,
-        spriteData.settings,
+        spriteData[spriteName].text,
+        spriteData[spriteName].settings,
       );
     }
     let styleData = json.styles;
@@ -41,6 +41,7 @@ const Parser = {
       for (let style in styleData[styleName]) {
         spriteStyle.setStyle(style, styleData[styleName][style]);
       }
+      styles[styleName] = spriteStyle;
     }
     return {
       sprites: sprites,
