@@ -12,7 +12,7 @@ export default class AsciiMouseInputModule {
       this._messageBoards[AsciiGL.EventTypes[name]] = new MessageBoard();
     }
     
-    agl.setHandler((event, type, target) => {
+    agl.setHandler((event, type, target, coords) => {
       if (target === undefined) {
         target = AsciiMouseInputModule.Global;
       }
@@ -20,6 +20,7 @@ export default class AsciiMouseInputModule {
         type: type,
         target: target,
         event: event,
+        coords: coords,
       });
     });
   }

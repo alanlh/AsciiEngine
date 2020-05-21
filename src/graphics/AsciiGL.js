@@ -31,6 +31,7 @@ class AsciiGLInstance {
     container.style.fontFamily = "Courier New";
     container.style.fontSize = "1em";
     container.style.userSelect = "none";
+    container.style.margin = "0";
     
     outerContainer.appendChild(container);
     
@@ -81,55 +82,74 @@ class AsciiGLInstance {
     // See below for list of event types:
     // https://www.w3schools.com/jsref/obj_mouseevent.asp
     this._container.addEventListener("mouseenter", (event) => {
-      this._handler(event, "mouseentercanvas");
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
+      this._handler(event, "mouseentercanvas", undefined, mouseCoords);
       let target = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId];
       this._currMouseOver = target;
       if (target) {
-        this._handler(event, "mouseenter", this._currMouseOver)
+        this._handler(event, "mouseenter", this._currMouseOver, mouseCoords);
       }
     });
     
     this._container.addEventListener("mouseleave", (event) => {
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
       // This should partially alleviate glitches where mousemove isn't triggered after the mouse leaves the canvas.
       if (this._currMouseOver) {
-        this._handler(event, "mouseleave", this._currMouseOver);
+        this._handler(event, "mouseleave", this._currMouseOver, mouseCoords);
       }
       this._currMouseOver = undefined;
-      this._handler(event, "mouseleavecanvas");
+      this._handler(event, "mouseleavecanvas", undefined, mouseCoords);
     });
 
     this._container.addEventListener("mousemove", (event) => {
       let target = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId];
-      
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
+
       if (target !== this._currMouseOver) {
         if (this._currMouseOver) {
-          this._handler(event, "mouseleave", this._currMouseOver);
+          this._handler(event, "mouseleave", this._currMouseOver, mouseCoords);
         }
         this._currMouseOver = target;
         if (target) {
-          this._handler(event, "mouseenter", this._currMouseOver)
+          this._handler(event, "mouseenter", this._currMouseOver,  mouseCoords)
         }
       }
-      this._handler(event, "mousemove", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId])
+      this._handler(event, "mousemove", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
     });
 
     this._container.addEventListener("mousedown", (event) => {
-      this._handler(event, "mousedown", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId])
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
+      this._handler(event, "mousedown", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
     });
     
     this._container.addEventListener("mouseup", (event) => {
-      this._handler(event, "mouseup", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId])
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
+      this._handler(event, "mouseup", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
     });
     
     this._container.addEventListener("click", (event) => {
-      this._handler(event, "click", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId])
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
+      this._handler(event, "click", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
     });
     
     this._container.addEventListener("contextmenu", (event) => {
       // TODO: Perhaps let user customize behavior?
       event.preventDefault();
-      this._handler(event, "contextmenu", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId]);
+      let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
+      this._handler(event, "contextmenu", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
     })
+  }
+  
+  /**
+   * Converts mouse position viewport coordinates into asciiengine coordinates.
+   */
+  mousePositionToCoordinates(mouseX, mouseY) {
+    // TODO: Find a more efficient method.
+    let bounds = this._container.getBoundingClientRect();
+    
+    let x = Math.floor((mouseX - bounds.x) * this.width / bounds.width);
+    let y = Math.floor((mouseY - bounds.y) * this.height / bounds.height);
+    return {x: x, y: y}
   }
   
   _flipBuffers() {
@@ -160,10 +180,11 @@ class AsciiGLInstance {
   /**
    * Set by user code. handlerFunc is called when an AsciiGL mouse event occurs. 
    * 
-   * handlerFunc takes in (event, target, type).
+   * handlerFunc takes in (event, target, type, coords).
    * event is the original MouseEvent object that triggered the AsiiGL event.
    * type is the name of the triggered event, with respect to AsciiGL.
    * target is the name of the element which the event was triggered on (may be undefined)
+   * coords is the coordinate of the character that the mouse is currently over.
    * 
    * The type parameter does not necessarily correspond to the type of MouseEvent.
    * AsciiGL currently reports the current events:

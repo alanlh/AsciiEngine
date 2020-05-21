@@ -8,6 +8,8 @@ export default class DOMBuffer {
     
     this.rows = [];
     this.elements = [];
+    
+    this.primaryElement.style.margin = "0";
   }
   
   init(width, height) {
@@ -16,6 +18,8 @@ export default class DOMBuffer {
     
     for (let y = 0; y < height; y ++) {
       let rowElement = document.createElement("div");
+      rowElement.dataset.asciiGlRow = y;
+      
       this.primaryElement.appendChild(rowElement);
       this.rows.push(rowElement);
       this.elements.push([]);
