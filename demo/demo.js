@@ -1,5 +1,5 @@
 import minesweeper from "./minesweeper/minesweeper.js";
-import inputField from "./input/InputField.js";
+import inputField from "./input/inputField.js";
 
 window.onload = function() {
   inputField();
