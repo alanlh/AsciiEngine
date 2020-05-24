@@ -1,0 +1,21 @@
+{
+  "input-border": {
+    "default": {
+      "spriteNameList": ["sprite-box"],
+      "styleNameList": ["style-none"],
+      "relativePositionList": [[0, 0, 0]]
+    }
+  },
+  "cursor": {
+    "default": {
+      "spriteNameList": ["sprite-blank"],
+      "styleNameList": ["style-gray"],
+      "relativePositionList": [[0, 0, 0]]
+    },
+    "off": {
+      "spriteNameList": ["sprite-blank"],
+      "styleNameList": ["style-none"],
+      "relativePositionList": [[0, 0, 0]]
+    }
+  }
+}

@@ -1,6 +1,8 @@
 import minesweeper from "./minesweeper/minesweeper.js";
+import inputField from "./input/InputField.js";
 
 window.onload = function() {
+  inputField();
   minesweeper();
   hello();
 }

@@ -1,0 +1,24 @@
+{
+  "sprites": {
+    "sprite-blank": {
+      "text": " ",
+      "settings": {
+        "spaceIsTransparent": false
+      }
+    },
+    "sprite-box": {
+      "text": "+----A VERY SIMPLE TEXT BOX----+\n|                              |\n|                              |\n|                              |\n|                              |\n|                              |\n|                              |\n|                              |\n|                              |\n|                              |\n|                              |\n+------------------------------+",
+      "settings": {
+        
+      }
+    }
+  },
+  "styles": {
+    "style-none": {
+      
+    },
+    "style-gray": {
+      "backgroundColor": "#cccccc"
+    }
+  }
+}

@@ -15,7 +15,7 @@ export default class SpriteBuilder {
     // TODO: Optimize.
     let result = "";
     for (let i = 0; i < this._template.length; i ++) {
-      result += this._template.length;
+      result += this._template[i];
       if (i < this._paramCount) {
         result += paramArray[i];
       }
