@@ -2,6 +2,7 @@ import MessageBoard from "../../utility/MessageBoard.js";
 
 export default class KeyboardInputModule {
   constructor() {
+    this.ALL = "ALL_KEYS";
     this._messageBoards = {};
     
     for (let eventType in KeyboardInputModule.EventTypes) {
@@ -12,7 +13,12 @@ export default class KeyboardInputModule {
       document.addEventListener(eventName, (event) => {
         this._messageBoards[eventName].post(eventName, event.key, event);
         // "" means listen for all events.
-        this._messageBoards[eventName].post(eventName, "", event);
+        this._messageBoards[eventName].post(eventName, this.ALL, event);
+        if (event.keyCode <= 40 && event.keyCode >= 37) {
+          event.preventDefault();
+        } else if (event.keyCode === 32) {
+          event.preventDefault();
+        }
       });
     }
   }

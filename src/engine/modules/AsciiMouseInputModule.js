@@ -3,6 +3,7 @@ import AsciiGL from "../../graphics/AsciiGL.js";
 
 export default class AsciiMouseInputModule {
   constructor(agl) {
+    this.GLOBAL = AsciiMouseInputModule.Global;
     this._agl = agl;
     
     this._registeredTargets = {};
@@ -13,10 +14,15 @@ export default class AsciiMouseInputModule {
     }
     
     agl.setHandler((event, type, target, coords) => {
-      if (target === undefined) {
-        target = AsciiMouseInputModule.Global;
+      if (target !== undefined) {
+        this._messageBoards[type].post(type, target, {
+          type: type,
+          target: target,
+          event: event,
+          coords: coords,
+        });
       }
-      this._messageBoards[type].post(type, target, {
+      this._messageBoards[type].post(type, this.GLOBAL, {
         type: type,
         target: target,
         event: event,

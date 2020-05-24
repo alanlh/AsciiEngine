@@ -1335,6 +1335,7 @@ var AsciiEngine = (function () {
 
   class KeyboardInputModule {
     constructor() {
+      this.ALL = "ALL_KEYS";
       this._messageBoards = {};
       
       for (let eventType in KeyboardInputModule.EventTypes) {
@@ -1345,7 +1346,12 @@ var AsciiEngine = (function () {
         document.addEventListener(eventName, (event) => {
           this._messageBoards[eventName].post(eventName, event.key, event);
           // "" means listen for all events.
-          this._messageBoards[eventName].post(eventName, "", event);
+          this._messageBoards[eventName].post(eventName, this.ALL, event);
+          if (event.keyCode <= 40 && event.keyCode >= 37) {
+            event.preventDefault();
+          } else if (event.keyCode === 32) {
+            event.preventDefault();
+          }
         });
       }
     }
@@ -2287,6 +2293,7 @@ var AsciiEngine = (function () {
 
   class AsciiMouseInputModule {
     constructor(agl) {
+      this.GLOBAL = AsciiMouseInputModule.Global;
       this._agl = agl;
       
       this._registeredTargets = {};
@@ -2297,10 +2304,15 @@ var AsciiEngine = (function () {
       }
       
       agl.setHandler((event, type, target, coords) => {
-        if (target === undefined) {
-          target = AsciiMouseInputModule.Global;
+        if (target !== undefined) {
+          this._messageBoards[type].post(type, target, {
+            type: type,
+            target: target,
+            event: event,
+            coords: coords,
+          });
         }
-        this._messageBoards[type].post(type, target, {
+        this._messageBoards[type].post(type, this.GLOBAL, {
           type: type,
           target: target,
           event: event,
