@@ -208,7 +208,7 @@ export default class BoardSystem extends AsciiEngine.System {
       return;
     }
     this._finished = true;
-    this.getSystemManager().getMessageBoard().post("game_end", false);
+    this.getSystemManager().getMessageBoard().post(this.name, "game_end", false);
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
         let cellComponent = this.cells[y][x].getComponent(CellComponent.type);
@@ -226,7 +226,7 @@ export default class BoardSystem extends AsciiEngine.System {
       return;
     }
     this._finished = true;
-    this.getSystemManager().getMessageBoard().post("game_end", true);
+    this.getSystemManager().getMessageBoard().post(this.name, "game_end", true);
   }
   
   handleFlag(x, y) {
@@ -234,22 +234,22 @@ export default class BoardSystem extends AsciiEngine.System {
     let renderComponent = this.cells[y][x].getComponent(AsciiEngine.Components.Render.type);
   }
   
-  receiveMessage(tag, body) {
+  receiveMessage(source, tag, body) {
     let sections = body.target.split("-");
     let x = parseInt(sections[1]);
     // We can ignore the ID because parseInt stops after a non-digit.
     let y = parseInt(sections[2]);
-    if (body.type === "click") {
+    if (source === "click") {
       this._clickLocations.push([x, y, true]);
-    } else if (body.type === "mouseenter") {
+    } else if (source === "mouseenter") {
       if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
         this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed-Hover";
       }
-    } else if (body.type === "mouseleave") {
+    } else if (source === "mouseleave") {
       if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
         this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed";
       }
-    } else if (body.type === "contextmenu") {
+    } else if (source === "contextmenu") {
       this._clickLocations.push([x, y, false]);
     }
   }

@@ -12,20 +12,23 @@ export default class MessageReceiver {
    *    NOTE: Should be bound to the owner of this MessageReceiver!
    */
   constructor(callback) {
+    this.sourceQueue = new Queue();
     this.tagQueue = new Queue();
     this.messageQueue = new Queue();
     this.callback = callback;
   }
   
-  receiveMessage(tag, message) {
+  receiveMessage(source, tag, message) {
+    this.sourceQueue.enqueue(source);
     this.tagQueue.enqueue(tag);
     this.messageQueue.enqueue(message);
   }
   
   handle() {
+    let source = this.sourceQueue.dequeue();
     let tag = this.tagQueue.dequeue();
     let message = this.messageQueue.dequeue();
-    this.callback(tag, message);
+    this.callback(source, tag, message);
   }
   
   handleAll() {

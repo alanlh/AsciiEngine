@@ -140,8 +140,9 @@ export default class System {
    * This should not be an expensive method. Ideally, this should pass the message to another data structure,
    * where it can be handled later. 
    * 
+   * @param {String} source The source of the message. Usually the name of the System, or the event type
    * @param {String} tag The tag of the message.
    * @param {Anything} body The message
    */
-  receiveMessage(tag, body) {}
+  receiveMessage(source, tag, body) {}
 }

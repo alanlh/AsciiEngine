@@ -110,7 +110,7 @@ export default class MenuSystem extends AsciiEngine.System {
     this.loseDisplay.getComponent(AsciiEngine.Components.AsciiRender.type).spriteNameList[1] = lossStringName;
   }
   
-  receiveMessage(tag, body) {
+  receiveMessage(source, tag, body) {
     if (tag === "game_end") {
       let gameWon = !!(body);
       if (gameWon) {

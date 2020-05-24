@@ -93,11 +93,11 @@ export default class MessageBoard {
   }
   
   // Posts message to all ids who have signed for the channel/tag.
-  post(channel, message) {
+  post(source, channel, message) {
     // Keep for now?
     if (channel in this.channelSubscribers) {
       for (let id of this.channelSubscribers[channel]) {
-        this.receivers[id].receiveMessage(channel, message);
+        this.receivers[id].receiveMessage(source, channel, message);
       }
     }
     

@@ -11,7 +11,7 @@ export default function minesweeper() {
   gl.init(40, 25);
   engine.setModule(AsciiEngine.Engine.ModuleSlots.Graphics, gl);
 
-  let resourceManager = new AsciiEngine.Modules.ResourceManager;
+  let resourceManager = new AsciiEngine.Modules.ResourceManager();
   engine.setModule(AsciiEngine.Engine.ModuleSlots.ResourceManager, resourceManager);
   loadSprites(resourceManager);
   

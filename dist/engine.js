@@ -592,20 +592,23 @@ var AsciiEngine = (function () {
      *    NOTE: Should be bound to the owner of this MessageReceiver!
      */
     constructor(callback) {
+      this.sourceQueue = new Queue();
       this.tagQueue = new Queue();
       this.messageQueue = new Queue();
       this.callback = callback;
     }
     
-    receiveMessage(tag, message) {
+    receiveMessage(source, tag, message) {
+      this.sourceQueue.enqueue(source);
       this.tagQueue.enqueue(tag);
       this.messageQueue.enqueue(message);
     }
     
     handle() {
+      let source = this.sourceQueue.dequeue();
       let tag = this.tagQueue.dequeue();
       let message = this.messageQueue.dequeue();
-      this.callback(tag, message);
+      this.callback(source, tag, message);
     }
     
     handleAll() {
@@ -755,10 +758,11 @@ var AsciiEngine = (function () {
      * This should not be an expensive method. Ideally, this should pass the message to another data structure,
      * where it can be handled later. 
      * 
+     * @param {String} source The source of the message. Usually the name of the System, or the event type
      * @param {String} tag The tag of the message.
      * @param {Anything} body The message
      */
-    receiveMessage(tag, body) {}
+    receiveMessage(source, tag, body) {}
   }
 
   class MessageBoard {
@@ -854,11 +858,11 @@ var AsciiEngine = (function () {
     }
     
     // Posts message to all ids who have signed for the channel/tag.
-    post(channel, message) {
+    post(source, channel, message) {
       // Keep for now?
       if (channel in this.channelSubscribers) {
         for (let id of this.channelSubscribers[channel]) {
-          this.receivers[id].receiveMessage(channel, message);
+          this.receivers[id].receiveMessage(source, channel, message);
         }
       }
       
@@ -1339,9 +1343,9 @@ var AsciiEngine = (function () {
         
         // Use the "key" property of the event as the events to listen for.
         document.addEventListener(eventName, (event) => {
-          this._messageBoards[eventName].post(event.key, event);
+          this._messageBoards[eventName].post(eventName, event.key, event);
           // "" means listen for all events.
-          this._messageBoards[eventName].post("", event);
+          this._messageBoards[eventName].post(eventName, "", event);
         });
       }
     }
@@ -2296,7 +2300,7 @@ var AsciiEngine = (function () {
         if (target === undefined) {
           target = AsciiMouseInputModule.Global;
         }
-        this._messageBoards[type].post(target, {
+        this._messageBoards[type].post(type, target, {
           type: type,
           target: target,
           event: event,

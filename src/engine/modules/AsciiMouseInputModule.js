@@ -16,7 +16,7 @@ export default class AsciiMouseInputModule {
       if (target === undefined) {
         target = AsciiMouseInputModule.Global;
       }
-      this._messageBoards[type].post(target, {
+      this._messageBoards[type].post(type, target, {
         type: type,
         target: target,
         event: event,
