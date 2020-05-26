@@ -66,21 +66,29 @@ const Parser = {
     let factories = {};
     for (let componentName in json) {
       let componentSpecs = json[componentName];
-      factories[componentName] = function() {
-        let animateComponent = new AsciiAnimateComponent();
-        for (let frameName in componentSpecs) {
-          // Need to create a copy to prevent (accidental?) changes.
-          animateComponent.addFrame(
-            frameName,
-            [...componentSpecs[frameName].spriteNameList],
-            [...componentSpecs[frameName].styleNameList],
-            [...componentSpecs[frameName].relativePositionList],
-          );
-        }
-        return animateComponent;
-      }
+      factories[componentName] = new AsciiAnimateComponentFactory(componentSpecs);
     }
     return factories;
+  }
+}
+
+class AsciiAnimateComponentFactory {
+  constructor(componentSpecs) {
+    this.specs = componentSpecs;
+  }
+  
+  construct() {
+    let animateComponent = new AsciiAnimateComponent();
+    for (let frameName in this.specs) {
+      // Need to create a copy to prevent (accidental?) changes.
+      animateComponent.addFrame(
+        frameName,
+        [...(this.specs[frameName].spriteNameList)],
+        [...(this.specs[frameName].styleNameList)],
+        [...(this.specs[frameName].relativePositionList)],
+      )
+    }
+    return animateComponent;
   }
 }
 

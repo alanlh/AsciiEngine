@@ -42,9 +42,9 @@ export default async function inputField() {
   
   engine.startLoop(100);
   
-  let generateBorderRenderComponent = resourceManager.get("input-border");
+  let borderRenderFactory = resourceManager.get("input-border");
   let borderEntity = new AsciiEngine.Entity("input-border");
-  borderEntity.setComponent(generateBorderRenderComponent());
+  borderEntity.setComponent(borderRenderFactory.construct());
   borderEntity.setComponent(new AsciiEngine.Components.Position(0, 0, 0));
   engine.getEntityManager().requestAddEntity(borderEntity);
 }

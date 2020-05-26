@@ -14,7 +14,7 @@ export default class CursorSystem extends AsciiEngine.System {
     
     let resourceManager = this.getEngine().getModule(AsciiEngine.Engine.ModuleSlots.ResourceManager);
     this._cursor.setComponent(new AsciiEngine.Components.Position(1, 1, 100));
-    this._cursor.setComponent(resourceManager.get("cursor")());
+    this._cursor.setComponent(resourceManager.get("cursor").construct());
     this._cursor.setComponent(new CursorComponent());
     this._cursor.setComponent(new BlinkerComponent(5));
     entityManager.requestAddEntity(this._cursor);
