@@ -25,7 +25,7 @@ export default class EntityManager {
   constructor(engine) {
     this._engine = engine;
     
-    this._entities = [];
+    this._entities = new Set();
     
     this._entityOperations = new Queue();
     
@@ -86,6 +86,10 @@ export default class EntityManager {
     this._enabled.clear();
     this._disabled.clear();
   }
+  
+  get entities() {
+    return this._entities;
+  }
     
   // --------- PUBLIC API ------------ //
   
@@ -125,6 +129,7 @@ export default class EntityManager {
   
   notifyAddition(entity) {
     this._added.add(entity);
+    this.entities.add(entity);
   }
   
   requestDeleteEntity(entity) {
@@ -140,6 +145,7 @@ export default class EntityManager {
   
   notifyDeletion(entity) {
     this._deleted.add(entity);
+    this.entities.delete(entity);
   }
   
   requestSetComponent(entity, component) {

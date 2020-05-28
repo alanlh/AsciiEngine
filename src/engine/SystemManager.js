@@ -93,8 +93,13 @@ export default class SystemManager {
     this._systems[system.name] = system;
     system.init(this);
     
-    // TODO: IMPORTANT
     // If the game has already started, then all existing entities need to be registered with the system.
+    let entityManager = this.engine.getEntityManager();
+    for (let entity of entityManager.entities) {
+      if (system.checkEntity(entity)) {
+        system.addEntity(entity);
+      }
+    }
   }
   
   /**
