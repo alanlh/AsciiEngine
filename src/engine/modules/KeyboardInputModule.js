@@ -11,13 +11,18 @@ export default class KeyboardInputModule {
       
       // Use the "key" property of the event as the events to listen for.
       document.addEventListener(eventName, (event) => {
-        this._messageBoards[eventName].post(eventName, event.key, event);
-        // "" means listen for all events.
-        this._messageBoards[eventName].post(eventName, this.ALL, event);
-        if (event.keyCode <= 40 && event.keyCode >= 37) {
-          event.preventDefault();
-        } else if (event.keyCode === 32) {
-          event.preventDefault();
+        if (document.activeElement === document.body || document.activeElement === null) {
+          // Only listen if nothing else is in focus.
+          // TODO: Make it so that it must be focused on the target element.
+          // How?
+          this._messageBoards[eventName].post(eventName, event.key, event);
+          // "" means listen for all events.
+          this._messageBoards[eventName].post(eventName, this.ALL, event);
+          if (event.keyCode <= 40 && event.keyCode >= 37) {
+            event.preventDefault();
+          } else if (event.keyCode === 32) {
+            event.preventDefault();
+          }
         }
       });
     }

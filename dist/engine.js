@@ -404,7 +404,7 @@ var AsciiEngine = (function () {
     constructor(engine) {
       this._engine = engine;
       
-      this._entities = [];
+      this._entities = new Set();
       
       this._entityOperations = new Queue();
       
@@ -465,6 +465,10 @@ var AsciiEngine = (function () {
       this._enabled.clear();
       this._disabled.clear();
     }
+    
+    get entities() {
+      return this._entities;
+    }
       
     // --------- PUBLIC API ------------ //
     
@@ -504,6 +508,7 @@ var AsciiEngine = (function () {
     
     notifyAddition(entity) {
       this._added.add(entity);
+      this.entities.add(entity);
     }
     
     requestDeleteEntity(entity) {
@@ -519,6 +524,7 @@ var AsciiEngine = (function () {
     
     notifyDeletion(entity) {
       this._deleted.add(entity);
+      this.entities.delete(entity);
     }
     
     requestSetComponent(entity, component) {
@@ -961,8 +967,13 @@ var AsciiEngine = (function () {
       this._systems[system.name] = system;
       system.init(this);
       
-      // TODO: IMPORTANT
       // If the game has already started, then all existing entities need to be registered with the system.
+      let entityManager = this.engine.getEntityManager();
+      for (let entity of entityManager.entities) {
+        if (system.checkEntity(entity)) {
+          system.addEntity(entity);
+        }
+      }
     }
     
     /**
@@ -1344,13 +1355,18 @@ var AsciiEngine = (function () {
         
         // Use the "key" property of the event as the events to listen for.
         document.addEventListener(eventName, (event) => {
-          this._messageBoards[eventName].post(eventName, event.key, event);
-          // "" means listen for all events.
-          this._messageBoards[eventName].post(eventName, this.ALL, event);
-          if (event.keyCode <= 40 && event.keyCode >= 37) {
-            event.preventDefault();
-          } else if (event.keyCode === 32) {
-            event.preventDefault();
+          if (document.activeElement === document.body || document.activeElement === null) {
+            // Only listen if nothing else is in focus.
+            // TODO: Make it so that it must be focused on the target element.
+            // How?
+            this._messageBoards[eventName].post(eventName, event.key, event);
+            // "" means listen for all events.
+            this._messageBoards[eventName].post(eventName, this.ALL, event);
+            if (event.keyCode <= 40 && event.keyCode >= 37) {
+              event.preventDefault();
+            } else if (event.keyCode === 32) {
+              event.preventDefault();
+            }
           }
         });
       }
