@@ -99,13 +99,13 @@ export default class System {
    * This method can be overriden to fit an alternative data structure.
    * However, failure to implement this correctly may result in undefined behavior.
    */
-  hasEntity(entity) {}
+  has(entity) {}
   
   /**
    * Adds the entity to the system.
    * The implementation should make sense for how the derived system stores its entities.
    */
-  addEntity(entity) {}
+  add(entity) {}
   
   /**
    * Removes the entity from this.entities.
@@ -114,7 +114,7 @@ export default class System {
    * Any alternate implementation MUST be defined so that the System no longer processes it.
    * Failure to do so may result in undefined behavior.
    */
-  removeEntity(entity) {}
+  remove(entity) {}
   
   /**
    * A virtual method Systems can override

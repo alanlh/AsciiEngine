@@ -114,7 +114,7 @@ export default class BoardSystem extends AsciiEngine.System {
    * This should be the only System using CellComponents/BoardComponents. 
    * Also only uses CellComponents/BoardComponent.
    */
-  hasEntity(entity) {
+  has(entity) {
     return entity.hasComponent(CellComponent.type) || entity.hasComponent(BoardComponent.type);
   }
   

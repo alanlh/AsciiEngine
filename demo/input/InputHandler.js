@@ -30,15 +30,15 @@ export default class InputHandler extends AsciiEngine.System {
     return entity.hasComponent(CursorComponent.type);
   }
   
-  hasEntity(entity) {
+  has(entity) {
     return check(entity);
   }
   
-  addEntity(entity) {
+  add(entity) {
     this._cursor = entity;
   }
   
-  removeEntity(entity) {
+  remove(entity) {
     if (entity === this._cursor) {
       this._cursor = undefined;
     }

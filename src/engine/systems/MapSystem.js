@@ -7,15 +7,15 @@ export default class MapSystem extends System {
     this.entities = {};
   }
   
-  hasEntity(entity) {
+  has(entity) {
     return entity.id in this.entities;
   };
   
-  addEntity(entity) {
+  add(entity) {
     this.entities[entity.id] = entity;
   }
   
-  removeEntity(entity) {
+  remove(entity) {
     delete this.entities[entity.id];
   }
 }

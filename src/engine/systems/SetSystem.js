@@ -14,15 +14,15 @@ export default class SetSystem extends System {
     this.entities = new Set();
   }
   
-  hasEntity(entity) {
+  has(entity) {
     return this.entities.has(entity);
   }
   
-  addEntity(entity) {
+  add(entity) {
     this.entities.add(entity);
   }
 
-  removeEntity(entity) {
+  remove(entity) {
     this.entities.delete(entity);
   }
 }

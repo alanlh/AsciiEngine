@@ -29,33 +29,33 @@ export default class SystemManager {
     for (let system of this) {
       for (let entity of operations.added) {
         if (system.check(entity)) {
-          system.addEntity(entity);
+          system.add(entity);
         }
       }
       
       for (let entity of operations.enabled) {
         if (system.check(entity)) {
-          system.addEntity(entity);
+          system.add(entity);
         }
       }
       
       for (let entity of operations.changed) {
-        if (!system.hasEntity(entity) && system.check(entity)) {
-          system.addEntity(entity);
-        } else if (system.hasEntity(entity) && !system.check(entity)) {
-          system.removeEntity(entity);
+        if (!system.has(entity) && system.check(entity)) {
+          system.add(entity);
+        } else if (system.has(entity) && !system.check(entity)) {
+          system.remove(entity);
         }
       }
       
       for (let entity of operations.disabled) {
-        if (system.hasEntity(entity)) {
-          system.removeEntity(entity);
+        if (system.has(entity)) {
+          system.remove(entity);
         }
       }
       
       for (let entity of operations.deleted) {
-        if (system.hasEntity(entity)) {
-          system.removeEntity(entity);
+        if (system.has(entity)) {
+          system.remove(entity);
         }
       }
     }
@@ -97,7 +97,7 @@ export default class SystemManager {
     let entityManager = this.engine.getEntityManager();
     for (let entity of entityManager.entities) {
       if (system.check(entity)) {
-        system.addEntity(entity);
+        system.add(entity);
       }
     }
   }
