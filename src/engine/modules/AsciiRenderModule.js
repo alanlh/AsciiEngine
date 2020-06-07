@@ -1,3 +1,7 @@
+/**
+ * NOTE: This file is currently unused.
+ */
+
 import Functions from "../../utility/Functions.js";
 
 export default class AsciiRenderModule {
