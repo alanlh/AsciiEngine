@@ -150,8 +150,7 @@ var AsciiEngine = (function () {
       if (this.hasComponent(type)) {
         return this._components[type];
       }
-      // TODO: Replace with custom logging.
-      console.warn("Entity", id, "does not have component of type ", type);
+      return null;
     }
     
     /**
@@ -914,9 +913,9 @@ var AsciiEngine = (function () {
         }
         
         for (let entity of operations.changed) {
-          if (!system.hasEntity(entity) && system.checkEntity(entity)) {
+          if (!system.hasEntity(entity) && system.check(entity)) {
             system.addEntity(entity);
-          } else if (systm.hasEntity(entity) && !system.checkEntity(entity)) {
+          } else if (system.hasEntity(entity) && !system.check(entity)) {
             system.removeEntity(entity);
           }
         }
@@ -970,7 +969,7 @@ var AsciiEngine = (function () {
       // If the game has already started, then all existing entities need to be registered with the system.
       let entityManager = this.engine.getEntityManager();
       for (let entity of entityManager.entities) {
-        if (system.checkEntity(entity)) {
+        if (system.check(entity)) {
           system.addEntity(entity);
         }
       }
@@ -1152,6 +1151,8 @@ var AsciiEngine = (function () {
       this.spriteNameList = spriteNameList || [];
       this.styleNameList = styleNameList || [];
       this.relativePositionList = relativePositionList || [];
+      
+      this.visible = true;
     }
   }
 
@@ -1164,6 +1165,8 @@ var AsciiEngine = (function () {
       this._spriteNameList = {};
       this._styleNameList = {};
       this._relativePositionList = {};
+      
+      this.visible = true;
     }
     
     get currentFrame() {
@@ -1209,7 +1212,7 @@ var AsciiEngine = (function () {
   }
 
   // Utilize the same type so that AsciiRenderSystem recognizes it.
-  AsciiAnimateComponent.type = AsciiRenderComponent.type;
+  AsciiAnimateComponent.type = "AsciiAnimate";
 
   class PositionComponent extends Component {
     constructor(x, y, z) {
@@ -1291,7 +1294,8 @@ var AsciiEngine = (function () {
     
     check(entity) {
       // Need both renderable and position.
-      return entity.hasComponent(AsciiRenderComponent.type)
+      return (entity.hasComponent(AsciiRenderComponent.type) 
+        || entity.hasComponent(AsciiAnimateComponent.type))
         && entity.hasComponent(PositionComponent.type);
     }
     
@@ -1302,7 +1306,10 @@ var AsciiEngine = (function () {
       let resourceManager = this.getEngine().getModule(Engine.ModuleSlots.ResourceManager);
       
       for (let entity of this.entities) {
-        let renderComponent = entity.getComponent(AsciiRenderComponent.type);
+        let renderComponent = entity.getComponent(AsciiRenderComponent.type) || entity.getComponent(AsciiAnimateComponent.type);
+        if (!renderComponent.visible) {
+          continue;
+        }
         let entityAbsolutePosition = this.getEntityAbsolutePosition(entity);
         for (let i = 0; i < renderComponent.spriteNameList.length; i ++) {
           let sprite = resourceManager.get(renderComponent.spriteNameList[i]);

@@ -130,8 +130,7 @@ export default class Entity {
     if (this.hasComponent(type)) {
       return this._components[type];
     }
-    // TODO: Replace with custom logging.
-    console.warn("Entity", id, "does not have component of type ", type);
+    return null;
   }
   
   /**
