@@ -2,6 +2,7 @@ import Engine from "../AsciiEngine.js";
 import SetSystem from "./SetSystem.js";
 import AsciiRenderModule from "../modules/AsciiRenderModule.js";
 import AsciiRenderComponent from "../components/AsciiRenderComponent.js";
+import AsciiAnimateComponent from "../components/AsciiAnimateComponent.js";
 import PositionComponent from "../components/PositionComponent.js";
 
 export default class AsciiRenderSystem extends SetSystem {
@@ -18,7 +19,8 @@ export default class AsciiRenderSystem extends SetSystem {
   
   check(entity) {
     // Need both renderable and position.
-    return entity.hasComponent(AsciiRenderComponent.type)
+    return (entity.hasComponent(AsciiRenderComponent.type) 
+      || entity.hasComponent(AsciiAnimateComponent.type))
       && entity.hasComponent(PositionComponent.type);
   }
   
@@ -29,7 +31,7 @@ export default class AsciiRenderSystem extends SetSystem {
     let resourceManager = this.getEngine().getModule(Engine.ModuleSlots.ResourceManager);
     
     for (let entity of this.entities) {
-      let renderComponent = entity.getComponent(AsciiRenderComponent.type);
+      let renderComponent = entity.getComponent(AsciiRenderComponent.type) || entity.getComponent(AsciiAnimateComponent.type);
       if (!renderComponent.visible) {
         continue;
       }

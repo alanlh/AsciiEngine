@@ -55,4 +55,4 @@ export default class AsciiAnimateComponent extends Component {
 }
 
 // Utilize the same type so that AsciiRenderSystem recognizes it.
-AsciiAnimateComponent.type = AsciiRenderComponent.type;
+AsciiAnimateComponent.type = "AsciiAnimate";
