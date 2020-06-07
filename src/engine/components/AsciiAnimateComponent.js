@@ -8,6 +8,8 @@ export default class AsciiAnimateComponent extends Component {
     this._spriteNameList = {};
     this._styleNameList = {};
     this._relativePositionList = {};
+    
+    this.visible = true;
   }
   
   get currentFrame() {

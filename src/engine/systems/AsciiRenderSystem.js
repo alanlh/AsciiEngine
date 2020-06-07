@@ -30,6 +30,9 @@ export default class AsciiRenderSystem extends SetSystem {
     
     for (let entity of this.entities) {
       let renderComponent = entity.getComponent(AsciiRenderComponent.type);
+      if (!renderComponent.visible) {
+        continue;
+      }
       let entityAbsolutePosition = this.getEntityAbsolutePosition(entity);
       for (let i = 0; i < renderComponent.spriteNameList.length; i ++) {
         let sprite = resourceManager.get(renderComponent.spriteNameList[i]);
