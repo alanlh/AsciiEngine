@@ -40,9 +40,9 @@ export default class SystemManager {
       }
       
       for (let entity of operations.changed) {
-        if (!system.hasEntity(entity) && system.checkEntity(entity)) {
+        if (!system.hasEntity(entity) && system.check(entity)) {
           system.addEntity(entity);
-        } else if (systm.hasEntity(entity) && !system.checkEntity(entity)) {
+        } else if (system.hasEntity(entity) && !system.check(entity)) {
           system.removeEntity(entity);
         }
       }
@@ -96,7 +96,7 @@ export default class SystemManager {
     // If the game has already started, then all existing entities need to be registered with the system.
     let entityManager = this.engine.getEntityManager();
     for (let entity of entityManager.entities) {
-      if (system.checkEntity(entity)) {
+      if (system.check(entity)) {
         system.addEntity(entity);
       }
     }
