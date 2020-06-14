@@ -1,4 +1,9 @@
 History:
+Version 1.1.2 - 2020/6/13
+  Rename methods in System
+  Entity getComponent now returns null if component is not present
+  Bug fixes
+
 Version 1.1.1 - 2020/6/7
   Added visible flag to AsciiAnimate/AsciiRender components
   Change AsciiAnimate type string, can now distinguish between the two
