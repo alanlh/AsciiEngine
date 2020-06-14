@@ -115,8 +115,4 @@ function hello() {
   }
 
   window.setInterval(tick, 1000);
-  
-  const game = new AsciiEngine.Engine();
-  
-  game.update();
 }
