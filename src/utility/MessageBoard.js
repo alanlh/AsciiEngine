@@ -34,6 +34,7 @@ export default class MessageBoard {
     // console.debug("Component", id, "signing up.");
     if (id in this.receivers) {
       console.warn("Id ", id, " is already signed up.");
+      return;
     }
     this.receivers[id] = receiver;
     this.subscriptions[id] = new Set();
@@ -44,6 +45,7 @@ export default class MessageBoard {
       // this.subscriptions[id] = new Set();
       // TODO: Create similar message when receiving. 
       console.error("Id ", id, " does not have a receiver but is signing up for messages.");
+      return;
     }
     for (let channel of channels) {
       if (!(channel in this.channelSubscribers)) {
@@ -61,6 +63,7 @@ export default class MessageBoard {
   unsubscribe(id, channels) {
     if (!(id in this.subscriptions)) {
       console.warn("Channel: ", id, " does not appear in the message board");
+      return;
     }
     for (let channel of channels) {
       if (!(channel in this.channelSubscribers)) {

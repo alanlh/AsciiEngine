@@ -804,6 +804,7 @@ var AsciiEngine = (function () {
       // console.debug("Component", id, "signing up.");
       if (id in this.receivers) {
         console.warn("Id ", id, " is already signed up.");
+        return;
       }
       this.receivers[id] = receiver;
       this.subscriptions[id] = new Set();
@@ -814,6 +815,7 @@ var AsciiEngine = (function () {
         // this.subscriptions[id] = new Set();
         // TODO: Create similar message when receiving. 
         console.error("Id ", id, " does not have a receiver but is signing up for messages.");
+        return;
       }
       for (let channel of channels) {
         if (!(channel in this.channelSubscribers)) {
@@ -831,6 +833,7 @@ var AsciiEngine = (function () {
     unsubscribe(id, channels) {
       if (!(id in this.subscriptions)) {
         console.warn("Channel: ", id, " does not appear in the message board");
+        return;
       }
       for (let channel of channels) {
         if (!(channel in this.channelSubscribers)) {
@@ -1387,7 +1390,7 @@ var AsciiEngine = (function () {
     
     withdraw(id) {
       for (let eventType in this._messageBoards) {
-        this._messageBoards[eventType].withdraw(id, receiver);
+        this._messageBoards[eventType].withdraw(id);
       }
     }
     

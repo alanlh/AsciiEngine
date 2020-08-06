@@ -36,7 +36,7 @@ export default class KeyboardInputModule {
   
   withdraw(id) {
     for (let eventType in this._messageBoards) {
-      this._messageBoards[eventType].withdraw(id, receiver);
+      this._messageBoards[eventType].withdraw(id);
     }
   }
   
