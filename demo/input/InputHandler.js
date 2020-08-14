@@ -56,7 +56,7 @@ export default class InputHandler extends AsciiEngine.System {
         ["Row-" + y], ["style-none"], [[0, 0, 0]]
       ));
       
-      this.getEngine().getEntityManager().requestAddEntity(rowEntity);
+      this.getEntityManager().requestAddEntity(rowEntity);
     }
     
     let keyboardInput = this.getEngine().getModule("KeyboardInput");

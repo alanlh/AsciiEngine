@@ -60,7 +60,7 @@ export default class MenuSystem extends AsciiEngine.System {
     this.wins = 0;
     this.losses = 0;
     
-    let entityManager = this.getEngine().getEntityManager();
+    let entityManager = this.getEntityManager();
     entityManager.requestAddEntity(this.title);
     entityManager.requestAddEntity(this.easyGameButton);
     entityManager.requestAddEntity(this.mediumGameButton);

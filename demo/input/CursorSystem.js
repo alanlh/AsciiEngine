@@ -10,7 +10,7 @@ export default class CursorSystem extends AsciiEngine.System {
   }
   
   startup() {
-    let entityManager = this.getEngine().getEntityManager();
+    let entityManager = this.getEntityManager();
     
     let resourceManager = this.getEngine().getModule(AsciiEngine.Engine.ModuleSlots.ResourceManager);
     this._cursor.setComponent(new AsciiEngine.Components.Position(1, 1, 100));

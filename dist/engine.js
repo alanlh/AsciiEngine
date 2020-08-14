@@ -398,7 +398,9 @@ var AsciiEngine = (function () {
   EntityOp.ENABLE = Symbol("Enable");
   EntityOp.DISABLE = Symbol("Disable");
 
-
+  /**
+   * @typedef {EntityManager}
+   */
   class EntityManager {
     constructor(engine) {
       this._engine = engine;
@@ -649,7 +651,7 @@ var AsciiEngine = (function () {
     init(systemManager) {
       this._systemManager = systemManager;
       // TODO: Remove? Prevent direct access to EntityManager?
-      this._engine = systemManager.engine;
+      this._engine = systemManager.getEngine();
       // This should only be accessed in order to directly modify an Entity, rather than component data.
       this._entityManager = this._engine.getEntityManager();
       this.getSystemManager().getMessageBoard().signup(this.name, this.getMessageReceiver());
@@ -671,6 +673,10 @@ var AsciiEngine = (function () {
     
     getEngine() {
       return this._engine;
+    }
+
+    getEntityManager() {
+      return this._entityManager;
     }
     
     getMessageReceiver() {
@@ -939,7 +945,7 @@ var AsciiEngine = (function () {
       this._engine.getEntityManager().markEntityChangesAsHandled();
     }
     
-    get engine() {
+    getEngine() {
       return this._engine;
     }
     
@@ -970,7 +976,7 @@ var AsciiEngine = (function () {
       system.init(this);
       
       // If the game has already started, then all existing entities need to be registered with the system.
-      let entityManager = this.engine.getEntityManager();
+      let entityManager = this.getEngine().getEntityManager();
       for (let entity of entityManager.entities) {
         if (system.check(entity)) {
           system.add(entity);
@@ -1039,84 +1045,93 @@ var AsciiEngine = (function () {
      */
     constructor(config) {
       this._initialized = false;
-      
+
       this._entityManager = new EntityManager(this);
-      
+
       this._systemManager = new SystemManager(this);
-      
+
       this._modules = {};
-      
+
       this._millisecPerUpdate = 1000; // Default to 1 FPS
       this._intervalKey = undefined;
       this._delta = 0;
     }
-    
+
+    /**
+     * @returns {EntityManager}
+     */
     getEntityManager() {
       return this._entityManager;
     }
-    
+
+    /**
+     * @returns {SystemManager}
+     */
     getSystemManager() {
       return this._systemManager;
     }
-    
+
     get modules() {
       return this._modules;
     }
-    
+
     setModule(type, module) {
       this.modules[type] = module;
     }
-    
+
     getModule(type) {
       return this.modules[type];
     }
-    
+
     /**
-     * TODO: Remove?
+     * Currently unused. TODO: Remove?
      */
     applyModuleConfig(config) {
       for (let type in this._modules) {
         this.modules[type].init(config);
       }
     }
-    
+
+    /**
+     * Returns whether or not the game loop is running.
+     * @returns {boolean}
+     */
     get running() {
       return this._intervalKey !== undefined;
     }
-    
+
     /**
-     * Starts the game loop.
-     * 
-     * @param {Number} updateRate Number of milliseconds between updates.
+     * Starts the game loop
+     * @param {number} updateRate Number of milliseconds between updates
      */
     startLoop(updateRate) {
       if (updateRate !== undefined) {
         this._millisecPerUpdate = updateRate;
       }
-      this._intervalKey = setInterval(() => {this.update();}, this._millisecPerUpdate);
+      this._intervalKey = setInterval(() => { this.update(); }, this._millisecPerUpdate);
     }
-    
+
     pauseLoop() {
       clearInterval(this._intervalKey);
       this._intervalKey = undefined;
     }
-    
+
     /**
      * Updates the game by one tick.
-     */ 
+     */
     update() {
       for (let system of this._systemManager) {
         system.preUpdate();
       }
-      
+
       for (let system of this._systemManager) {
         system.update();
       }
-      
+
       for (let system of this._systemManager) {
         system.postUpdate();
       }
-      
+
       // Update Entity/System Managers.
       this.getEntityManager().processEntityOperations();
       this.getSystemManager().processEntityOperations();

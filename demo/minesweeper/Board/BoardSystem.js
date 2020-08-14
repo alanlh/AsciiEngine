@@ -83,7 +83,7 @@ export default class BoardSystem extends AsciiEngine.System {
   
   startup() {
     // Entities have been created. Notify the entity manager about it.
-    let entityManager = this.getEngine().getEntityManager();
+    let entityManager = this.getEntityManager();
     // Add board as an entity. This also adds all Cells as an entity as well.
     entityManager.requestAddEntity(this._board);
 
@@ -101,7 +101,7 @@ export default class BoardSystem extends AsciiEngine.System {
     let mouseModule = this.getEngine().getModule("mouse");
     mouseModule.withdraw(this.name);
     
-    let entityManager = this.getEngine().getEntityManager();
+    let entityManager = this.getEntityManager();
     entityManager.requestDeleteEntity(this._board);
   }
   

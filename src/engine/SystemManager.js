@@ -63,7 +63,7 @@ export default class SystemManager {
     this._engine.getEntityManager().markEntityChangesAsHandled();
   }
   
-  get engine() {
+  getEngine() {
     return this._engine;
   }
   
@@ -94,7 +94,7 @@ export default class SystemManager {
     system.init(this);
     
     // If the game has already started, then all existing entities need to be registered with the system.
-    let entityManager = this.engine.getEntityManager();
+    let entityManager = this.getEngine().getEntityManager();
     for (let entity of entityManager.entities) {
       if (system.check(entity)) {
         system.add(entity);

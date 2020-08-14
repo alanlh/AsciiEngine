@@ -26,7 +26,7 @@ export default class System {
   init(systemManager) {
     this._systemManager = systemManager;
     // TODO: Remove? Prevent direct access to EntityManager?
-    this._engine = systemManager.engine;
+    this._engine = systemManager.getEngine();
     // This should only be accessed in order to directly modify an Entity, rather than component data.
     this._entityManager = this._engine.getEntityManager();
     this.getSystemManager().getMessageBoard().signup(this.name, this.getMessageReceiver());
@@ -48,6 +48,10 @@ export default class System {
   
   getEngine() {
     return this._engine;
+  }
+
+  getEntityManager() {
+    return this._entityManager;
   }
   
   getMessageReceiver() {
