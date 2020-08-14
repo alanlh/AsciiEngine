@@ -1,9 +1,8 @@
-import Engine from "../AsciiEngine.js";
 import SetSystem from "./SetSystem.js";
-import AsciiRenderModule from "../modules/AsciiRenderModule.js";
 import AsciiRenderComponent from "../components/AsciiRenderComponent.js";
 import AsciiAnimateComponent from "../components/AsciiAnimateComponent.js";
 import PositionComponent from "../components/PositionComponent.js";
+import ModuleSlots from "../modules/ModuleSlots.js";
 
 export default class AsciiRenderSystem extends SetSystem {
   constructor(name) {
@@ -14,7 +13,7 @@ export default class AsciiRenderSystem extends SetSystem {
   }
   
   startup() {
-    this._asciiGl = this.getEngine().getModule(Engine.ModuleSlots.Graphics);
+    this._asciiGl = this.getEngine().getModule(ModuleSlots.Graphics);
   }
   
   check(entity) {
@@ -28,7 +27,7 @@ export default class AsciiRenderSystem extends SetSystem {
    * Only render after the main loop.
    */
   postUpdate() {
-    let resourceManager = this.getEngine().getModule(Engine.ModuleSlots.ResourceManager);
+    let resourceManager = this.getEngine().getModule(ModuleSlots.ResourceManager);
     
     for (let entity of this.entities) {
       let renderComponent = entity.getComponent(AsciiRenderComponent.type) || entity.getComponent(AsciiAnimateComponent.type);

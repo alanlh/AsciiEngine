@@ -45,7 +45,7 @@ export default class InputHandler extends AsciiEngine.System {
   }
   
   startup() {
-    let resourceManager = this.getEngine().getModule(AsciiEngine.Engine.ModuleSlots.ResourceManager);
+    let resourceManager = this.getEngine().getModule(AsciiEngine.ModuleSlots.ResourceManager);
 
     for (let y = 0; y < 10; y ++) {
       resourceManager.add("Row-" + y, this.rowSprites[y]);
@@ -74,7 +74,7 @@ export default class InputHandler extends AsciiEngine.System {
   }
   
   update() {
-    let resourceManager = this.getEngine().getModule(AsciiEngine.Engine.ModuleSlots.ResourceManager);
+    let resourceManager = this.getEngine().getModule(AsciiEngine.ModuleSlots.ResourceManager);
     
     for (let y = 0; y < 10; y ++) {
       let rowSprite = this.spriteBuilders[y].construct(this.paramArrays[y]);

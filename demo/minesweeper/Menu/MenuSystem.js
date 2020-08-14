@@ -96,7 +96,7 @@ export default class MenuSystem extends AsciiEngine.System {
     let winStringName = "text-" + this.wins.toString();
     let lossStringName = "text-" + this.losses.toString();
     
-    let resourceManager = this.getEngine().getModule(AsciiEngine.Engine.ModuleSlots.ResourceManager);
+    let resourceManager = this.getEngine().getModule(AsciiEngine.ModuleSlots.ResourceManager);
     if (!resourceManager.has(winStringName)) {
       let winStringSprite = new AsciiEngine.GL.Sprite(this.wins.toString());
       resourceManager.add(winStringName, winStringSprite);

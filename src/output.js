@@ -5,6 +5,7 @@ import Component from "./engine/components/Component.js";
 import System from "./engine/systems/System.js";
 import Systems from "./engine/systems/DefaultSystems.js";
 import Modules from "./engine/modules/DefaultModules.js";
+import ModuleSlots from "./engine/modules/ModuleSlots.js";
 import Utility from "./utility/Utility.js";
 
 import AsciiGL from "./graphics/AsciiGL.js";
@@ -17,6 +18,7 @@ const AsciiEngine = {
   System: System,
   Systems: Systems,
   Modules: Modules,
+  ModuleSlots: ModuleSlots,
   GL: AsciiGL,
   Utility: Utility,
 }

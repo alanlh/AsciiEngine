@@ -9,10 +9,10 @@ export default function minesweeper() {
   
   let gl = new AsciiEngine.GL.Instance("minesweeper");
   gl.init(40, 25);
-  engine.setModule(AsciiEngine.Engine.ModuleSlots.Graphics, gl);
+  engine.setModule(AsciiEngine.ModuleSlots.Graphics, gl);
 
   let resourceManager = new AsciiEngine.Modules.ResourceManager();
-  engine.setModule(AsciiEngine.Engine.ModuleSlots.ResourceManager, resourceManager);
+  engine.setModule(AsciiEngine.ModuleSlots.ResourceManager, resourceManager);
   loadSprites(resourceManager);
   
   let mouseInput = new AsciiEngine.Modules.AsciiMouseInput(gl);

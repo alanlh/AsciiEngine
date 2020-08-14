@@ -103,9 +103,4 @@ export default class Engine {
   }
 }
 
-Engine.ModuleSlots = {
-  Graphics: Symbol("GraphicsLibrary"),
-  ResourceManager: Symbol("ResourceManager"),
-}
-
 Object.freeze(Engine.Modules);

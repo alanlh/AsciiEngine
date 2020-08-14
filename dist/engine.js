@@ -398,9 +398,7 @@ var AsciiEngine = (function () {
   EntityOp.ENABLE = Symbol("Enable");
   EntityOp.DISABLE = Symbol("Disable");
 
-  /**
-   * @typedef {EntityManager}
-   */
+
   class EntityManager {
     constructor(engine) {
       this._engine = engine;
@@ -1138,11 +1136,6 @@ var AsciiEngine = (function () {
     }
   }
 
-  Engine.ModuleSlots = {
-    Graphics: Symbol("GraphicsLibrary"),
-    ResourceManager: Symbol("ResourceManager"),
-  };
-
   Object.freeze(Engine.Modules);
 
   class Component {
@@ -1298,6 +1291,11 @@ var AsciiEngine = (function () {
     }
   }
 
+  const ModuleSlots = {
+    Graphics: Symbol("GraphicsLibrary"),
+    ResourceManager: Symbol("ResourceManager"),
+  };
+
   class AsciiRenderSystem extends SetSystem {
     constructor(name) {
       super(name);
@@ -1307,7 +1305,7 @@ var AsciiEngine = (function () {
     }
     
     startup() {
-      this._asciiGl = this.getEngine().getModule(Engine.ModuleSlots.Graphics);
+      this._asciiGl = this.getEngine().getModule(ModuleSlots.Graphics);
     }
     
     check(entity) {
@@ -1321,7 +1319,7 @@ var AsciiEngine = (function () {
      * Only render after the main loop.
      */
     postUpdate() {
-      let resourceManager = this.getEngine().getModule(Engine.ModuleSlots.ResourceManager);
+      let resourceManager = this.getEngine().getModule(ModuleSlots.ResourceManager);
       
       for (let entity of this.entities) {
         let renderComponent = entity.getComponent(AsciiRenderComponent.type) || entity.getComponent(AsciiAnimateComponent.type);
@@ -2592,6 +2590,7 @@ var AsciiEngine = (function () {
     System: System,
     Systems: DefaultSystems,
     Modules: Modules,
+    ModuleSlots: ModuleSlots,
     GL: AsciiGL,
     Utility: Utility,
   };

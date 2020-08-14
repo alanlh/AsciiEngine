@@ -11,10 +11,10 @@ export default async function inputField() {
   let engine = new AsciiEngine.Engine();
   let systemManager = engine.getSystemManager();
 
-  engine.setModule(AsciiEngine.Engine.ModuleSlots.Graphics, gl);
+  engine.setModule(AsciiEngine.ModuleSlots.Graphics, gl);
 
   let resourceManager = new AsciiEngine.Modules.ResourceManager();
-  engine.setModule(AsciiEngine.Engine.ModuleSlots.ResourceManager, resourceManager);
+  engine.setModule(AsciiEngine.ModuleSlots.ResourceManager, resourceManager);
   await resourceManager.loadSpriteFiles([
     "./demo/input/assets/sprites.json",
   ]);
