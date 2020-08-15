@@ -1,12 +1,28 @@
 import System from "./systems/System.js";
 
 import MessageBoard from "../utility/MessageBoard.js";
+import OrderedMultiMap from "../utility/data_structures/OrderedMultiMap.js";
 
 export default class SystemManager {
+  /**
+   * Creates a new SystemManager
+   * @param {Engine} engine The engine for reference
+   */
   constructor(engine) {
     this._engine = engine;
     
+    /**
+     * @type {OrderedMultiMap<number, System>}
+     */
+    this._activeSystems = new OrderedMultiMap();
+    /**
+     * @type {Object.<string, System>}
+     */
     this._systems = {};
+    /**
+     * @type {Object.<string, number>}
+     */
+    this._systemPriorities = {};
     
     this._messageBoard = new MessageBoard();
   }
@@ -26,7 +42,8 @@ export default class SystemManager {
    */
   processEntityOperations() {
     let operations = this._engine.getEntityManager().requestEntityChanges();
-    for (let system of this) {
+    for (let systemName in this._systems) {
+      let system = this._systems[systemName];
       for (let entity of operations.added) {
         if (system.check(entity)) {
           system.add(entity);
@@ -71,26 +88,26 @@ export default class SystemManager {
    * Iterates over all active systems in the order they should be processed in.
    */ 
   *[Symbol.iterator]() {
-    // Return in order of priority.
-    for (let systemName in this._systems) {
-      let system = this._systems[systemName];
-      if (system.active) {
-        yield system;
-      }
+    for (let system of this._activeSystems) {
+      yield system;
     }
   }
   
   // ---------- PUBLIC API ---------- //
   
   /**
-   * Adds a system to the SystemManager.
+   * Adds a system to the SystemManager. 
+   * The default priority is 0.
+   * By default, the system is added immediately. (DELAY NOT IMPLEMENTED)
    * 
    * @param {System} system The system to add
+   * @param {number} priority The priority of the system. Lower priorities are run first.
    * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
    */
-  addSystem(system, delay) {
-    // TODO: Implement priority.
+  addSystem(system, priority, delay) {
+    priority = priority || 0;
     this._systems[system.name] = system;
+    this._activeSystems.add(priority, system);
     system.init(this);
     
     // If the game has already started, then all existing entities need to be registered with the system.
@@ -110,8 +127,13 @@ export default class SystemManager {
    */
   removeSystem(name, delay) {
     if (name in this._systems) {
-      this._systems[name].destroy();
+      let system = this._systems[name];
+      if (this._systems[name].active) {
+        let priority = this._systemPriorities[name];
+        this._activeSystems.delete(priority, system);
+      }
       delete this._systems[name];
+      system.destroy();
     }
   }
   
@@ -126,7 +148,9 @@ export default class SystemManager {
     // TODO: Give the option to delay this from taking effect until the next cycle.
     // TODO: Make this a configuration setting.
     if (name in this._systems) {
-      this._systems[name].enable();
+      let system = this._systems[name];
+      system.enable();
+      this._activeSystems.add(this._systemPriorities[name], system);
       return true;
     }
     return false;
@@ -143,7 +167,9 @@ export default class SystemManager {
     // TODO: Give the option to delay this from taking effect until the next cycle.
     // TODO: Make this a configuration setting.
     if (name in this._systems) {
-      this._systems[name].disable();
+      let system = this._systems[name];
+      system.disable();
+      this._activeSystems.delete(this._systemPriorities[name], system);
       return true;
     }
     return false;
