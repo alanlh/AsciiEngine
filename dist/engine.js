@@ -1569,7 +1569,20 @@ var AsciiEngine = (function () {
     KEY_UP: "keyup",
   };
 
+  /**
+   * @typedef {{
+   * setAsBlank?: string,
+   * spaceIsTransparent?: boolean,
+   * ignoreLeadingSpaces?: boolean,
+   * spaceHasFormatting?: boolean,
+   * }} SpriteSettings
+   */
   class Sprite {
+    /**
+     * Creates a new Sprite that can be used by AsciiGL.
+     * @param {string} text The text which the sprite is composed of
+     * @param {SpriteSettings} settings Controls how the sprite is displayed
+     */
     constructor(text, settings) {
       // TODO: Verify text.
       text = text || "";
@@ -1582,25 +1595,27 @@ var AsciiEngine = (function () {
       this._height = 1;
       
       let visibleCharFound = false;
-      let i = 0;
+      let textIdx = 0;
       if (text[0] === '\n') {
         // Ignore the first character if it is a newline.
-        i = 1;
+        textIdx = 1;
       }
-      this._rowIndices.push(i);
-      for (; i < text.length; i ++) {
-        if (text[i] === '\n') {
-          if (i - this._rowIndices[this._rowIndices.length - 1] > this._width) {
-            this._width = Math.max(this._width, i - this._rowIndices[this._rowIndices.length - 1]);
+      this._rowIndices.push(textIdx);
+      this._firstVisibleChar.push(undefined);
+      for (; textIdx < text.length; textIdx ++) {
+        if (text[textIdx] === '\n') {
+          if (textIdx - this._rowIndices[this._rowIndices.length - 1] > this._width) {
+            this._width = Math.max(this._width, textIdx - this._rowIndices[this._rowIndices.length - 1]);
           }
-          this._rowIndices.push(i + 1);
+          this._rowIndices.push(textIdx + 1);
+          this._firstVisibleChar.push(undefined);
           visibleCharFound = false;
-        } else if (!visibleCharFound && text[i] !== ' ') {
+        } else if (!visibleCharFound && text[textIdx] !== ' ') {
           visibleCharFound = true;
-          this._firstVisibleChar.push(i);
+          this._firstVisibleChar[this._firstVisibleChar.length - 1] = textIdx;
         }
         // TODO: Handle any other bad characters (\t, \b, etc.)
-        if (i > 1 && text[i - 1] === '\n') {
+        if (textIdx > 1 && text[textIdx - 1] === '\n') {
           this._height ++;
         }
       }
@@ -1623,7 +1638,7 @@ var AsciiEngine = (function () {
       this._ignoreLeadingSpaces = true;
       // If ignoreLeadingSpaces is true but spaceIsTransparent is false, leading spaces are still ignored.
       // i.e. ignoreLeadingSpaces takes precedence. 
-      
+      this._spaceHasFormatting = false;
       
       if ("setAsBlank" in settings) {
         this._setAsBlank = settings.setAsBlank;
@@ -1636,6 +1651,10 @@ var AsciiEngine = (function () {
       
       if ("ignoreLeadingSpaces" in settings) {
         this._ignoreLeadingSpaces = settings.ignoreLeadingSpaces;
+      }
+
+      if ("spaceHasFormatting" in settings) {
+        this._spaceHasFormatting = settings.spaceHasFormatting;
       }
       
       Object.freeze(this);
@@ -1668,6 +1687,43 @@ var AsciiEngine = (function () {
       return this._ignoreLeadingSpaces;
     }
     
+    get spaceHasFormatting() {
+      return this._spaceHasFormatting;
+    }
+
+    *getIt(left, right, top, bottom) {
+      let minX = Math.max(left, 0);
+      let maxX = math.min(right, this.width);
+      let minY = Math.max(top, 0);
+      let maxY = Math.min(bottom, this.height);
+
+      if (top >= this.height || bottom < 0) {
+        // The sprite is above or below the screen, respectively;
+        return;
+      }
+
+      for (let y = minY; y < maxY; y++) {
+        if (this._firstVisibleChar[y] === undefined) {
+          continue;
+        }
+        let x = this.ignoreLeadingSpaces ? this._firstVisibleChar[y] : 0;
+        let rowStart = this._rowIndices[y];
+        let rowEnd = this._rowIndices[y + 1] - 1; // Subtract 1 because last character is a new line.
+        let rowLength = rowEnd - rowStart;
+        if (left >= rowStart + rowLength || right < x) {
+          // This row is to the right or left of the screen, respectively.
+          continue;
+        }
+        if (this._rowIndices[y + 1] - 1 - rowStart <= minX) ;
+        let rowStartIdx = this._rowIndices[y];
+        while (x < maxX) {
+          let charIdx = rowStartIdx + x;
+          if (this.ignoreLeadingSpaces && charIdx < this._firstVisibleChar[y]) ;
+
+        }
+      }
+    }
+
     /**
      * Returns the character at the specified location.
      * If the location is invalid or transparent, returns the empty string.
@@ -1681,6 +1737,9 @@ var AsciiEngine = (function () {
       }
       
       let rowStart = this._rowIndices[y];
+      if (rowStart === undefined) {
+        return "";
+      }
       let nextRow = this._rowIndices[y + 1];
       if (x + rowStart + 1 >= nextRow) {
         return "";

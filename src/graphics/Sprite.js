@@ -1,4 +1,17 @@
+/**
+ * @typedef {{
+ * setAsBlank?: string,
+ * spaceIsTransparent?: boolean,
+ * ignoreLeadingSpaces?: boolean,
+ * spaceHasFormatting?: boolean,
+ * }} SpriteSettings
+ */
 export default class Sprite {
+  /**
+   * Creates a new Sprite that can be used by AsciiGL.
+   * @param {string} text The text which the sprite is composed of
+   * @param {SpriteSettings} settings Controls how the sprite is displayed
+   */
   constructor(text, settings) {
     // TODO: Verify text.
     text = text || "";
@@ -11,25 +24,27 @@ export default class Sprite {
     this._height = 1;
     
     let visibleCharFound = false;
-    let i = 0;
+    let textIdx = 0;
     if (text[0] === '\n') {
       // Ignore the first character if it is a newline.
-      i = 1;
+      textIdx = 1;
     }
-    this._rowIndices.push(i);
-    for (; i < text.length; i ++) {
-      if (text[i] === '\n') {
-        if (i - this._rowIndices[this._rowIndices.length - 1] > this._width) {
-          this._width = Math.max(this._width, i - this._rowIndices[this._rowIndices.length - 1]);
+    this._rowIndices.push(textIdx);
+    this._firstVisibleChar.push(undefined);
+    for (; textIdx < text.length; textIdx ++) {
+      if (text[textIdx] === '\n') {
+        if (textIdx - this._rowIndices[this._rowIndices.length - 1] > this._width) {
+          this._width = Math.max(this._width, textIdx - this._rowIndices[this._rowIndices.length - 1]);
         }
-        this._rowIndices.push(i + 1);
+        this._rowIndices.push(textIdx + 1);
+        this._firstVisibleChar.push(undefined);
         visibleCharFound = false;
-      } else if (!visibleCharFound && text[i] !== ' ') {
+      } else if (!visibleCharFound && text[textIdx] !== ' ') {
         visibleCharFound = true;
-        this._firstVisibleChar.push(i);
+        this._firstVisibleChar[this._firstVisibleChar.length - 1] = textIdx;
       }
       // TODO: Handle any other bad characters (\t, \b, etc.)
-      if (i > 1 && text[i - 1] === '\n') {
+      if (textIdx > 1 && text[textIdx - 1] === '\n') {
         this._height ++;
       }
     }
@@ -52,7 +67,7 @@ export default class Sprite {
     this._ignoreLeadingSpaces = true;
     // If ignoreLeadingSpaces is true but spaceIsTransparent is false, leading spaces are still ignored.
     // i.e. ignoreLeadingSpaces takes precedence. 
-    
+    this._spaceHasFormatting = false;
     
     if ("setAsBlank" in settings) {
       this._setAsBlank = settings.setAsBlank;
@@ -65,6 +80,10 @@ export default class Sprite {
     
     if ("ignoreLeadingSpaces" in settings) {
       this._ignoreLeadingSpaces = settings.ignoreLeadingSpaces;
+    }
+
+    if ("spaceHasFormatting" in settings) {
+      this._spaceHasFormatting = settings.spaceHasFormatting;
     }
     
     Object.freeze(this);
@@ -97,6 +116,10 @@ export default class Sprite {
     return this._ignoreLeadingSpaces;
   }
   
+  get spaceHasFormatting() {
+    return this._spaceHasFormatting;
+  }
+
   /**
    * Returns the character at the specified location.
    * If the location is invalid or transparent, returns the empty string.
@@ -110,6 +133,9 @@ export default class Sprite {
     }
     
     let rowStart = this._rowIndices[y];
+    if (rowStart === undefined) {
+      return "";
+    }
     let nextRow = this._rowIndices[y + 1];
     if (x + rowStart + 1 >= nextRow) {
       return "";
