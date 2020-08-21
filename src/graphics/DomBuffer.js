@@ -68,28 +68,28 @@ export default class DOMBuffer {
         let domElement = this.elements[y][cellsUsed];
         
         let segmentLength = drawBuffer.getSegmentLengthAt(x, y);
-        let style = drawBuffer.getStyleAt(x, y);
-        let front = style.front;
-        let text = null;
-        if (front === null) {
+        let frontTextId = drawBuffer.getSpriteIdAt(x, y);
+        let text = undefined;
+        if (frontTextId === undefined) {
           text = " ".repeat(segmentLength);
         } else {
-          text = drawBuffer.sprites[front].segmentAt(
-            x - drawBuffer.locations[front][0],
-            y - drawBuffer.locations[front][1],
+          text = drawBuffer.sprites[frontTextId].segmentAt(
+            x - drawBuffer.locations[frontTextId][0],
+            y - drawBuffer.locations[frontTextId][1],
             segmentLength
           );
         }
         domElement.textContent = text;
-        domElement.dataset.asciiGlId = front;
         
+        let style = drawBuffer.getStyleAt(x, y);
         if (!style.completed) {
           style.fillRemainder(drawBuffer.backgroundStyle);
         }
         for (let styleName of style) {
           domElement.style[styleName] = style.getStyle(styleName);
         }
-        
+        domElement.dataset.asciiGlId = style.front;
+
         cellsUsed ++;
         x += segmentLength;
       }

@@ -3,7 +3,9 @@
     "sprite-blank": {
       "text": " ",
       "settings": {
-        "spaceIsTransparent": false
+        "ignoreLeadingSpaces": false,
+        "spaceIsTransparent": true,
+        "spaceHasFormatting": true
       }
     },
     "sprite-box": {

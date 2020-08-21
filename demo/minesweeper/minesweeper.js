@@ -78,6 +78,7 @@ function loadSprites(resourceManager) {
   // Create sprite for empty block.
   let emptySprite = new AsciiEngine.GL.Sprite(" ", {
     spaceIsTransparent: false,
+    ignoreLeadingSpaces: false,
   });
   resourceManager.add("CellSprite-Empty", emptySprite);
   

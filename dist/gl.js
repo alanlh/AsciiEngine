@@ -8,6 +8,14 @@ var AsciiGL = (function () {
    * ignoreLeadingSpaces?: boolean,
    * spaceHasFormatting?: boolean,
    * }} SpriteSettings
+   * 
+   *
+   * @typedef {{
+   * x: number,
+   * y: number,
+   * length: number,
+   * visibleText: boolean,
+   * }} SegmentData
    */
   class Sprite {
     /**
@@ -19,46 +27,17 @@ var AsciiGL = (function () {
       // TODO: Verify text.
       text = text || "";
       settings = settings || {};
-      
+
       this._text = text;
+      /** @type {Array<number>} */
       this._rowIndices = [];
+      /** @type {Array<number>} */
       this._firstVisibleChar = [];
       this._width = 0;
       this._height = 1;
-      
-      let visibleCharFound = false;
-      let textIdx = 0;
-      if (text[0] === '\n') {
-        // Ignore the first character if it is a newline.
-        textIdx = 1;
-      }
-      this._rowIndices.push(textIdx);
-      this._firstVisibleChar.push(undefined);
-      for (; textIdx < text.length; textIdx ++) {
-        if (text[textIdx] === '\n') {
-          if (textIdx - this._rowIndices[this._rowIndices.length - 1] > this._width) {
-            this._width = Math.max(this._width, textIdx - this._rowIndices[this._rowIndices.length - 1]);
-          }
-          this._rowIndices.push(textIdx + 1);
-          this._firstVisibleChar.push(undefined);
-          visibleCharFound = false;
-        } else if (!visibleCharFound && text[textIdx] !== ' ') {
-          visibleCharFound = true;
-          this._firstVisibleChar[this._firstVisibleChar.length - 1] = textIdx;
-        }
-        // TODO: Handle any other bad characters (\t, \b, etc.)
-        if (textIdx > 1 && text[textIdx - 1] === '\n') {
-          this._height ++;
-        }
-      }
+      /** @type {Array<Array<SegmentData>>} */
+      this._segments = undefined;
 
-      if (text.charAt(text.length - 1) !== '\n') {
-        this._width = Math.max(this._width, text.length - this._rowIndices[this._rowIndices.length - 1]);
-        this._rowIndices.push(text.length + 1);
-      } else {
-        this._rowIndices.push(text.length);
-      }
-      
       // All characters in this set are replaced with a blank space when being drawn.
       // These characters are not transparent.
       this._setAsBlank = "";
@@ -71,16 +50,16 @@ var AsciiGL = (function () {
       // If ignoreLeadingSpaces is true but spaceIsTransparent is false, leading spaces are still ignored.
       // i.e. ignoreLeadingSpaces takes precedence. 
       this._spaceHasFormatting = false;
-      
+
       if ("setAsBlank" in settings) {
         this._setAsBlank = settings.setAsBlank;
       }
       this._setAsBlankRegexp = new RegExp("[" + this._setAsBlank + "]", "g");
-      
+
       if ("spaceIsTransparent" in settings) {
         this._spaceIsTransparent = settings.spaceIsTransparent;
       }
-      
+
       if ("ignoreLeadingSpaces" in settings) {
         this._ignoreLeadingSpaces = settings.ignoreLeadingSpaces;
       }
@@ -88,48 +67,135 @@ var AsciiGL = (function () {
       if ("spaceHasFormatting" in settings) {
         this._spaceHasFormatting = settings.spaceHasFormatting;
       }
-      
+
+      this._parseSpriteShape();
+
+      /** Parse and store segment data */
+      this._parseSegmentData();
       Object.freeze(this);
     }
-    
+
+    _parseSpriteShape() {
+      let visibleCharFound = false;
+      let textIdx = 0;
+      if (this.text[0] === '\n') {
+        // Ignore the first character if it is a newline.
+        textIdx = 1;
+      }
+      this._rowIndices.push(textIdx);
+      this._firstVisibleChar.push(this.ignoreLeadingSpaces ? undefined : textIdx);
+      for (; textIdx < this.text.length; textIdx++) {
+        if (this.text[textIdx] === '\n') {
+          if (textIdx - this._rowIndices[this._rowIndices.length - 1] > this._width) {
+            this._width = Math.max(this._width, textIdx - this._rowIndices[this._rowIndices.length - 1]);
+          }
+          this._rowIndices.push(textIdx + 1);
+          this._firstVisibleChar.push(this.ignoreLeadingSpaces ? undefined : textIdx);
+          visibleCharFound = false;
+        } else if (!visibleCharFound && this.text[textIdx] !== ' ') {
+          visibleCharFound = true;
+          this._firstVisibleChar[this._firstVisibleChar.length - 1] = textIdx;
+        }
+        // TODO: Handle any other bad characters (\t, \b, etc.)
+        if (textIdx > 1 && this.text[textIdx - 1] === '\n') {
+          this._height++;
+        }
+      }
+      if (this.text.charAt(this.text.length - 1) !== '\n') {
+        this._width = Math.max(
+          this._width,
+          this.text.length - this._rowIndices[this._rowIndices.length - 1]
+        );
+        this._rowIndices.push(this.text.length + 1);
+      } else {
+        this._rowIndices.push(this.text.length);
+      }
+
+    }
+
+    _parseSegmentData() {
+      this._segments = new Array(this.height);
+      for (let y = 0; y < this.height; y++) {
+        this._segments[y] = [];
+
+        let rowStart = this._rowIndices[y];
+        let rowEnd = this._rowIndices[y + 1] - 1; // Subtract 1 because last character is a new line.
+        let rowLength = rowEnd - rowStart;
+
+        let firstUsedX = this.ignoreLeadingSpaces ? this._firstVisibleChar[y] - rowStart : 0;
+        let x = firstUsedX;
+        let currSegmentStart = x;
+        let currSegmentState = SegmentState.BLANK;
+        while (x < rowLength) {
+          let charIdx = rowStart + x;
+          let char = this.text[charIdx];
+          let charState = this._charState(char);
+          if (charState !== currSegmentState) {
+            this._addSegment(currSegmentStart, x, y, currSegmentState);
+            currSegmentStart = x;
+            currSegmentState = charState;
+          }
+          x++;
+        }
+        this._addSegment(currSegmentStart, x, y, currSegmentState);
+      }
+    }
+
+    _addSegment(startX, currX, y, state) {
+      if (state !== SegmentState.BLANK) {
+        this._segments[y].push({
+          x: startX,
+          y: y,
+          length: currX - startX,
+          visibleText: state === SegmentState.HAS_TEXT,
+        });
+      }
+    }
+
     get text() {
       return this._text;
     }
-    
+
     get width() {
       return this._width;
     }
-    
+
     get height() {
       return this._height;
     }
-    
+
     /**
      * Returns a set containing the characters that should be replaced with a space.
      */
     get setAsBlank() {
       return this._setAsBlank;
     }
-    
+
     get spaceIsTransparent() {
       return this._spaceIsTransparent;
     }
-    
+
     get ignoreLeadingSpaces() {
       return this._ignoreLeadingSpaces;
     }
-    
+
     get spaceHasFormatting() {
       return this._spaceHasFormatting;
     }
 
-    *getIt(left, right, top, bottom) {
-      let minX = Math.max(left, 0);
-      let maxX = math.min(right, this.width);
+    /**
+     * 
+     * @param {number} left The leftmost allowed column in sprite coordinates
+     * @param {number} right 
+     * @param {number} top 
+     * @param {number} bottom 
+     * @yields {SegmentData} 
+     */
+    *getItSpritePos(left, right, top, bottom) {
       let minY = Math.max(top, 0);
       let maxY = Math.min(bottom, this.height);
 
-      if (top >= this.height || bottom < 0) {
+      if (top >= this.height || bottom <= 0) {
         // The sprite is above or below the screen, respectively;
         return;
       }
@@ -138,22 +204,85 @@ var AsciiGL = (function () {
         if (this._firstVisibleChar[y] === undefined) {
           continue;
         }
-        let x = this.ignoreLeadingSpaces ? this._firstVisibleChar[y] : 0;
         let rowStart = this._rowIndices[y];
         let rowEnd = this._rowIndices[y + 1] - 1; // Subtract 1 because last character is a new line.
         let rowLength = rowEnd - rowStart;
-        if (left >= rowStart + rowLength || right < x) {
+        let firstUsedX = this.ignoreLeadingSpaces ? this._firstVisibleChar[y] - rowStart : 0;
+
+        if (left >= rowLength || right <= firstUsedX) {
           // This row is to the right or left of the screen, respectively.
           continue;
         }
-        if (this._rowIndices[y + 1] - 1 - rowStart <= minX) ;
-        let rowStartIdx = this._rowIndices[y];
-        while (x < maxX) {
-          let charIdx = rowStartIdx + x;
-          if (this.ignoreLeadingSpaces && charIdx < this._firstVisibleChar[y]) ;
 
+        for (let segment of this._segments[y]) {
+          let segmentLeft = Math.max(segment.x, left);
+          let segmentRight = Math.min(segment.x + segment.length, right);
+          if (right <= segmentLeft) {
+            break;
+          }
+          if (segmentRight <= left) {
+            continue;
+          }
+          yield {
+            x: segmentLeft,
+            y: y,
+            length: segmentRight - segmentLeft,
+            visibleText: segment.visibleText,
+          };
         }
       }
+    }
+
+    /**
+     * 
+     * @param {number} spriteX 
+     * @param {number} spriteY 
+     * @param {number} screenX 
+     * @param {number} screenY 
+     * @param {number} screenWidth 
+     * @param {number} screenHeight 
+     * 
+     * @yields {SegmentData}
+     */
+    *getItScreenPos(spriteX, spriteY, screenX, screenY, screenWidth, screenHeight) {
+      for (let segmentData of this.getItSpritePos(
+        screenX - spriteX,
+        screenX + screenWidth - spriteX,
+        screenY - spriteY,
+        screenY + screenHeight - spriteY)
+      ) {
+        segmentData.x += spriteX;
+        segmentData.y += spriteY;
+        yield segmentData;
+      }
+    }
+
+    _charHasFormatting(c) {
+      return c !== " " || !this.spaceIsTransparent || this.spaceHasFormatting;
+    }
+
+    _charHasText(c) {
+      return c !== " " || !this.spaceIsTransparent;
+    }
+
+    _charState(c) {
+      return this._charHasText(c) ? SegmentState.HAS_TEXT :
+        this._charHasFormatting(c) ? SegmentState.HAS_FORMATTING :
+          SegmentState.BLANK;
+    }
+
+    /**
+     * Retrieves a substring from the sprite.
+     * Does not do lengths checking to make sure the substring exists, is on the same line, or visible.
+     * The retrieved section should only belong within a segment from getIt().
+     * @param {number} x The x-coordinate of the first character
+     * @param {number} y The y-coordinate of the first character
+     * @param {number} length The length of the substring to retrieve
+     * @returns {string}
+     */
+    substring(x, y, length) {
+      let rawString = this.text.substr(this._rowIndices[y] + x, length);
+      return rawString.replace(this._setAsBlankRegexp, " ");
     }
 
     /**
@@ -167,7 +296,7 @@ var AsciiGL = (function () {
       if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
         return "";
       }
-      
+
       let rowStart = this._rowIndices[y];
       if (rowStart === undefined) {
         return "";
@@ -176,12 +305,12 @@ var AsciiGL = (function () {
       if (x + rowStart + 1 >= nextRow) {
         return "";
       }
-      
+
       if (this.ignoreLeadingSpaces && x + rowStart < this._firstVisibleChar[y]) {
         // Leading space, and should ignore.
         return "";
       }
-      
+
       let c = this.text[rowStart + x];
       if (this.spaceIsTransparent && c === " ") {
         return "";
@@ -192,36 +321,36 @@ var AsciiGL = (function () {
     /**
      * Computes the length of the segment starting at the the specified location.
      * 
-     * If the starting character is not visible, returns 0.
+     * If the starting character has neither text nor formatting, returns 0.
      * 
-     * TODO: Cache this data?
+     * TODO: REPLACE WITH METHOD THAT USES this._segments
      */
     segmentLengthAt(x, y) {
       // TODO: Store this data?
-      let initialChar = this.charAt(x, y);
-      if (initialChar.length === 0) {
+      let rowStart = this._rowIndices[y];
+      let rowEnd = this._rowIndices[y + 1] - 1;
+      if (rowStart + x < this._firstVisibleChar[y]) {
         return 0;
       }
-      // The above check guarantees that either x is past the leading spaces, 
-      // or leading spaces aren't ignored.
-      const rowStart = this._rowIndices[y];
-      const strStart = rowStart + x;
-      while (rowStart + x + 1 < this._rowIndices[y + 1]) {
-        x ++;
-        let c = this.text[rowStart + x];
-        
-        if (c === '\n') {
-          break;
-        } else if (c === ' ' && this.spaceIsTransparent) {
-          break;
-        } // TODO: Any other conditions?
+      let startState = this._charState(this.text[rowStart + x]);
+      if (startState === SegmentState.BLANK) {
+        return 0;
       }
-      return rowStart + x - strStart;
+      let startX = x;
+      x++;
+      while (rowStart + x < rowEnd) {
+        let currState = this._charState(this.text[rowStart + x]);
+        if (currState !== startState) {
+          break;
+        }
+        x++;
+      }
+      return x - startX;
     }
 
     /**
      * Returns a substring of the row starting at the specified location.
-     * Stops when it encounters a non-visible character (and spaceIsTransparent), or a new line.
+     * Stops when it encounters a non-visible character, or a new line.
      * 
      * If the starting character is not visible, returns an empty string.
      * 
@@ -239,8 +368,10 @@ var AsciiGL = (function () {
     }
   }
 
-  Sprite.RENDER_LEVELS = {
-    
+  const SegmentState = {
+    BLANK: 0,
+    HAS_FORMATTING: 1,
+    HAS_TEXT: 2,
   };
 
   class SpriteStyle {
@@ -450,28 +581,28 @@ var AsciiGL = (function () {
           let domElement = this.elements[y][cellsUsed];
           
           let segmentLength = drawBuffer.getSegmentLengthAt(x, y);
-          let style = drawBuffer.getStyleAt(x, y);
-          let front = style.front;
-          let text = null;
-          if (front === null) {
+          let frontTextId = drawBuffer.getSpriteIdAt(x, y);
+          let text = undefined;
+          if (frontTextId === undefined) {
             text = " ".repeat(segmentLength);
           } else {
-            text = drawBuffer.sprites[front].segmentAt(
-              x - drawBuffer.locations[front][0],
-              y - drawBuffer.locations[front][1],
+            text = drawBuffer.sprites[frontTextId].segmentAt(
+              x - drawBuffer.locations[frontTextId][0],
+              y - drawBuffer.locations[frontTextId][1],
               segmentLength
             );
           }
           domElement.textContent = text;
-          domElement.dataset.asciiGlId = front;
           
+          let style = drawBuffer.getStyleAt(x, y);
           if (!style.completed) {
             style.fillRemainder(drawBuffer.backgroundStyle);
           }
           for (let styleName of style) {
             domElement.style[styleName] = style.getStyle(styleName);
           }
-          
+          domElement.dataset.asciiGlId = style.front;
+
           cellsUsed ++;
           x += segmentLength;
         }
@@ -481,12 +612,14 @@ var AsciiGL = (function () {
     }
   }
 
+  // Only importing Sprite due to type checking in vs code...
+
   class DrawBuffer {
     constructor() {
       this._width = 0;
       this._height = 0;
       
-      this.computedStyles = [];
+      this.rowComputedData = [];
       this.sprites = {};
       this.locations = {};
       
@@ -499,7 +632,7 @@ var AsciiGL = (function () {
       this._height = height;
       
       for (let y = 0; y < height; y ++) {
-        this.computedStyles.push(new RowSegmentBuffer(y, width));
+        this.rowComputedData.push(new RowSegmentBuffer(y, width));
       }
     }
     
@@ -513,34 +646,23 @@ var AsciiGL = (function () {
     
     clear() {
       for (let y = 0; y < this.height; y ++) {
-        this.computedStyles[y].clear();
+        this.rowComputedData[y].clear();
       }
       this.sprites = {};
       this.locations = {};
     }
     
+    /**
+     * 
+     * @param {Sprite} sprite The sprite to draw
+     * @param {Array<number>} location The position to draw at
+     * @param {SpriteStyle} style The corresponding style
+     * @param {string} id The unique id associated with the draw
+     */
     draw(sprite, location, style, id) {
-      let startX = Math.max(location[0], 0);
-      let startY = Math.max(location[1], 0);
-      let endX = Math.min(location[0] + sprite.width, this.width);
-      let endY = Math.min(location[1] + sprite.height, this.height);
-      
-      for (let y = startY; y < endY; y ++) {
-        let x = startX;
-        while (x < endX) {
-          let segmentLength = sprite.segmentLengthAt(x - location[0], y - location[1]);
-          if (segmentLength > 0) {
-            this.computedStyles[y].loadSegment(segmentLength, x, style, location[2], id);
-            x += segmentLength;
-          } else {
-            x ++;
-          }
-        }
-        // for (let x = startX; x < endX; x ++) {
-        //   if (sprite.charAt(x - location[0], y - location[1]).length > 0) {
-        //     this.computedStyles[y][x].addStyle(style, location[2], id);
-        //   }
-        // }
+      for (let segment of sprite.getItScreenPos(location[0], location[1], 0, 0, this.width, this.height)) {
+        let y = segment.y;
+        this.rowComputedData[y].loadSegment(segment.length, segment.x, style, location[2], id, segment.visibleText);
       }
       
       this.sprites[id] = sprite;
@@ -548,11 +670,15 @@ var AsciiGL = (function () {
     }
     
     getStyleAt(x, y) {
-      return this.computedStyles[y].getStyleAt(x);
+      return this.rowComputedData[y].getStyleAt(x);
     }
     
     getSegmentLengthAt(x, y) {
-      return this.computedStyles[y].getSegmentLengthAt(x);
+      return this.rowComputedData[y].getSegmentLengthAt(x);
+    }
+
+    getSpriteIdAt(x, y) {
+      return this.rowComputedData[y].getSpriteIdAt(x);
     }
   }
 
@@ -561,10 +687,14 @@ var AsciiGL = (function () {
       this._width = width;
       this._rowNumber = rowNumber;
       
+      this._textIds = new Array(width);
+      this._textPriority = new Array(width);
       this._computedStyles = new Array(width);
       this._nextPointer = new Array(width);
       
-      for (let i = 0; i < this.width; i ++) {
+      for (let i = 0; i < this.width; i++) {
+        this._textIds[i] = undefined;
+        this._textPriority[i] = Number.POSITIVE_INFINITY;
         this._computedStyles[i] = new ComputedStyle();
         this._nextPointer[i] = -1;
       }
@@ -572,11 +702,14 @@ var AsciiGL = (function () {
     }
     
     clear() {
+      // Don't actually need to clear the old data.
       for (let i = 1; i < this.width; i ++) {
         this._nextPointer[i] = -1;
       }
       this._nextPointer[0] = this.width;
       this._computedStyles[0].clear();
+      this._textIds[0] = undefined;
+      this._textPriority[0] = Number.POSITIVE_INFINITY;
     }
     
     get row() {
@@ -592,6 +725,7 @@ var AsciiGL = (function () {
         // If it's not a segment start point already,
         // Find the previous segment and copy it.
         this._computedStyles[startX].clear();
+        this._textIds[startX] = undefined;
         let prevActiveStyle = startX - 1;
         while (this._nextPointer[prevActiveStyle] === -1) {
           prevActiveStyle --;
@@ -599,21 +733,29 @@ var AsciiGL = (function () {
         this._nextPointer[startX] = this._nextPointer[prevActiveStyle];
         this._nextPointer[prevActiveStyle] = startX;
         this._computedStyles[startX].copy(this._computedStyles[prevActiveStyle]);
+        this._textIds[startX] = this._textIds[prevActiveStyle];
+        this._textPriority[startX] = this._textPriority[prevActiveStyle];
       }
     }
     
-    loadSegment(segmentLength, startX, style, priority, id) {
+    loadSegment(segmentLength, startX, style, priority, id, visibleText) {
       let endX = startX + segmentLength;
 
       this.insertSegmentStart(startX);
       this.insertSegmentStart(endX);
       
-      this._computedStyles[startX].addStyle(style, priority, id);
-      let currPointer = this._nextPointer[startX];
-      while (currPointer < this.width && currPointer < endX) {
+      let currPointer = startX;
+      do {
         this._computedStyles[currPointer].addStyle(style, priority, id);
+        if (visibleText && this._textPriority[currPointer] > priority) {
+          this._textIds[currPointer] = id;
+          this._textPriority[currPointer] = priority;
+        } else if (!visibleText) {
+          visibleText = false;
+        }
         currPointer = this._nextPointer[currPointer];
       }
+      while (currPointer < this.width && currPointer < endX);
     }
     
     getStyleAt(x) {
@@ -629,6 +771,13 @@ var AsciiGL = (function () {
         prevActive --;
       }
       return this._nextPointer[prevActive] - x;
+    }
+
+    getSpriteIdAt(x) {
+      while (this._nextPointer[x] === -1) {
+        x--;
+      }
+      return this._textIds[x];
     }
   }
 

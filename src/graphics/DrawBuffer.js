@@ -1,3 +1,5 @@
+// Only importing Sprite due to type checking in vs code...
+import Sprite from "./Sprite.js";
 import SpriteStyle from "./SpriteStyle.js";
 
 export default class DrawBuffer {
@@ -5,7 +7,7 @@ export default class DrawBuffer {
     this._width = 0;
     this._height = 0;
     
-    this.computedStyles = [];
+    this.rowComputedData = [];
     this.sprites = {};
     this.locations = {};
     
@@ -18,7 +20,7 @@ export default class DrawBuffer {
     this._height = height;
     
     for (let y = 0; y < height; y ++) {
-      this.computedStyles.push(new RowSegmentBuffer(y, width));
+      this.rowComputedData.push(new RowSegmentBuffer(y, width));
     }
   }
   
@@ -32,34 +34,23 @@ export default class DrawBuffer {
   
   clear() {
     for (let y = 0; y < this.height; y ++) {
-      this.computedStyles[y].clear();
+      this.rowComputedData[y].clear();
     }
     this.sprites = {};
     this.locations = {};
   }
   
+  /**
+   * 
+   * @param {Sprite} sprite The sprite to draw
+   * @param {Array<number>} location The position to draw at
+   * @param {SpriteStyle} style The corresponding style
+   * @param {string} id The unique id associated with the draw
+   */
   draw(sprite, location, style, id) {
-    let startX = Math.max(location[0], 0);
-    let startY = Math.max(location[1], 0);
-    let endX = Math.min(location[0] + sprite.width, this.width);
-    let endY = Math.min(location[1] + sprite.height, this.height);
-    
-    for (let y = startY; y < endY; y ++) {
-      let x = startX;
-      while (x < endX) {
-        let segmentLength = sprite.segmentLengthAt(x - location[0], y - location[1]);
-        if (segmentLength > 0) {
-          this.computedStyles[y].loadSegment(segmentLength, x, style, location[2], id);
-          x += segmentLength;
-        } else {
-          x ++;
-        }
-      }
-      // for (let x = startX; x < endX; x ++) {
-      //   if (sprite.charAt(x - location[0], y - location[1]).length > 0) {
-      //     this.computedStyles[y][x].addStyle(style, location[2], id);
-      //   }
-      // }
+    for (let segment of sprite.getItScreenPos(location[0], location[1], 0, 0, this.width, this.height)) {
+      let y = segment.y;
+      this.rowComputedData[y].loadSegment(segment.length, segment.x, style, location[2], id, segment.visibleText);
     }
     
     this.sprites[id] = sprite;
@@ -67,11 +58,15 @@ export default class DrawBuffer {
   }
   
   getStyleAt(x, y) {
-    return this.computedStyles[y].getStyleAt(x);
+    return this.rowComputedData[y].getStyleAt(x);
   }
   
   getSegmentLengthAt(x, y) {
-    return this.computedStyles[y].getSegmentLengthAt(x);
+    return this.rowComputedData[y].getSegmentLengthAt(x);
+  }
+
+  getSpriteIdAt(x, y) {
+    return this.rowComputedData[y].getSpriteIdAt(x);
   }
 }
 
@@ -80,10 +75,14 @@ class RowSegmentBuffer {
     this._width = width;
     this._rowNumber = rowNumber;
     
+    this._textIds = new Array(width);
+    this._textPriority = new Array(width);
     this._computedStyles = new Array(width);
     this._nextPointer = new Array(width);
     
-    for (let i = 0; i < this.width; i ++) {
+    for (let i = 0; i < this.width; i++) {
+      this._textIds[i] = undefined;
+      this._textPriority[i] = Number.POSITIVE_INFINITY;
       this._computedStyles[i] = new ComputedStyle();
       this._nextPointer[i] = -1;
     }
@@ -91,11 +90,14 @@ class RowSegmentBuffer {
   }
   
   clear() {
+    // Don't actually need to clear the old data.
     for (let i = 1; i < this.width; i ++) {
       this._nextPointer[i] = -1;
     }
     this._nextPointer[0] = this.width;
     this._computedStyles[0].clear();
+    this._textIds[0] = undefined;
+    this._textPriority[0] = Number.POSITIVE_INFINITY;
   }
   
   get row() {
@@ -111,6 +113,7 @@ class RowSegmentBuffer {
       // If it's not a segment start point already,
       // Find the previous segment and copy it.
       this._computedStyles[startX].clear();
+      this._textIds[startX] = undefined;
       let prevActiveStyle = startX - 1;
       while (this._nextPointer[prevActiveStyle] === -1) {
         prevActiveStyle --;
@@ -118,21 +121,29 @@ class RowSegmentBuffer {
       this._nextPointer[startX] = this._nextPointer[prevActiveStyle];
       this._nextPointer[prevActiveStyle] = startX;
       this._computedStyles[startX].copy(this._computedStyles[prevActiveStyle]);
+      this._textIds[startX] = this._textIds[prevActiveStyle];
+      this._textPriority[startX] = this._textPriority[prevActiveStyle];
     }
   }
   
-  loadSegment(segmentLength, startX, style, priority, id) {
+  loadSegment(segmentLength, startX, style, priority, id, visibleText) {
     let endX = startX + segmentLength;
 
     this.insertSegmentStart(startX);
     this.insertSegmentStart(endX);
     
-    this._computedStyles[startX].addStyle(style, priority, id);
-    let currPointer = this._nextPointer[startX];
-    while (currPointer < this.width && currPointer < endX) {
+    let currPointer = startX;
+    do {
       this._computedStyles[currPointer].addStyle(style, priority, id);
+      if (visibleText && this._textPriority[currPointer] > priority) {
+        this._textIds[currPointer] = id;
+        this._textPriority[currPointer] = priority;
+      } else if (!visibleText) {
+        visibleText = false;
+      }
       currPointer = this._nextPointer[currPointer];
     }
+    while (currPointer < this.width && currPointer < endX);
   }
   
   getStyleAt(x) {
@@ -148,6 +159,13 @@ class RowSegmentBuffer {
       prevActive --;
     }
     return this._nextPointer[prevActive] - x;
+  }
+
+  getSpriteIdAt(x) {
+    while (this._nextPointer[x] === -1) {
+      x--;
+    }
+    return this._textIds[x];
   }
 }
 
