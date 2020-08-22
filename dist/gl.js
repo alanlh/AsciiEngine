@@ -55,6 +55,7 @@ var AsciiGL = (function () {
         this._setAsBlank = settings.setAsBlank;
       }
       this._setAsBlankRegexp = new RegExp("[" + this._setAsBlank + "]", "g");
+      this._processedText = this._text.replace(this._setAsBlankRegexp, " ");
 
       if ("spaceIsTransparent" in settings) {
         this._spaceIsTransparent = settings.spaceIsTransparent;
@@ -272,53 +273,6 @@ var AsciiGL = (function () {
     }
 
     /**
-     * Retrieves a substring from the sprite.
-     * Does not do lengths checking to make sure the substring exists, is on the same line, or visible.
-     * The retrieved section should only belong within a segment from getIt().
-     * @param {number} x The x-coordinate of the first character
-     * @param {number} y The y-coordinate of the first character
-     * @param {number} length The length of the substring to retrieve
-     * @returns {string}
-     */
-    substring(x, y, length) {
-      let rawString = this.text.substr(this._rowIndices[y] + x, length);
-      return rawString.replace(this._setAsBlankRegexp, " ");
-    }
-
-    /**
-     * Returns the character at the specified location.
-     * If the location is invalid or transparent, returns the empty string.
-     * 
-     * Otherwise, returns the character to display (space if the character is in setAsBlank)
-     */
-    charAt(x, y) {
-      // TODO: Verify values. (Integers)
-      if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
-        return "";
-      }
-
-      let rowStart = this._rowIndices[y];
-      if (rowStart === undefined) {
-        return "";
-      }
-      let nextRow = this._rowIndices[y + 1];
-      if (x + rowStart + 1 >= nextRow) {
-        return "";
-      }
-
-      if (this.ignoreLeadingSpaces && x + rowStart < this._firstVisibleChar[y]) {
-        // Leading space, and should ignore.
-        return "";
-      }
-
-      let c = this.text[rowStart + x];
-      if (this.spaceIsTransparent && c === " ") {
-        return "";
-      }
-      return this.text[rowStart + x];
-    }
-
-    /**
      * Computes the length of the segment starting at the the specified location.
      * 
      * If the starting character has neither text nor formatting, returns 0.
@@ -327,25 +281,23 @@ var AsciiGL = (function () {
      */
     segmentLengthAt(x, y) {
       // TODO: Store this data?
-      let rowStart = this._rowIndices[y];
-      let rowEnd = this._rowIndices[y + 1] - 1;
-      if (rowStart + x < this._firstVisibleChar[y]) {
+      if (y < 0 || y >= this.height) {
         return 0;
       }
-      let startState = this._charState(this.text[rowStart + x]);
-      if (startState === SegmentState.BLANK) {
+      if (x < 0 || x >= this.width) {
         return 0;
       }
-      let startX = x;
-      x++;
-      while (rowStart + x < rowEnd) {
-        let currState = this._charState(this.text[rowStart + x]);
-        if (currState !== startState) {
-          break;
+      // TODO: Binary search?
+      for (let segment of this._segments[y]) {
+        if (segment.x + segment.length <= x) {
+          continue;
         }
-        x++;
+        if (x < segment.x) {
+          return 0;
+        }
+        return segment.x + segment.length - x;
       }
-      return x - startX;
+      return 0;
     }
 
     /**
@@ -362,9 +314,7 @@ var AsciiGL = (function () {
       const rowStart = this._rowIndices[y];
       let strLength = this.segmentLengthAt(x, y);
       strLength = (maxLength && maxLength < strLength) ? maxLength : strLength;
-      let rawString = this.text.substring(rowStart + x, rowStart + x + strLength);
-      // Note: This solution SHOULD work even if setAsBlank is the empty string.
-      return rawString.replace(this._setAsBlankRegexp, " ");
+      return this._processedText.substring(rowStart + x, rowStart + x + strLength);
     }
   }
 
@@ -581,7 +531,9 @@ var AsciiGL = (function () {
           let domElement = this.elements[y][cellsUsed];
           
           let segmentLength = drawBuffer.getSegmentLengthAt(x, y);
-          let frontTextId = drawBuffer.getSpriteIdAt(x, y);
+          let segmentData = drawBuffer.getSegmentAt(x, y);
+
+          let frontTextId = segmentData.textId;
           let text = undefined;
           if (frontTextId === undefined) {
             text = " ".repeat(segmentLength);
@@ -594,14 +546,12 @@ var AsciiGL = (function () {
           }
           domElement.textContent = text;
           
-          let style = drawBuffer.getStyleAt(x, y);
-          if (!style.completed) {
-            style.fillRemainder(drawBuffer.backgroundStyle);
+          let style = segmentData.styles;
+          for (let styleName in style) {
+            domElement.style[styleName] = style[styleName] || "";
           }
-          for (let styleName of style) {
-            domElement.style[styleName] = style.getStyle(styleName);
-          }
-          domElement.dataset.asciiGlId = style.front;
+          
+          domElement.dataset.asciiGlId = segmentData.frontId;
 
           cellsUsed ++;
           x += segmentLength;
@@ -632,7 +582,7 @@ var AsciiGL = (function () {
       this._height = height;
       
       for (let y = 0; y < height; y ++) {
-        this.rowComputedData.push(new RowSegmentBuffer(y, width));
+        this.rowComputedData.push(new RowSegmentBuffer(y, width, this.backgroundStyle));
       }
     }
     
@@ -669,33 +619,32 @@ var AsciiGL = (function () {
       this.locations[id] = location;
     }
     
-    getStyleAt(x, y) {
-      return this.rowComputedData[y].getStyleAt(x);
-    }
-    
     getSegmentLengthAt(x, y) {
       return this.rowComputedData[y].getSegmentLengthAt(x);
     }
 
-    getSpriteIdAt(x, y) {
-      return this.rowComputedData[y].getSpriteIdAt(x);
+    getSegmentAt(x, y) {
+      return this.rowComputedData[y].getSegmentAt(x);
     }
   }
 
   class RowSegmentBuffer {
-    constructor(rowNumber, width) {
+    /**
+     * 
+     * @param {number} rowNumber The row number of this buffer
+     * @param {number} width The width of the row
+     * @param {SpriteStyle} defaultStyle A REFERENCE of the default style.
+     */
+    constructor(rowNumber, width, defaultStyle) {
       this._width = width;
       this._rowNumber = rowNumber;
       
-      this._textIds = new Array(width);
-      this._textPriority = new Array(width);
-      this._computedStyles = new Array(width);
       this._nextPointer = new Array(width);
-      
+      /** @type{Array<ComputedSegmentData>} */
+      this._computedSegments = new Array(width);
+
       for (let i = 0; i < this.width; i++) {
-        this._textIds[i] = undefined;
-        this._textPriority[i] = Number.POSITIVE_INFINITY;
-        this._computedStyles[i] = new ComputedStyle();
+        this._computedSegments[i] = new ComputedSegmentData(defaultStyle);
         this._nextPointer[i] = -1;
       }
       this._nextPointer[0] = this.width;
@@ -706,10 +655,8 @@ var AsciiGL = (function () {
       for (let i = 1; i < this.width; i ++) {
         this._nextPointer[i] = -1;
       }
+      this._computedSegments[0].clear();
       this._nextPointer[0] = this.width;
-      this._computedStyles[0].clear();
-      this._textIds[0] = undefined;
-      this._textPriority[0] = Number.POSITIVE_INFINITY;
     }
     
     get row() {
@@ -724,17 +671,14 @@ var AsciiGL = (function () {
       if (this._nextPointer[startX] === -1) {
         // If it's not a segment start point already,
         // Find the previous segment and copy it.
-        this._computedStyles[startX].clear();
-        this._textIds[startX] = undefined;
+        this._computedSegments[startX].clear();
         let prevActiveStyle = startX - 1;
         while (this._nextPointer[prevActiveStyle] === -1) {
           prevActiveStyle --;
         }
         this._nextPointer[startX] = this._nextPointer[prevActiveStyle];
         this._nextPointer[prevActiveStyle] = startX;
-        this._computedStyles[startX].copy(this._computedStyles[prevActiveStyle]);
-        this._textIds[startX] = this._textIds[prevActiveStyle];
-        this._textPriority[startX] = this._textPriority[prevActiveStyle];
+        this._computedSegments[startX].copy(this._computedSegments[prevActiveStyle]);
       }
     }
     
@@ -746,25 +690,12 @@ var AsciiGL = (function () {
       
       let currPointer = startX;
       do {
-        this._computedStyles[currPointer].addStyle(style, priority, id);
-        if (visibleText && this._textPriority[currPointer] > priority) {
-          this._textIds[currPointer] = id;
-          this._textPriority[currPointer] = priority;
-        } else if (!visibleText) {
-          visibleText = false;
-        }
+        this._computedSegments[currPointer].addStyle(id, visibleText, style, priority);
         currPointer = this._nextPointer[currPointer];
       }
       while (currPointer < this.width && currPointer < endX);
     }
-    
-    getStyleAt(x) {
-      while(this._nextPointer[x] === -1) {
-        x --;
-      }
-      return this._computedStyles[x];
-    }
-    
+      
     getSegmentLengthAt(x) {
       let prevActive = x;
       while(this._nextPointer[prevActive] === -1) {
@@ -773,75 +704,99 @@ var AsciiGL = (function () {
       return this._nextPointer[prevActive] - x;
     }
 
-    getSpriteIdAt(x) {
+    getSegmentAt(x) {
+      // TODO: Is this loop necessary? DOMBuffer elements should perfectly correspond to segments.
       while (this._nextPointer[x] === -1) {
         x--;
       }
-      return this._textIds[x];
+      return this._computedSegments[x];
     }
   }
 
-  class ComputedStyle extends SpriteStyle {
+  class ComputedSegmentData {
     /**
      * A helper class to manage the resulting style.
      */
-    constructor() {
-      super();
-      this._priorities = {};
+    constructor(defaultStyle) {
+      this._default = defaultStyle;
+
+      this._spriteId = undefined;
+      this._spritePriority = undefined;
+
+      this._styleValues = {};
+      this._stylePriorities = {};
+      
       this._highestPriority = Number.POSITIVE_INFINITY;
-      this._frontId = null;
+      this._frontId = undefined;
       this.clear();
+
+      Object.seal(this);
+      Object.seal(this._styleValues);
+      Object.seal(this._stylePriorities);
     }
     
     copy(other) {
       for (let styleName in SpriteStyle.defaultValues) {
-        this._styles[styleName] = other._styles[styleName];
-        this._priorities[styleName] = other._priorities[styleName];
+        this._styleValues[styleName] = other._styleValues[styleName];
+        this._stylePriorities[styleName] = other._stylePriorities[styleName];
       }
-      this._frontId = other._frontId;
+      this._spriteId = other._spriteId;
+      this._spritePriority = other._spritePriority;
+
       this._highestPriority = other._highestPriority;
+      this._frontId = other._frontId;
     }
     
     clear() {
       for (let styleName in SpriteStyle.defaultValues) {
-        this._styles[styleName] = null;
-        this._priorities[styleName] = Number.POSITIVE_INFINITY;
+        this._styleValues[styleName] = this._default.getStyle(styleName);
+        this._stylePriorities[styleName] = Number.POSITIVE_INFINITY;
       }
+      this._spriteId = undefined;
+      this._spritePriority = Number.POSITIVE_INFINITY;
+
       this._highestPriority = Number.POSITIVE_INFINITY;
-      this._frontId = null;
+      this._frontId = undefined;
     }
-    
-    get completed() {
-      for (let styleName in SpriteStyle.defaultValues) {
-        if (this._styles[styleName] === null) {
-          return false;
-        }
-      }
-      return true;
-    }
-    
-    get front() {
+      
+    get frontId() {
       return this._frontId;
+    }
+
+    get textId() {
+      return this._spriteId;
+    }
+
+    get styles() {
+      return this._styleValues;
     }
     
     /**
-     * Adds a new style at the specified priority.
+     * Adds a new segment at the specified priority.
+     * 
+     * @param {string} segmentId 
+     * @param {boolean} hasText 
+     * @param {SpriteStyle} style 
+     * @param {number} priority 
      */
-    addStyle(style, priority, id) {
+    addStyle(segmentId, hasText, style, priority) {
       for (let styleName of style) {
-        if (this._priorities[styleName] > priority) {
-          this.setStyle(styleName, style.getStyle(styleName));
-          this._priorities[styleName] = priority;
+        if (priority < this._stylePriorities[styleName]) {
+          let styleValue = style.getStyle(styleName);
+          if (styleValue !== undefined) {
+            this._styleValues[styleName] = styleValue;
+            this._stylePriorities[styleName] = priority;
+          }
         }
+      }
+      if (hasText && priority < this._spritePriority) {
+        this._spriteId = segmentId;
+        this._spritePriority = priority;
       }
       if (priority < this._highestPriority) {
         this._highestPriority = priority;
-        this._frontId = id;
+        this._frontId = segmentId;
       }
-    }
-    
-    sameAs(other) {
-      return super.sameAs(other) && this.front === other.front;
     }
   }
 

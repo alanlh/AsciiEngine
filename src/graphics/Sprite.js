@@ -52,6 +52,7 @@ export default class Sprite {
       this._setAsBlank = settings.setAsBlank;
     }
     this._setAsBlankRegexp = new RegExp("[" + this._setAsBlank + "]", "g");
+    this._processedText = this._text.replace(this._setAsBlankRegexp, " ");
 
     if ("spaceIsTransparent" in settings) {
       this._spaceIsTransparent = settings.spaceIsTransparent;
@@ -269,53 +270,6 @@ export default class Sprite {
   }
 
   /**
-   * Retrieves a substring from the sprite.
-   * Does not do lengths checking to make sure the substring exists, is on the same line, or visible.
-   * The retrieved section should only belong within a segment from getIt().
-   * @param {number} x The x-coordinate of the first character
-   * @param {number} y The y-coordinate of the first character
-   * @param {number} length The length of the substring to retrieve
-   * @returns {string}
-   */
-  substring(x, y, length) {
-    let rawString = this.text.substr(this._rowIndices[y] + x, length);
-    return rawString.replace(this._setAsBlankRegexp, " ");
-  }
-
-  /**
-   * Returns the character at the specified location.
-   * If the location is invalid or transparent, returns the empty string.
-   * 
-   * Otherwise, returns the character to display (space if the character is in setAsBlank)
-   */
-  charAt(x, y) {
-    // TODO: Verify values. (Integers)
-    if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
-      return "";
-    }
-
-    let rowStart = this._rowIndices[y];
-    if (rowStart === undefined) {
-      return "";
-    }
-    let nextRow = this._rowIndices[y + 1];
-    if (x + rowStart + 1 >= nextRow) {
-      return "";
-    }
-
-    if (this.ignoreLeadingSpaces && x + rowStart < this._firstVisibleChar[y]) {
-      // Leading space, and should ignore.
-      return "";
-    }
-
-    let c = this.text[rowStart + x];
-    if (this.spaceIsTransparent && c === " ") {
-      return "";
-    }
-    return this.text[rowStart + x];
-  }
-
-  /**
    * Computes the length of the segment starting at the the specified location.
    * 
    * If the starting character has neither text nor formatting, returns 0.
@@ -324,25 +278,23 @@ export default class Sprite {
    */
   segmentLengthAt(x, y) {
     // TODO: Store this data?
-    let rowStart = this._rowIndices[y];
-    let rowEnd = this._rowIndices[y + 1] - 1;
-    if (rowStart + x < this._firstVisibleChar[y]) {
+    if (y < 0 || y >= this.height) {
       return 0;
     }
-    let startState = this._charState(this.text[rowStart + x]);
-    if (startState === SegmentState.BLANK) {
+    if (x < 0 || x >= this.width) {
       return 0;
     }
-    let startX = x;
-    x++;
-    while (rowStart + x < rowEnd) {
-      let currState = this._charState(this.text[rowStart + x]);
-      if (currState !== startState) {
-        break;
+    // TODO: Binary search?
+    for (let segment of this._segments[y]) {
+      if (segment.x + segment.length <= x) {
+        continue;
       }
-      x++;
+      if (x < segment.x) {
+        return 0;
+      }
+      return segment.x + segment.length - x;
     }
-    return x - startX;
+    return 0;
   }
 
   /**
@@ -359,9 +311,7 @@ export default class Sprite {
     const rowStart = this._rowIndices[y];
     let strLength = this.segmentLengthAt(x, y);
     strLength = (maxLength && maxLength < strLength) ? maxLength : strLength;
-    let rawString = this.text.substring(rowStart + x, rowStart + x + strLength);
-    // Note: This solution SHOULD work even if setAsBlank is the empty string.
-    return rawString.replace(this._setAsBlankRegexp, " ");
+    return this._processedText.substring(rowStart + x, rowStart + x + strLength);
   }
 }
 
