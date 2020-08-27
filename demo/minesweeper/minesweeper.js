@@ -21,8 +21,11 @@ export default function minesweeper() {
   let menuSystem = new MenuSystem("menu");
   systemManager.addSystem(menuSystem);
   
-  let renderSystem = new AsciiEngine.Systems.AsciiRender("render");
+  let renderSystem = new AsciiEngine.Systems.AsciiRender();
   systemManager.addSystem(renderSystem);
+
+  let inputHandlerSystem = new AsciiEngine.Systems.AsciiInputHandler();
+  systemManager.addSystem(inputHandlerSystem);
   
   engine.startLoop(50);
 }

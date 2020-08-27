@@ -1,4 +1,7 @@
-// An implementation of queue that allows the user to access any element in it (but not modify)
+/**
+ * An implementation of queue that allows the user to access any element in it (but not modify)
+ * @template T
+ */
 export default class Queue {
   constructor() {
     this._storage = [];

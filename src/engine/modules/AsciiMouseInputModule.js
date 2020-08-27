@@ -1,6 +1,9 @@
 import MessageBoard from "../../utility/MessageBoard.js";
 import AsciiGL from "../../graphics/AsciiGL.js";
 
+/**
+ * @deprecated
+ */
 export default class AsciiMouseInputModule {
   constructor(agl) {
     this.GLOBAL = AsciiMouseInputModule.Global;

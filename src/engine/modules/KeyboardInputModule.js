@@ -1,23 +1,27 @@
-import MessageBoard from "../../utility/MessageBoard.js";
-
+/**
+ * Listens for and processes keyboard events.
+ * Does limited filtering for usability.
+ * 
+ * @typedef {(
+ * eventName: string, 
+ * eventKey: string, 
+ * event: KeyboardEvent
+ * ) => void} KeyboardEventHandler
+ */
 export default class KeyboardInputModule {
   constructor() {
-    this.ALL = "ALL_KEYS";
-    this._messageBoards = {};
-    
+    /** @type {Set<KeyboardEventHandler>} */
+    this.handlers = new Set();
+
     for (let eventType in KeyboardInputModule.EventTypes) {
       let eventName = KeyboardInputModule.EventTypes[eventType];
-      this._messageBoards[eventName] = new MessageBoard();
-      
-      // Use the "key" property of the event as the events to listen for.
       document.addEventListener(eventName, (event) => {
         if (document.activeElement === document.body || document.activeElement === null) {
           // Only listen if nothing else is in focus.
-          // TODO: Make it so that it must be focused on the target element.
-          // How?
-          this._messageBoards[eventName].post(eventName, event.key, event);
-          // "" means listen for all events.
-          this._messageBoards[eventName].post(eventName, this.ALL, event);
+          // TODO: Make it so that it must be focused on the target element. How?
+          for (let handler of this.handlers) {
+            handler(eventName, event.key, event);
+          }
           if (event.keyCode <= 40 && event.keyCode >= 37) {
             event.preventDefault();
           } else if (event.keyCode === 32) {
@@ -27,37 +31,23 @@ export default class KeyboardInputModule {
       });
     }
   }
-  
-  signup(id, receiver) {
-    for (let eventType in this._messageBoards) {
-      this._messageBoards[eventType].signup(id, receiver);
-    }
+
+  /**
+   * Attaches an event listener.
+   * For now, only allow all or nothing. 
+   * The handler should decide what to do with everything else by itself.
+   * @param {KeyboardEventHandler} handler The event handler to attach
+   */
+  addEventListener(handler) {
+    this.handlers.add(handler);
   }
-  
-  withdraw(id) {
-    for (let eventType in this._messageBoards) {
-      this._messageBoards[eventType].withdraw(id);
-    }
-  }
-  
-  subscribe(id, target, events) {
-    for (let event of events) {
-      if (event in this._messageBoards) {
-        this._messageBoards[event].subscribe(id, [target]);
-      } else {
-        console.warn("Keyboard event", event, "is not supported");
-      }
-    }
-  }
-  
-  unsubscribe(id, target, events) {
-    for (let event of events) {
-      if (event in this._messageBoards) {
-        this._messageBoards[event].unsubscribe(id, [target]);
-      } else {
-        console.warn("Keyboard event", event, "is not supported");
-      }
-    }
+
+  /**
+   * Removes an event listener.
+   * @param {KeyboardEventHandler} handler The handler to remove.
+   */
+  removeEventListener(handler) {
+    this.handlers.delete(handler);
   }
 }
 

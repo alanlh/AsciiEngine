@@ -26,7 +26,7 @@ export default async function inputField() {
   engine.setModule("MouseInput", mouseInput);
   
   let keyboardInput = new AsciiEngine.Modules.KeyboardInput();
-  engine.setModule("KeyboardInput", keyboardInput);
+  engine.setModule(AsciiEngine.ModuleSlots.KeyboardInput, keyboardInput);
 
   let cursorSystem = new CursorSystem();
   systemManager.addSystem(cursorSystem);
@@ -37,8 +37,11 @@ export default async function inputField() {
   let inputHandler = new InputHandler();
   systemManager.addSystem(inputHandler);
   
-  let renderSystem = new AsciiEngine.Systems.AsciiRender("render");
+  let renderSystem = new AsciiEngine.Systems.AsciiRender();
   systemManager.addSystem(renderSystem);
+
+  let asciiInputHandler = new AsciiEngine.Systems.AsciiInputHandler();
+  systemManager.addSystem(asciiInputHandler);
   
   engine.startLoop(100);
   

@@ -87,20 +87,17 @@ export default class BoardSystem extends AsciiEngine.System {
     // Add board as an entity. This also adds all Cells as an entity as well.
     entityManager.requestAddEntity(this._board);
 
-    let mouseModule = this.getEngine().getModule("mouse");
-    mouseModule.signup(this.name, this.getMessageReceiver());
     for (let y = 0; y < this.height; y ++) {
-      for (let x = 0; x < this.width; x ++) {
-        // For each cell, listen for click events
-        mouseModule.subscribe(this.name, this.cells[y][x].id, ["click", "mouseenter", "mouseleave", "contextmenu"]);
+      for (let x = 0; x < this.width; x++) {
+        this.subscribe(["MouseEvent", "click", this.cells[y][x].id], this._handleMouseClick.bind(this, x, y));
+        this.subscribe(["MouseEvent", "mouseenter", this.cells[y][x].id], this._handleMouseEnter.bind(this, x, y));
+        this.subscribe(["MouseEvent", "mouseleave", this.cells[y][x].id], this._handleMouseLeave.bind(this, x, y));
+        this.subscribe(["MouseEvent", "contextmenu", this.cells[y][x].id], this._handleContextMenu.bind(this, x, y));
       }
     }
   }
   
   shutdown() {
-    let mouseModule = this.getEngine().getModule("mouse");
-    mouseModule.withdraw(this.name);
-    
     let entityManager = this.getEntityManager();
     entityManager.requestDeleteEntity(this._board);
   }
@@ -125,7 +122,6 @@ export default class BoardSystem extends AsciiEngine.System {
    */
   preUpdate() {
     // TODO: Directly handle in receive message?
-    this.getMessageReceiver().handleAll();
     for (let i = 0; i < this._clickLocations.length; i ++) {
       this.handleClick(...this._clickLocations[i]);
     }
@@ -208,7 +204,7 @@ export default class BoardSystem extends AsciiEngine.System {
       return;
     }
     this._finished = true;
-    this.getSystemManager().getMessageBoard().post(this.name, "game_end", false);
+    this.postMessage(["Game", "End"], false);
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x ++) {
         let cellComponent = this.cells[y][x].getComponent(CellComponent.type);
@@ -226,7 +222,7 @@ export default class BoardSystem extends AsciiEngine.System {
       return;
     }
     this._finished = true;
-    this.getSystemManager().getMessageBoard().post(this.name, "game_end", true);
+    this.postMessage(["Game", "End"], true);
   }
   
   handleFlag(x, y) {
@@ -234,24 +230,24 @@ export default class BoardSystem extends AsciiEngine.System {
     let renderComponent = this.cells[y][x].getComponent(AsciiEngine.Components.Render.type);
   }
   
-  receiveMessage(source, tag, body) {
-    let sections = body.target.split("-");
-    let x = parseInt(sections[1]);
-    // We can ignore the ID because parseInt stops after a non-digit.
-    let y = parseInt(sections[2]);
-    if (source === "click") {
-      this._clickLocations.push([x, y, true]);
-    } else if (source === "mouseenter") {
-      if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
-        this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed-Hover";
-      }
-    } else if (source === "mouseleave") {
-      if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
-        this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed";
-      }
-    } else if (source === "contextmenu") {
-      this._clickLocations.push([x, y, false]);
+  _handleMouseClick(x, y) {
+    this._clickLocations.push([x, y, true]);
+  }
+
+  _handleMouseEnter(x, y) {
+    if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
+      this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed-Hover";
     }
+  }
+
+  _handleMouseLeave(x, y) {
+    if (!this.cells[y][x].getComponent(CellComponent.type).revealed) {
+      this.cells[y][x].getComponent(AsciiEngine.Components.AsciiRender.type).styleNameList[0] = "CellStyle-Unrevealed";
+    }
+  }
+
+  _handleContextMenu(x, y) {
+    this._clickLocations.push([x, y, false]);
   }
 }
 

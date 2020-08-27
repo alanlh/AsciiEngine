@@ -1,6 +1,6 @@
 import System from "./systems/System.js";
+import SystemMessageBoard from "./SystemMessageBoard.js";
 
-import MessageBoard from "../utility/MessageBoard.js";
 import OrderedMultiMap from "../utility/data_structures/OrderedMultiMap.js";
 
 export default class SystemManager {
@@ -24,7 +24,7 @@ export default class SystemManager {
      */
     this._systemPriorities = {};
     
-    this._messageBoard = new MessageBoard();
+    this._messageBoard = new SystemMessageBoard();
   }
   
   /**

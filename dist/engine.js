@@ -311,7 +311,10 @@ var AsciiEngine = (function () {
     }
   }
 
-  // An implementation of queue that allows the user to access any element in it (but not modify)
+  /**
+   * An implementation of queue that allows the user to access any element in it (but not modify)
+   * @template T
+   */
   class Queue {
     constructor() {
       this._storage = [];
@@ -585,44 +588,6 @@ var AsciiEngine = (function () {
     }
   }
 
-  class MessageReceiver {
-    /**
-     * An extensible class that receives messages from message boards.
-     * Allows for delayed processing.
-     * 
-     * Currently supports processing only the top message.
-     * In the future, may allow for grouping of messages, etc.
-     * 
-     * @param {Function} callback The callback to handle each message.
-     *    NOTE: Should be bound to the owner of this MessageReceiver!
-     */
-    constructor(callback) {
-      this.sourceQueue = new Queue();
-      this.tagQueue = new Queue();
-      this.messageQueue = new Queue();
-      this.callback = callback;
-    }
-    
-    receiveMessage(source, tag, message) {
-      this.sourceQueue.enqueue(source);
-      this.tagQueue.enqueue(tag);
-      this.messageQueue.enqueue(message);
-    }
-    
-    handle() {
-      let source = this.sourceQueue.dequeue();
-      let tag = this.tagQueue.dequeue();
-      let message = this.messageQueue.dequeue();
-      this.callback(source, tag, message);
-    }
-    
-    handleAll() {
-      while (this.tagQueue.size > 0) {
-        this.handle();
-      }
-    }
-  }
-
   class System {
     constructor(name) {
       this._engine = undefined;
@@ -634,8 +599,6 @@ var AsciiEngine = (function () {
       this._priority = 0;
       
       this._active = false;
-      
-      this._messageReceiver = new MessageReceiver(this.receiveMessage.bind(this));
     }
     
     get type() {
@@ -652,7 +615,6 @@ var AsciiEngine = (function () {
       this._engine = systemManager.getEngine();
       // This should only be accessed in order to directly modify an Entity, rather than component data.
       this._entityManager = this._engine.getEntityManager();
-      this.getSystemManager().getMessageBoard().signup(this.name, this.getMessageReceiver());
 
       this._active = true;
       
@@ -661,8 +623,9 @@ var AsciiEngine = (function () {
    
     destroy() {
       this.shutdown();
-      this.getSystemManager().getMessageBoard().withdraw(this.name);
+      this.unsubscribe([]);
     }
+
     // ---------- PUBLIC API --------- //
     
     getSystemManager() {
@@ -675,10 +638,6 @@ var AsciiEngine = (function () {
 
     getEntityManager() {
       return this._entityManager;
-    }
-    
-    getMessageReceiver() {
-      return this._messageReceiver;
     }
     
     enable() {
@@ -695,6 +654,44 @@ var AsciiEngine = (function () {
     
     get active() {
       return this._active;
+    }
+
+    /**
+     * A wrapper around SystemMessageBoard's subscribe.
+     * @param {Array<string>} descriptor The event path descriptor
+     * @param {function} handler The event handler, which should be bound to self if necessary
+     * @param {boolean} bind Whether or not the event handler should be bound to this.
+     * @param {string?} source The source system. If undefined, will accept any system.
+     */
+    subscribe(descriptor, handler, bind, source) {
+      if (bind) {
+        handler = handler.bind(this);
+      }
+      this.getSystemManager().getMessageBoard().subscribe(
+        this.name, descriptor, handler, source
+      );
+    }
+
+    /**
+     * A wrapper around SystemMessageBoard's unsubscribe.
+     * @param {Array<string>} descriptor The path descriptor of the event
+     */
+    unsubscribe(descriptor) {
+      this.getSystemManager().getMessageBoard().unsubscribe(
+        this.name, descriptor
+      );
+    }
+
+    /**
+     * A wrapper around SystemMessageBoard's post.
+     * @param {Array<string>} descriptor 
+     * @param {any} body 
+     * @param {string?} target 
+     */
+    postMessage(descriptor, body, target) {
+      this.getSystemManager().getMessageBoard().post(
+        this.name, descriptor, body, target
+      );
     }
     
     // ---------- PUBLIC INTERFACE ---------- //
@@ -760,125 +757,305 @@ var AsciiEngine = (function () {
      * Called after main update method.
      */
     postUpdate() {}
-    
-    /**
-     * A virtual method Systems can override.
-     * Passed to a message receiver. To run, call "this.getMessageReceiver().handle();"
-     * This should not be an expensive method. Ideally, this should pass the message to another data structure,
-     * where it can be handled later. 
-     * 
-     * @param {String} source The source of the message. Usually the name of the System, or the event type
-     * @param {String} tag The tag of the message.
-     * @param {Anything} body The message
-     */
-    receiveMessage(source, tag, body) {}
   }
 
-  class MessageBoard {
+  /**
+   * @template T
+   */
+  class RootedSearchTreeNode {
     constructor() {
-      this.channelSubscribers = {}; // Maps channels to their subscribers
-      this.subscriptions = {}; // Maps ids to set of subscriptions
-      this.receivers = {}; // Maps each id to where it receives messages.
-      
-      this.channelQueue = new Queue();
-      this.messageQueue = new Queue();
+      /** @type {Object.<string, RootedSearchTreeNode>} */
+      this.children = {};
+      /** @type {Set<T>} */
+      this.data = new Set();
+      /**
+       * @type {number}
+       * Keeps track of the number of values in this and all child nodes.
+       */
+      this.size = 0;
     }
-    
-    getAllChannels() {
-      // Is this ever used?
-      return Object.keys(this.channelSubscribers);
+
+    has(path, value) {
+      this._has(path, 0, value);
     }
-    
-    getSubscriptions(id) {
-      if (id in this.subscriptions) {
-        return this.subscriptions[id];
+
+    _has(path, index, value) {
+      if (index === path.length) {
+        return this.data.has(value);
       }
-      console.warn("Id ", id, " not found in messageBoard");
+      return path[index] in this.children
+        && this.children[path[index]]._has(path, index + 1, value);
     }
-    
-    getSubscribers(channel) {
-      // TODO: Is this ever used?
-      if (id in this.channelSubscribers) {
-        return this.channelSubscribers[id];
-      }
-      console.warn("Id ", id, " not found in messageBoard");
+
+    /**
+     * 
+     * @param {Array<string>} path The path to add to
+     * @param {T} value The value to add
+     */
+    add(path, value) {
+      this._add(path, 0, value);
     }
-    
-    signup(id, receiver) {
-      // console.debug("Component", id, "signing up.");
-      if (id in this.receivers) {
-        console.warn("Id ", id, " is already signed up.");
+
+    /**
+     * 
+     * @param {Array<string>} path The path to add to
+     * @param {number} index The current index of the path
+     * @param {T} value The value to add
+     */
+    _add(path, index, value) {
+      if (index === path.length) {
+        this.data.add(value);
+        this.size++;
         return;
       }
-      this.receivers[id] = receiver;
-      this.subscriptions[id] = new Set();
+      let key = path[index];
+      if (!(key in this.children)) {
+        this.children[key] = new RootedSearchTreeNode();
+      }
+      this.children[key]._add(path, index + 1, value);
+      this.size++;
     }
-    
-    subscribe(id, channels) {
-      if (!(id in this.receivers)) {
-        // this.subscriptions[id] = new Set();
-        // TODO: Create similar message when receiving. 
-        console.error("Id ", id, " does not have a receiver but is signing up for messages.");
+
+    /**
+     * Removes all instances of value in the subtree rooted at the specified path.
+     * If path is the empty array, will remove all instances of value in the tree.
+     * @param {Array<string>} path The path in which to remove the elements
+     * @param {T?} value The value to remove
+     */
+    delete(path, value) {
+      if (value === undefined) {
+        // This should only be called on the root node. 
+        // Must be handled separately because the implementation in _delete
+        // relies on a parent node to clean it up.
+        this.children = {};
+        this.data = new Set();
+        this.size = 0;
         return;
       }
-      for (let channel of channels) {
-        if (!(channel in this.channelSubscribers)) {
-          this.channelSubscribers[channel] = new Set();
+      this._delete(path, 0, value);
+    }
+
+    /**
+     * 
+     * @param {Array<string>} path 
+     * @param {number} index 
+     * @param {T?} value If undefined, removes everything.
+     * @returns {number} The number of times value was deleted.
+     */
+    _delete(path, index, value) {
+      let deleted = 0;
+      if (index >= path.length) {
+        if (value === undefined) {
+          // Quick way to have the parent completely remove it. 
+          this.size = 0;
+          return;
         }
-        if (id in this.channelSubscribers[channel]) {
-          // console.debug("Channel ", id, " is already signed up for ", channel);
-          continue;
+        if (this.data.has(value)) {
+          this.data.delete(value);
+          deleted++;
         }
-        this.channelSubscribers[channel].add(id);
-        this.subscriptions[id].add(channel);
+        for (let childKey in this.children) {
+          deleted += this.children[childKey]._delete(path, index + 1, value);
+          if (this.children[childKey].size === 0) {
+            delete this.children[childKey];
+          }
+        }
+        this.size -= deleted;
+        return deleted;
+      }
+      if (path[index] in this.children) {
+        deleted = this.children[path[index]]._delete(path, index + 1, value);
+        this.size -= deleted;
+      }
+      return deleted;
+    }
+
+    /**
+     * Iterates over the data at the node specified by path,
+     * along with all descendant nodes. 
+     * @param {Array<string>} path 
+     * @returns {Generator<T, void, any>}
+     */
+    *getDescIt(path) {
+      yield* this._getDescIt(path, 0);
+    }
+
+    /**
+     * 
+     * @param {Array<string>} path 
+     * @param {number} index 
+     * @returns {Generator<T, void, any>}
+     */
+    *_getDescIt(path, index) {
+      if (index >= path.length) {
+        for (let value of this.data) {
+          yield value;
+        }
+        for (let childKey in this.children) {
+          yield* this.children[childKey]._getDescIt(path, index + 1);
+        }
+      }
+      if (path[index] in this.children) {
+        yield* this.children[path[key]]._getDescIt(path, index + 1);
       }
     }
-    
-    unsubscribe(id, channels) {
-      if (!(id in this.subscriptions)) {
-        console.warn("Channel: ", id, " does not appear in the message board");
+
+    /**
+     * Iterates over the data at the node specified by path,
+     * along with all ancestor nodes. 
+     * @param {Array<string>} path 
+     */
+    *getAnscIt(path) {
+      yield* this._getAnscIt(path, 0);
+    }
+
+    *_getAnscIt(path, index) {
+      if (index >= path.length) {
+        for (let value of this.data) {
+          yield value;
+        }
         return;
       }
-      for (let channel of channels) {
-        if (!(channel in this.channelSubscribers)) {
-          console.error("Channel ", channel, " does not belong the messageBoard");
-          continue;
-        }
-        if (!(id in this.channelSubscribers[channel])) {
-          console.warn("State id: ", id, " does not appear in the messageBoard list ", channel);
-        }
-        this.channelSubscribers[channel].delete(id);
-        if (this.channelSubscribers[channel].size === 0) {
-          delete this.channelSubscribers[channel];
-        }
-        this.subscriptions[id].delete(channel);
+      if (path[index] in this.children) {
+        yield* this.children[path[index]]._getAnscIt(path, index + 1);
+      }
+      for (let value of this.data) {
+        yield value;
       }
     }
-    
-    withdraw(id) {
-      if (!(id in this.subscriptions)) {
-        console.warn("Id: ", id, " does not appear in the message board");
-      }
-      for (let channel of this.subscriptions[id]) {
-        this.channelSubscribers[channel].delete(id);
-        if (this.channelSubscribers[channel].size === 0) {
-          delete this.channelSubscribers[channel];
-        }
-      }
-      delete this.subscriptions[id];
-      delete this.receivers[id];
+  }
+
+  /**
+   * @typedef {(event: any, descriptor: Array<string>) => void} EventHandler
+   * @typedef {{
+   * name: string,
+   * handler: EventHandler,
+   * source?: string,
+   * }} ListenerInfo
+   * @typedef {string} ListenerKey
+   * @typedef {[string, Array<string>, any, string?]} Message
+   */
+  class MessageBoard {
+    /**
+     * A central message board implementation for Systems.
+     */
+    constructor() {
+      /**
+       * Keeps track of the information associated with each key.
+       * @type {Object.<ListenerKey, ListenerInfo>}
+       */
+      this._listeners = {};
+      /**
+       * Keeps track of the events each system is listening to,
+       * @type {Object.<string, RootedSearchTreeNode<ListenerKey>>}
+       */
+      this._subscribers = {};
+      /** 
+       * Keeps track of the event descriptorss that can trigger an event. 
+       * @type {RootedSearchTreeNode<ListenerKey>} 
+       */
+      this._descriptors = new RootedSearchTreeNode();
+
+      /**
+       * @type {Queue<Message>}
+       */
+      this._messageQueue = new Queue();
+      this._processImmediately = true;
     }
-    
-    // Posts message to all ids who have signed for the channel/tag.
-    post(source, channel, message) {
-      // Keep for now?
-      if (channel in this.channelSubscribers) {
-        for (let id of this.channelSubscribers[channel]) {
-          this.receivers[id].receiveMessage(source, channel, message);
+
+    get processImmediately() {
+      return this._processImmediately;
+    }
+
+    set processImmediately(value) {
+      this._processImmediately = !!value;
+      if (this._processImmediately) {
+        this.processMessages();
+      }
+    }
+
+    /**
+     * Subscribes to an event. 
+     * @param {string} name The name of the subscribing system
+     * @param {Array<string>} descriptor The path descriptor of the event
+     * @param {EventHandler} handler The event handler
+     * @param {string} source The name of the source. Default is undefined, which handles all sources.
+     */
+    subscribe(name, descriptor, handler, source) {
+      if (!(name in this._subscribers)) {
+        this._subscribers[name] = new RootedSearchTreeNode();
+      }
+      let listenerKey = Functions.generateId("SystemMessageBoard");
+      this._subscribers[name].add(descriptor, listenerKey);
+      let listenerInfo = {
+        name: name,
+        handler: handler,
+        source: source,
+      };
+      this._listeners[listenerKey] = listenerInfo;
+      this._descriptors.add(descriptor, listenerKey);
+    }
+
+    /**
+     * Unsubscribes to any event listeners in the given path.
+     * @param {string} name The name of the unsubscribing system
+     * @param {Array<string>} descriptor The path descriptor of the event
+     */
+    unsubscribe(name, descriptor) {
+      if (!(name in this._subscribers)) {
+        return;
+      }
+      for (let key of this._subscribers[name].getDescIt(descriptor)) {
+        this._descriptors.delete(descriptor, key);
+        delete this._listeners[key];
+      }
+      this._subscribers[name].delete(descriptor);
+    }
+
+    /**
+     * Unsubscribes to all events
+     * @param {string} name The name of the unsubscribing system
+     */
+    unsubscribeAll(name) {
+      this.unsubscribe(name, []);
+    }
+
+    /**
+     * Posts a message to the message board.
+     * Messages will always be handled in the order they are received.
+     * However, they may be handled asynchronously.
+     * @param {string} sender The sender system's name
+     * @param {Array<string>} descriptor The path descriptor of the event, in increasing specificity
+     * @param {any} body The event body
+     * @param {string?} target The target system's name, or undefined for all systems
+     */
+    post(sender, descriptor, body, target) {
+      this._messageQueue.enqueue([
+        sender, descriptor, body, target
+      ]);
+
+      if (this.processImmediately) {
+        this.processMessages();
+      }
+    }
+
+    processMessages() {
+      while (this._messageQueue.size > 0) {
+        let [sender, descriptor, body, target] = this._messageQueue.dequeue(1);
+        for (let listenerKey of this._descriptors.getAnscIt(descriptor)) {
+          let {
+            name: subscriberName, handler, source: senderName
+          } = this._listeners[listenerKey];
+          if (target !== undefined && target !== subscriberName) {
+            continue;
+          }
+          if (senderName !== undefined && senderName !== sender) {
+            continue;
+          }
+          
+          handler(body, descriptor);
         }
       }
-      
-      return;
     }
   }
 
@@ -1430,11 +1607,12 @@ var AsciiEngine = (function () {
   const ModuleSlots = {
     Graphics: Symbol("GraphicsLibrary"),
     ResourceManager: Symbol("ResourceManager"),
+    KeyboardInput: Symbol("KeyboardInput"),
   };
 
   class AsciiRenderSystem extends SetSystem {
     constructor(name) {
-      super(name);
+      super(name || "AsciiRender");
       // Use the default Set container for all entities.
       
       this._asciiGl = null;
@@ -1495,32 +1673,135 @@ var AsciiEngine = (function () {
 
   AsciiRenderSystem.type = "AsciiRenderSystem";
 
+  /**
+   * Handles events from mouse and keyboard
+   * Mouse events are sent by AsciiGL. 
+   * This system should only be used with AsciiGL as the graphics library.
+   * 
+   * Allows for focusing, 
+   */
+  class AsciiInputHandlerSystem extends System {
+    constructor(name) {
+      super(name || "AsciiInputHandler");
+      this.mouseEventsEnabled = false;
+      this.keyboardEventsEnabled = false;
+    }
+
+    startup() {
+      let asciiGl = this.getEngine().getModule(ModuleSlots.Graphics);
+      if (asciiGl !== undefined) {
+        asciiGl.setHandler(this._mouseEventHandler.bind(this));
+        this.mouseEventsEnabled = true;
+      }
+
+      let keyboardInputModule = this.getEngine().getModule(ModuleSlots.KeyboardInput);
+      if (keyboardInputModule !== undefined) {
+        keyboardInputModule.addEventListener(this._keyboardEventHandler.bind(this));
+        this.keyboardEventsEnabled = true;
+      }
+    }
+
+    /**
+     * Receives mouse input messages from AsciiGL and forwards them to the System Message Board.
+     * The event descriptor always begins with ["MouseEvent", eventType].
+     * If there is a named target being clicked, it will be appended.
+     * 
+     * @param {MouseEvent} event The MouseEvent object generated by the browser
+     * @param {string} target The target element's name, if defined
+     * @param {string} type The event type
+     * @param {{x: number, y: number}} coords The location of the mouse event on the screen.
+     */
+    _mouseEventHandler(event, type, target, coords) {
+      let eventDescriptor = (target !== undefined) ? [
+        "MouseEvent", type, target
+      ] : [
+        "MouseEvent", type
+      ];
+      this.postMessage(
+        eventDescriptor,
+        {
+          event: event,
+          coords: coords,
+        },
+      );
+    }
+
+    /**
+     * Receives keyboard events from KeyboardInputModule and forwards them to the System Message Board
+     * The event descriptor is 
+     * ["KeyboardEvent", eventType [, key category[, key subcategory...]], event.key]
+     * Current key categories include:
+     * Visible: Any visible character
+     *    - Alphabetical: a-z A-Z
+     *      - Lower: a-z
+     *      - Upper: A-Z
+     *    - Numeric: 0-9
+     *    - Symbol: Everything else
+     * Arrow: One of the four arrow keys
+     * 
+     * @param {string} eventName The type of event
+     * @param {string} eventKey The name of the key that triggered the event
+     * @param {KeyboardEvent} event The event object generated by the browser.
+     */
+    _keyboardEventHandler(eventName, eventKey, event) {
+      let eventDescriptor = undefined;
+      if (eventKey.length === 1) {
+        let keyCode = eventKey.charCodeAt(0);
+        if (keyCode >= 48 && keyCode <= 57) {
+          eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Numeric", eventKey];
+        } else if (keyCode >= 65 && keyCode <= 90) {
+          eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Alphabetical", "Upper", eventKey];
+        } else if (keyCode >= 97 && keyCode <= 122) {
+          eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Alphabetical", "Lower", eventKey];
+        } else {
+          eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Symbol", eventKey];
+        }
+        eventDescriptor = ["KeyboardEvent", eventName, "Visible", eventKey];
+      } else if (eventKey.startsWith("Arrow")) {
+        eventDescriptor = ["KeyboardEvent", eventName, "Arrow", eventKey];
+      } else {
+        eventDescriptor = ["KeyboardEvent", eventName, eventKey];
+      }
+      this.postMessage(
+        eventDescriptor,
+        event
+      );
+    }
+  }
+
   const DefaultSystems = {
     Set: SetSystem,
     Map: MapSystem,
     AsciiRender: AsciiRenderSystem,
+    AsciiInputHandler: AsciiInputHandlerSystem,
   };
 
   Object.freeze(DefaultSystems);
 
+  /**
+   * Listens for and processes keyboard events.
+   * Does limited filtering for usability.
+   * 
+   * @typedef {(
+   * eventName: string, 
+   * eventKey: string, 
+   * event: KeyboardEvent
+   * ) => void} KeyboardEventHandler
+   */
   class KeyboardInputModule {
     constructor() {
-      this.ALL = "ALL_KEYS";
-      this._messageBoards = {};
-      
+      /** @type {Set<KeyboardEventHandler>} */
+      this.handlers = new Set();
+
       for (let eventType in KeyboardInputModule.EventTypes) {
         let eventName = KeyboardInputModule.EventTypes[eventType];
-        this._messageBoards[eventName] = new MessageBoard();
-        
-        // Use the "key" property of the event as the events to listen for.
         document.addEventListener(eventName, (event) => {
           if (document.activeElement === document.body || document.activeElement === null) {
             // Only listen if nothing else is in focus.
-            // TODO: Make it so that it must be focused on the target element.
-            // How?
-            this._messageBoards[eventName].post(eventName, event.key, event);
-            // "" means listen for all events.
-            this._messageBoards[eventName].post(eventName, this.ALL, event);
+            // TODO: Make it so that it must be focused on the target element. How?
+            for (let handler of this.handlers) {
+              handler(eventName, event.key, event);
+            }
             if (event.keyCode <= 40 && event.keyCode >= 37) {
               event.preventDefault();
             } else if (event.keyCode === 32) {
@@ -1530,37 +1811,23 @@ var AsciiEngine = (function () {
         });
       }
     }
-    
-    signup(id, receiver) {
-      for (let eventType in this._messageBoards) {
-        this._messageBoards[eventType].signup(id, receiver);
-      }
+
+    /**
+     * Attaches an event listener.
+     * For now, only allow all or nothing. 
+     * The handler should decide what to do with everything else by itself.
+     * @param {KeyboardEventHandler} handler The event handler to attach
+     */
+    addEventListener(handler) {
+      this.handlers.add(handler);
     }
-    
-    withdraw(id) {
-      for (let eventType in this._messageBoards) {
-        this._messageBoards[eventType].withdraw(id);
-      }
-    }
-    
-    subscribe(id, target, events) {
-      for (let event of events) {
-        if (event in this._messageBoards) {
-          this._messageBoards[event].subscribe(id, [target]);
-        } else {
-          console.warn("Keyboard event", event, "is not supported");
-        }
-      }
-    }
-    
-    unsubscribe(id, target, events) {
-      for (let event of events) {
-        if (event in this._messageBoards) {
-          this._messageBoards[event].unsubscribe(id, [target]);
-        } else {
-          console.warn("Keyboard event", event, "is not supported");
-        }
-      }
+
+    /**
+     * Removes an event listener.
+     * @param {KeyboardEventHandler} handler The handler to remove.
+     */
+    removeEventListener(handler) {
+      this.handlers.delete(handler);
     }
   }
 
@@ -1568,6 +1835,114 @@ var AsciiEngine = (function () {
     KEY_DOWN: "keydown",
     KEY_UP: "keyup",
   };
+
+  class MessageBoard$1 {
+    constructor() {
+      this.channelSubscribers = {}; // Maps channels to their subscribers
+      this.subscriptions = {}; // Maps ids to set of subscriptions
+      this.receivers = {}; // Maps each id to where it receives messages.
+      
+      this.channelQueue = new Queue();
+      this.messageQueue = new Queue();
+    }
+    
+    getAllChannels() {
+      // Is this ever used?
+      return Object.keys(this.channelSubscribers);
+    }
+    
+    getSubscriptions(id) {
+      if (id in this.subscriptions) {
+        return this.subscriptions[id];
+      }
+      console.warn("Id ", id, " not found in messageBoard");
+    }
+    
+    getSubscribers(channel) {
+      // TODO: Is this ever used?
+      if (id in this.channelSubscribers) {
+        return this.channelSubscribers[id];
+      }
+      console.warn("Id ", id, " not found in messageBoard");
+    }
+    
+    signup(id, receiver) {
+      // console.debug("Component", id, "signing up.");
+      if (id in this.receivers) {
+        console.warn("Id ", id, " is already signed up.");
+        return;
+      }
+      this.receivers[id] = receiver;
+      this.subscriptions[id] = new Set();
+    }
+    
+    subscribe(id, channels) {
+      if (!(id in this.receivers)) {
+        // this.subscriptions[id] = new Set();
+        // TODO: Create similar message when receiving. 
+        console.error("Id ", id, " does not have a receiver but is signing up for messages.");
+        return;
+      }
+      for (let channel of channels) {
+        if (!(channel in this.channelSubscribers)) {
+          this.channelSubscribers[channel] = new Set();
+        }
+        if (id in this.channelSubscribers[channel]) {
+          // console.debug("Channel ", id, " is already signed up for ", channel);
+          continue;
+        }
+        this.channelSubscribers[channel].add(id);
+        this.subscriptions[id].add(channel);
+      }
+    }
+    
+    unsubscribe(id, channels) {
+      if (!(id in this.subscriptions)) {
+        console.warn("Channel: ", id, " does not appear in the message board");
+        return;
+      }
+      for (let channel of channels) {
+        if (!(channel in this.channelSubscribers)) {
+          console.error("Channel ", channel, " does not belong the messageBoard");
+          continue;
+        }
+        if (!(id in this.channelSubscribers[channel])) {
+          console.warn("State id: ", id, " does not appear in the messageBoard list ", channel);
+        }
+        this.channelSubscribers[channel].delete(id);
+        if (this.channelSubscribers[channel].size === 0) {
+          delete this.channelSubscribers[channel];
+        }
+        this.subscriptions[id].delete(channel);
+      }
+    }
+    
+    withdraw(id) {
+      if (!(id in this.subscriptions)) {
+        console.warn("Id: ", id, " does not appear in the message board");
+      }
+      for (let channel of this.subscriptions[id]) {
+        this.channelSubscribers[channel].delete(id);
+        if (this.channelSubscribers[channel].size === 0) {
+          delete this.channelSubscribers[channel];
+        }
+      }
+      delete this.subscriptions[id];
+      delete this.receivers[id];
+    }
+    
+    // Posts message to all ids who have signed for the channel/tag.
+    post(source, channel, message) {
+      // Keep for now?
+      if (channel in this.channelSubscribers) {
+        for (let id of this.channelSubscribers[channel]) {
+          this.receivers[id].receiveMessage(source, channel, message);
+        }
+      }
+      
+      return;
+    }
+  }
 
   /**
    * @typedef {{
@@ -2679,6 +3054,9 @@ var AsciiEngine = (function () {
 
   Object.freeze(AsciiGL);
 
+  /**
+   * @deprecated
+   */
   class AsciiMouseInputModule {
     constructor(agl) {
       this.GLOBAL = AsciiMouseInputModule.Global;
@@ -2688,7 +3066,7 @@ var AsciiEngine = (function () {
       
       this._messageBoards = {};
       for (let name in AsciiGL.EventTypes) {
-        this._messageBoards[AsciiGL.EventTypes[name]] = new MessageBoard();
+        this._messageBoards[AsciiGL.EventTypes[name]] = new MessageBoard$1();
       }
       
       agl.setHandler((event, type, target, coords) => {
@@ -2921,11 +3299,49 @@ var AsciiEngine = (function () {
 
   Object.freeze(Modules);
 
+  class MessageReceiver {
+    /**
+     * An extensible class that receives messages from message boards.
+     * Allows for delayed processing.
+     * 
+     * Currently supports processing only the top message.
+     * In the future, may allow for grouping of messages, etc.
+     * 
+     * @param {Function} callback The callback to handle each message.
+     *    NOTE: Should be bound to the owner of this MessageReceiver!
+     */
+    constructor(callback) {
+      this.sourceQueue = new Queue();
+      this.tagQueue = new Queue();
+      this.messageQueue = new Queue();
+      this.callback = callback;
+    }
+    
+    receiveMessage(source, tag, message) {
+      this.sourceQueue.enqueue(source);
+      this.tagQueue.enqueue(tag);
+      this.messageQueue.enqueue(message);
+    }
+    
+    handle() {
+      let source = this.sourceQueue.dequeue();
+      let tag = this.tagQueue.dequeue();
+      let message = this.messageQueue.dequeue();
+      this.callback(source, tag, message);
+    }
+    
+    handleAll() {
+      while (this.tagQueue.size > 0) {
+        this.handle();
+      }
+    }
+  }
+
   // A selection of tools and data structures to export.
   const Utility = {
     Parser: Parser,
     AssetLoader: AssetLoader,
-    MessageBoard: MessageBoard,
+    MessageBoard: MessageBoard$1,
     MessageReceiver: MessageReceiver,
   };
 

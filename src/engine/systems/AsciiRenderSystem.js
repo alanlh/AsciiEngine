@@ -6,7 +6,7 @@ import ModuleSlots from "../modules/ModuleSlots.js";
 
 export default class AsciiRenderSystem extends SetSystem {
   constructor(name) {
-    super(name);
+    super(name || "AsciiRender");
     // Use the default Set container for all entities.
     
     this._asciiGl = null;

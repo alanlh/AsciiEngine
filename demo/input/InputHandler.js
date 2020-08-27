@@ -23,6 +23,7 @@ export default class InputHandler extends AsciiEngine.System {
         this.spriteBuilders[y].construct(this.paramArrays[y])
       );
     }
+    this._cursor = undefined;
   }
   
   // The only entity it cares about is the cursor. 
@@ -59,20 +60,9 @@ export default class InputHandler extends AsciiEngine.System {
       this.getEntityManager().requestAddEntity(rowEntity);
     }
     
-    let keyboardInput = this.getEngine().getModule("KeyboardInput");
-    keyboardInput.signup(this.name, this.getMessageReceiver());
-    keyboardInput.subscribe(this.name, keyboardInput.ALL, ["keydown"]);
+    this.subscribe(["KeyboardEvent", "keydown", "Visible"], this._handleKeyDown, true);
   }
-  
-  shutdown() {
-    let keyboardInput = this.getEngine().getModule("KeyboardInput");
-    keyboardInput.withdraw(this.name);
-  }
-    
-  preUpdate() {
-    this.getMessageReceiver().handleAll();
-  }
-  
+      
   update() {
     let resourceManager = this.getEngine().getModule(AsciiEngine.ModuleSlots.ResourceManager);
     
@@ -83,27 +73,21 @@ export default class InputHandler extends AsciiEngine.System {
     }
   }
   
-  receiveMessage(source, tag, body) {
-    // TODO: Handle Backspace, etc.
-    if (source === "keydown") {
-      let key = body.key;
-      if (key.length === 1) {
-        // Visible character, proceed.
-        let position = this._cursor.getComponent(AsciiEngine.Components.Position.type);
-        this.paramArrays[position.y - 1][position.x - 1] = key;
-        
-        // Alternatively, we could derive a CursorPositionComponent system, which handles this automatically.
-        position.x ++;
-        // Harded-coded numbers...
-        if (position.x === 31) {
-          // Wrap to next line.
-          position.y ++;
-          position.x = 1;
-          if (position.y === 11) {
-            // Wrap to beginining of textbox.
-            position.y = 1;
-          }
-        }
+  _handleKeyDown(event) {
+    let key = event.key;
+    let position = this._cursor.getComponent(AsciiEngine.Components.Position.type);
+    this.paramArrays[position.y - 1][position.x - 1] = key;
+
+    // Alternatively, we could derive a CursorPositionComponent system, which handles this automatically.
+    position.x++;
+    // Harded-coded numbers...
+    if (position.x === 31) {
+      // Wrap to next line.
+      position.y++;
+      position.x = 1;
+      if (position.y === 11) {
+        // Wrap to beginining of textbox.
+        position.y = 1;
       }
     }
   }

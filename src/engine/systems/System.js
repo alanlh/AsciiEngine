@@ -1,5 +1,3 @@
-import MessageReceiver from "../../utility/MessageReceiver.js";
-
 export default class System {
   constructor(name) {
     this._engine = undefined;
@@ -11,8 +9,6 @@ export default class System {
     this._priority = 0;
     
     this._active = false;
-    
-    this._messageReceiver = new MessageReceiver(this.receiveMessage.bind(this));
   }
   
   get type() {
@@ -29,7 +25,6 @@ export default class System {
     this._engine = systemManager.getEngine();
     // This should only be accessed in order to directly modify an Entity, rather than component data.
     this._entityManager = this._engine.getEntityManager();
-    this.getSystemManager().getMessageBoard().signup(this.name, this.getMessageReceiver());
 
     this._active = true;
     
@@ -38,8 +33,9 @@ export default class System {
  
   destroy() {
     this.shutdown();
-    this.getSystemManager().getMessageBoard().withdraw(this.name);
+    this.unsubscribe([]);
   }
+
   // ---------- PUBLIC API --------- //
   
   getSystemManager() {
@@ -52,10 +48,6 @@ export default class System {
 
   getEntityManager() {
     return this._entityManager;
-  }
-  
-  getMessageReceiver() {
-    return this._messageReceiver;
   }
   
   enable() {
@@ -72,6 +64,44 @@ export default class System {
   
   get active() {
     return this._active;
+  }
+
+  /**
+   * A wrapper around SystemMessageBoard's subscribe.
+   * @param {Array<string>} descriptor The event path descriptor
+   * @param {function} handler The event handler, which should be bound to self if necessary
+   * @param {boolean} bind Whether or not the event handler should be bound to this.
+   * @param {string?} source The source system. If undefined, will accept any system.
+   */
+  subscribe(descriptor, handler, bind, source) {
+    if (bind) {
+      handler = handler.bind(this);
+    }
+    this.getSystemManager().getMessageBoard().subscribe(
+      this.name, descriptor, handler, source
+    );
+  }
+
+  /**
+   * A wrapper around SystemMessageBoard's unsubscribe.
+   * @param {Array<string>} descriptor The path descriptor of the event
+   */
+  unsubscribe(descriptor) {
+    this.getSystemManager().getMessageBoard().unsubscribe(
+      this.name, descriptor
+    );
+  }
+
+  /**
+   * A wrapper around SystemMessageBoard's post.
+   * @param {Array<string>} descriptor 
+   * @param {any} body 
+   * @param {string?} target 
+   */
+  postMessage(descriptor, body, target) {
+    this.getSystemManager().getMessageBoard().post(
+      this.name, descriptor, body, target
+    )
   }
   
   // ---------- PUBLIC INTERFACE ---------- //
@@ -137,16 +167,4 @@ export default class System {
    * Called after main update method.
    */
   postUpdate() {}
-  
-  /**
-   * A virtual method Systems can override.
-   * Passed to a message receiver. To run, call "this.getMessageReceiver().handle();"
-   * This should not be an expensive method. Ideally, this should pass the message to another data structure,
-   * where it can be handled later. 
-   * 
-   * @param {String} source The source of the message. Usually the name of the System, or the event type
-   * @param {String} tag The tag of the message.
-   * @param {Anything} body The message
-   */
-  receiveMessage(source, tag, body) {}
 }

@@ -69,29 +69,18 @@ export default class MenuSystem extends AsciiEngine.System {
     entityManager.requestAddEntity(this.loseDisplay);
     this.getSystemManager().addSystem(new BoardSystem(10, 10, 10));
     
-    let mouseModule = this.getEngine().getModule("mouse");
-    mouseModule.signup(this.name, this.getMessageReceiver());
-    mouseModule.subscribe(this.name, this.easyGameButton.id, ["click"]);
-    mouseModule.subscribe(this.name, this.mediumGameButton.id, ["click"]);
-    mouseModule.subscribe(this.name, this.hardGameButton.id, ["click"]);
+    let newGameHandler = this._handleNewGameClick.bind(this);
+    this.subscribe(["MouseEvent", "click", this.easyGameButton.id], newGameHandler);
+    this.subscribe(["MouseEvent", "click", this.mediumGameButton.id], newGameHandler);
+    this.subscribe(["MouseEvent", "click", this.hardGameButton.id], newGameHandler);
     
-    let messageBoard = this.getSystemManager().getMessageBoard();
-    
-    messageBoard.subscribe(this.name, ["game_end"]);
+    this.subscribe(["Game", "End"], this._handleGameEnd, true);
   }
   
   shutdown() {
-    // Should never be called, but let's cleanup anyways...
-    // TODO: Need to remove title and new game button
-    let messageBoard = this.getSystemManager().getMessageBoard();
-    messageBoard.withdraw(this.name);
+    // TODO: Need to remove title and new game button?
   }
-  
-  preUpdate() {
-    // Only listen for events. Nothing else to do.
-    this.getMessageReceiver().handleAll();
-  }
-  
+    
   changeWinLossDisplay() {
     let winStringName = "text-" + this.wins.toString();
     let lossStringName = "text-" + this.losses.toString();
@@ -110,30 +99,29 @@ export default class MenuSystem extends AsciiEngine.System {
     this.loseDisplay.getComponent(AsciiEngine.Components.AsciiRender.type).spriteNameList[1] = lossStringName;
   }
   
-  receiveMessage(source, tag, body) {
-    if (tag === "game_end") {
-      let gameWon = !!(body);
-      if (gameWon) {
-        this.wins ++;
-      } else {
-        this.losses ++;
-      }
-      this.changeWinLossDisplay();
-    } else if (tag === this.easyGameButton.id) {
-      if (body.type === "click") {
-        this.getSystemManager().removeSystem("Board");
-        this.getSystemManager().addSystem(new BoardSystem(10, 10, 10));
-      }
-    } else if (tag === this.mediumGameButton.id) {
-      if (body.type === "click") {
-        this.getSystemManager().removeSystem("Board");
-        this.getSystemManager().addSystem(new BoardSystem(15, 15, 40));
-      }
-    } else if (tag === this.hardGameButton.id) {
-      if (body.type === "click") {
-        this.getSystemManager().removeSystem("Board");
-        this.getSystemManager().addSystem(new BoardSystem(20, 20, 100));
-      }
+  _handleGameEnd(event, descriptor) {
+    let gameWon = !!(event);
+    if (gameWon) {
+      this.wins++;
+    } else {
+      this.losses++;
+    }
+    this.changeWinLossDisplay();
+  }
+
+  _handleNewGameClick(event, descriptor) {
+    if (descriptor.length !== 3) {
+      return;
+    }
+    if (descriptor[2] === this.easyGameButton.id) {
+      this.getSystemManager().removeSystem("Board");
+      this.getSystemManager().addSystem(new BoardSystem(10, 10, 10));
+    } else if (descriptor[2] === this.mediumGameButton.id) {
+      this.getSystemManager().removeSystem("Board");
+      this.getSystemManager().addSystem(new BoardSystem(15, 15, 40));
+    } else if (descriptor[2] === this.hardGameButton.id) {
+      this.getSystemManager().removeSystem("Board");
+      this.getSystemManager().addSystem(new BoardSystem(20, 20, 100));
     }
   }
 }
