@@ -85,22 +85,24 @@ export default class Engine {
    * Updates the game by one tick.
    */
   update() {
+    // Currently, process between update functions, so that data isn't changed as the result of a message.
+    // This isn't set in stone, maybe change as necessary.
+    // The two other alternatives are process immediately during update, or always process immediately.
+    this._systemManager.getMessageBoard().processMessages();
     for (let system of this._systemManager) {
       system.preUpdate();
     }
-
+    this._systemManager.getMessageBoard().processMessages();
     for (let system of this._systemManager) {
       system.update();
     }
-
+    this._systemManager.getMessageBoard().processMessages();
     for (let system of this._systemManager) {
       system.postUpdate();
     }
-
+    this._systemManager.getMessageBoard().processMessages();
     // Update Entity/System Managers.
     this.getEntityManager().processEntityOperations();
     this.getSystemManager().processEntityOperations();
   }
 }
-
-Object.freeze(Engine.Modules);

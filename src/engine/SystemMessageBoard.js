@@ -37,7 +37,8 @@ export default class MessageBoard {
      * @type {Queue<Message>}
      */
     this._messageQueue = new Queue();
-    this._processImmediately = true;
+    this._processImmediately = false;
+    this._currentlyProcessing = false;
   }
 
   get processImmediately() {
@@ -116,7 +117,15 @@ export default class MessageBoard {
     }
   }
 
+  /**
+   * Processes all messasges in the queue.
+   */
   processMessages() {
+    if (this._currentlyProcessing) {
+      // Prevent bloating the call stack.
+      return;
+    }
+    this._currentlyProcessing = true;
     while (this._messageQueue.size > 0) {
       let [sender, descriptor, body, target] = this._messageQueue.dequeue(1);
       for (let listenerKey of this._descriptors.getAnscIt(descriptor)) {
@@ -133,5 +142,6 @@ export default class MessageBoard {
         handler(body, descriptor);
       }
     }
+    this._currentlyProcessing = false;
   }
 }

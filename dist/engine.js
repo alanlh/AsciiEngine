@@ -960,7 +960,7 @@ var AsciiEngine = (function () {
        * @type {Queue<Message>}
        */
       this._messageQueue = new Queue();
-      this._processImmediately = true;
+      this._processImmediately = false;
     }
 
     get processImmediately() {
@@ -1431,18 +1431,19 @@ var AsciiEngine = (function () {
      * Updates the game by one tick.
      */
     update() {
+      this._systemManager.getMessageBoard().processMessages();
       for (let system of this._systemManager) {
         system.preUpdate();
       }
-
+      this._systemManager.getMessageBoard().processMessages();
       for (let system of this._systemManager) {
         system.update();
       }
-
+      this._systemManager.getMessageBoard().processMessages();
       for (let system of this._systemManager) {
         system.postUpdate();
       }
-
+      this._systemManager.getMessageBoard().processMessages();
       // Update Entity/System Managers.
       this.getEntityManager().processEntityOperations();
       this.getSystemManager().processEntityOperations();
