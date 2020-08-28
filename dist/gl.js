@@ -606,7 +606,13 @@ var AsciiGL = (function () {
         this._currStyles[styleName] = styleValue;
       }
       if (this._nextId !== this._currId) {
-        domElement.dataset.asciiGlId = this._nextId;
+        // TODO: Find a more efficient way of storing this property.
+        // Testing currently suggests setting values w/ dataset is very expensive.
+        if (this._nextId === undefined) {
+          delete domElement.dataset.asciiGlId;
+        } else {
+          domElement.dataset.asciiGlId = this._nextId;
+        }
       }
       this._currId = this._nextId;
     }
