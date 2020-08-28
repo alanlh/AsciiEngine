@@ -914,6 +914,7 @@ var AsciiGL = (function () {
       this._drawBuffer = new DrawBuffer();
       
       this._currMouseOver = undefined;
+      this._currMouseDown = undefined;
       this._handler = () => {};
     }
     
@@ -960,6 +961,9 @@ var AsciiGL = (function () {
         if (this._currMouseOver) {
           this._handler(event, "mouseleave", this._currMouseOver, mouseCoords);
         }
+        if (this._currMouseDown) {
+          this._currMouseDown = undefined;
+        }
         this._currMouseOver = undefined;
         this._handler(event, "mouseleavecanvas", undefined, mouseCoords);
       });
@@ -982,7 +986,8 @@ var AsciiGL = (function () {
 
       this._container.addEventListener("mousedown", (event) => {
         let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
-        this._handler(event, "mousedown", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
+        this._currMouseDown = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId] || undefined;
+        this._handler(event, "mousedown", this._currMouseDown, mouseCoords);
       });
       
       this._container.addEventListener("mouseup", (event) => {
@@ -992,7 +997,12 @@ var AsciiGL = (function () {
       
       this._container.addEventListener("click", (event) => {
         let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
-        this._handler(event, "click", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
+        let currMouseDown = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId];
+        if (this._currMouseDown !== undefined && currMouseDown !== this._currMouseDown) {
+          this._currMouseDown = undefined;
+        }
+        this._handler(event, "click", this._currMouseDown, mouseCoords);
+        this._currMouseDown = undefined;
       });
       
       this._container.addEventListener("contextmenu", (event) => {

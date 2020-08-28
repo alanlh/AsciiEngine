@@ -961,6 +961,7 @@ var AsciiEngine = (function () {
        */
       this._messageQueue = new Queue();
       this._processImmediately = false;
+      this._currentlyProcessing = false;
     }
 
     get processImmediately() {
@@ -1039,7 +1040,15 @@ var AsciiEngine = (function () {
       }
     }
 
+    /**
+     * Processes all messasges in the queue.
+     */
     processMessages() {
+      if (this._currentlyProcessing) {
+        // Prevent bloating the call stack.
+        return;
+      }
+      this._currentlyProcessing = true;
       while (this._messageQueue.size > 0) {
         let [sender, descriptor, body, target] = this._messageQueue.dequeue(1);
         for (let listenerKey of this._descriptors.getAnscIt(descriptor)) {
@@ -1056,6 +1065,7 @@ var AsciiEngine = (function () {
           handler(body, descriptor);
         }
       }
+      this._currentlyProcessing = false;
     }
   }
 
@@ -1431,6 +1441,9 @@ var AsciiEngine = (function () {
      * Updates the game by one tick.
      */
     update() {
+      // Currently, process between update functions, so that data isn't changed as the result of a message.
+      // This isn't set in stone, maybe change as necessary.
+      // The two other alternatives are process immediately during update, or always process immediately.
       this._systemManager.getMessageBoard().processMessages();
       for (let system of this._systemManager) {
         system.preUpdate();
@@ -1449,8 +1462,6 @@ var AsciiEngine = (function () {
       this.getSystemManager().processEntityOperations();
     }
   }
-
-  Object.freeze(Engine.Modules);
 
   class Component {
     /**
@@ -2839,6 +2850,7 @@ var AsciiEngine = (function () {
       this._drawBuffer = new DrawBuffer();
       
       this._currMouseOver = undefined;
+      this._currMouseDown = undefined;
       this._handler = () => {};
     }
     
@@ -2885,6 +2897,9 @@ var AsciiEngine = (function () {
         if (this._currMouseOver) {
           this._handler(event, "mouseleave", this._currMouseOver, mouseCoords);
         }
+        if (this._currMouseDown) {
+          this._currMouseDown = undefined;
+        }
         this._currMouseOver = undefined;
         this._handler(event, "mouseleavecanvas", undefined, mouseCoords);
       });
@@ -2907,7 +2922,8 @@ var AsciiEngine = (function () {
 
       this._container.addEventListener("mousedown", (event) => {
         let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
-        this._handler(event, "mousedown", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
+        this._currMouseDown = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId] || undefined;
+        this._handler(event, "mousedown", this._currMouseDown, mouseCoords);
       });
       
       this._container.addEventListener("mouseup", (event) => {
@@ -2917,7 +2933,12 @@ var AsciiEngine = (function () {
       
       this._container.addEventListener("click", (event) => {
         let mouseCoords = this.mousePositionToCoordinates(event.clientX, event.clientY);
-        this._handler(event, "click", this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId], mouseCoords);
+        let currMouseDown = this._nameBuffers[this._activeBufferIdx][event.target.dataset.asciiGlId];
+        if (this._currMouseDown !== undefined && currMouseDown !== this._currMouseDown) {
+          this._currMouseDown = undefined;
+        }
+        this._handler(event, "click", this._currMouseDown, mouseCoords);
+        this._currMouseDown = undefined;
       });
       
       this._container.addEventListener("contextmenu", (event) => {
