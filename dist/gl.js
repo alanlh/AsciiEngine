@@ -483,6 +483,7 @@ var AsciiGL = (function () {
       
       for (let y = 0; y < height; y ++) {
         let rowElement = document.createElement("div");
+        // TODO: Is this necessary? Remove?
         rowElement.dataset.asciiGlRow = y;
         
         this.primaryElement.appendChild(rowElement);

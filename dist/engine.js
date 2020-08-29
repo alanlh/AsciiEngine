@@ -659,7 +659,7 @@ var AsciiEngine = (function () {
     /**
      * A wrapper around SystemMessageBoard's subscribe.
      * @param {Array<string>} descriptor The event path descriptor
-     * @param {function} handler The event handler, which should be bound to self if necessary
+     * @param {import("../SystemMessageBoard").EventHandler} handler The event handler
      * @param {boolean} bind Whether or not the event handler should be bound to this.
      * @param {string?} source The source system. If undefined, will accept any system.
      */
@@ -926,7 +926,7 @@ var AsciiEngine = (function () {
   }
 
   /**
-   * @typedef {(event: any, descriptor: Array<string>) => void} EventHandler
+   * @typedef {(event: any, descriptor: Array<string>, sender: string) => void} EventHandler
    * @typedef {{
    * name: string,
    * handler: EventHandler,
@@ -1062,7 +1062,7 @@ var AsciiEngine = (function () {
             continue;
           }
           
-          handler(body, descriptor);
+          handler(body, descriptor, sender);
         }
       }
       this._currentlyProcessing = false;
@@ -1688,29 +1688,57 @@ var AsciiEngine = (function () {
   /**
    * Handles events from mouse and keyboard
    * Mouse events are sent by AsciiGL. 
-   * This system should only be used with AsciiGL as the graphics library.
+   * This system should only be used with AsciiGL as the graphics library,
+   * and the built-in KeyboardInputModule for keyboard events.
    * 
-   * Allows for focusing, 
+   * Allows for focusing. An entity is focused iff it is registered as a focusable element,
+   * and a click event occurred on it. 
+   * If there is a focused entity, keyboard events will only be sent to the system that
+   * registered focus for that element.
+   * Once an entity has been registered as focusable, other systems cannot register focus for
+   * that element until the initial system releases it.
+   * If an element is no longer used, it should be unregistered.
+   * If no entity is focused, keyboard events will be sent to all systems
    */
   class AsciiInputHandlerSystem extends System {
     constructor(name) {
       super(name || "AsciiInputHandler");
-      this.mouseEventsEnabled = false;
-      this.keyboardEventsEnabled = false;
+      // TODO: Do we actually need to keep track of this?
+      this._mouseEventsEnabled = false;
+      this._keyboardEventsEnabled = false;
+
+      this._focusedElement = undefined;
+      this._focusableEntities = {};
     }
 
     startup() {
       let asciiGl = this.getEngine().getModule(ModuleSlots.Graphics);
       if (asciiGl !== undefined) {
         asciiGl.setHandler(this._mouseEventHandler.bind(this));
-        this.mouseEventsEnabled = true;
+        this._mouseEventsEnabled = true;
       }
 
       let keyboardInputModule = this.getEngine().getModule(ModuleSlots.KeyboardInput);
       if (keyboardInputModule !== undefined) {
         keyboardInputModule.addEventListener(this._keyboardEventHandler.bind(this));
-        this.keyboardEventsEnabled = true;
+        this._keyboardEventsEnabled = true;
       }
+
+      // Enable focus checking iff both mouse and keyboard events are available.
+      if (this.mouseEventsEnabled && this.keyboardEventsEnabled) {
+        this.subscribe(["InputHandlerRequest", "AddFocusable"], this._handleAddFocusable, true);
+        this.subscribe(["InputHandlerRequest", "RemoveFocusable"], this._handleRemoveFocusable, true);
+        this.subscribe(["InputHandlerRequest", "SetFocusRequest", this._handleSetFocusRequest], true);
+        this.subscribe(["InputHandlerRequest", "ReleaseFocus"], this._handleReleaseFocus, true);
+      }
+    }
+
+    get mouseEventsEnabled() {
+      return this._mouseEventsEnabled;
+    }
+
+    get keyboardEventsEnabled() {
+      return this._keyboardEventsEnabled;
     }
 
     /**
@@ -1736,6 +1764,9 @@ var AsciiEngine = (function () {
           coords: coords,
         },
       );
+      if (type === "click" && target in this._focusableEntities) {
+        this._switchFocus(target);
+      }
     }
 
     /**
@@ -1774,10 +1805,99 @@ var AsciiEngine = (function () {
       } else {
         eventDescriptor = ["KeyboardEvent", eventName, eventKey];
       }
-      this.postMessage(
-        eventDescriptor,
-        event
-      );
+      if (this._focusedElement !== undefined) {
+        this.postMessage(
+          eventDescriptor,
+          event,
+          this._focusableEntities[this._focusedElement]
+        );
+      } else {
+        this.postMessage(
+          eventDescriptor,
+          event,
+        );
+      }
+    }
+
+    /**
+     * 
+     * @param {string} entityId The event body.
+     *    Should be the id of the entity to register. 
+     * @param {Array<string>} _descriptor
+     * @param {string} sender The name of the System registering the entity
+     */
+    _handleAddFocusable(entityId, _descriptor, sender) {
+      if (!(entityId in this._focusableEntities)) {
+        this._focusableEntities[entityId] = sender;
+      }
+    }
+
+    /**
+     * Unregisters the entity from being focusable.
+     * The message sender should be the same System that registered the entity.
+     * However this *currently* is not enforced.
+     * 
+     * @param {any} entityId The event body
+     *    Should be the id of the entity to unregister
+     */
+    _handleRemoveFocusable(entityId) {
+      if (entityId in this._focusableEntities) {
+        if (this._focusedElement === entityId) {
+          this._switchFocus();
+        }
+        delete this._focusableEntities[entityId];
+      }
+    }
+
+    /**
+     * Programatically tries to set focus to an entity. 
+     * For now, this will always work, but logic may be added later for situations
+     * where we don't want this to happen.
+     * 
+     * The message sender should be the same System that registered the entity.
+     * However, this *currently* is not enforced. 
+     * 
+     * Systems should not assume that the set focus was successful unless the FocusSet message is received.
+     * 
+     * @param {any} entityId The event body
+     *    Should be the id of the entity to focus.
+     */
+    _handleSetFocusRequest(entityId) {
+      if (entityId in this._focusableEntities) {
+        this._switchFocus(entityId);
+      }
+    }
+
+    /**
+     * Programmatically releases focus from an entity if it is currently focused.
+     * The message sender should be the same System that registered the entity.
+     * However, this is not enforced.
+     *
+     * @param {any} entityId The event body
+     *    Should be the id of the entity to release focus from.
+     */
+    _handleReleaseFocus(entityId) {
+      if (this._focusedElement !== undefined && this._focusedElement === entityId) {
+        this._switchFocus();
+      }
+    }
+
+    /**
+     * Switches focus to the specified id. That id should be registered already.
+     * Does not do error checking.
+     * @param {string} newFocusedId The new id to focus on.
+     */
+    _switchFocus(newFocusedId) {
+      let currFocusedId = this._focusedElement;
+      if (currFocusedId !== undefined && currFocusedId !== newFocusedId) {
+        this.postMessage(["InputHandlerFocusEvent", "FocusLost"],
+          currFocusedId, this._focusableEntities[currFocusedId]);
+        this._focusedElement = undefined;
+      }
+      if (newFocusedId !== undefined) {
+        this._focusedElement = entityId;
+        this.postMessage(["InputHandlerFocusEvent", "FocusSet"], entityId, this._focusableEntities[entityId]);
+      }
     }
   }
 
@@ -2438,6 +2558,7 @@ var AsciiEngine = (function () {
       
       for (let y = 0; y < height; y ++) {
         let rowElement = document.createElement("div");
+        // TODO: Is this necessary? Remove?
         rowElement.dataset.asciiGlRow = y;
         
         this.primaryElement.appendChild(rowElement);

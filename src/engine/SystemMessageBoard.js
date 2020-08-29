@@ -3,7 +3,7 @@ import Functions from "../utility/Functions.js";
 import Queue from "../utility/data_structures/Queue.js";
 
 /**
- * @typedef {(event: any, descriptor: Array<string>) => void} EventHandler
+ * @typedef {(event: any, descriptor: Array<string>, sender: string) => void} EventHandler
  * @typedef {{
  * name: string,
  * handler: EventHandler,
@@ -139,7 +139,7 @@ export default class MessageBoard {
           continue;
         }
         
-        handler(body, descriptor);
+        handler(body, descriptor, sender);
       }
     }
     this._currentlyProcessing = false;
