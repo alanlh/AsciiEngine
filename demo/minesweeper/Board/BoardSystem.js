@@ -1,3 +1,5 @@
+import AsciiEngine from "../../../dist/engine.js";
+
 import BoardComponent from "./BoardComponent.js";
 import CellComponent from "./CellComponent.js";
 

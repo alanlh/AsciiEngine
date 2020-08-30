@@ -1,3 +1,5 @@
+import AsciiEngine from "../../dist/engine.js";
+
 import CursorComponent from "./CursorComponent.js";
 
 import BlinkerComponent from "./BlinkerComponent.js";

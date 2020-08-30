@@ -1,4 +1,6 @@
-export default class BoardComponent extends AsciiEngine.Component {
+import { Component } from "../../../dist/engine.js";
+
+export default class BoardComponent extends Component {
   constructor(width, height) {
     super();
     

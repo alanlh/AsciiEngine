@@ -1,10 +1,13 @@
+import AsciiEngine from "../dist/engine.js";
 import minesweeper from "./minesweeper/minesweeper.js";
 import inputField from "./input/inputField.js";
+import form from "./form/form.js";
 
 window.onload = function() {
   inputField();
   minesweeper();
   hello();
+  form();
 }
 
 function hello() {
@@ -83,18 +86,18 @@ function hello() {
     }),
   ];
   
-  const cloudStyle = new AsciiEngine.GL.SpriteStyle();
+  const cloudStyle = new AsciiEngine.GL.Style();
   cloudStyle.setStyle("backgroundColor", "#f8f8f8");
   cloudStyle.setStyle("color", "#222222");
   
-  const greenBackground = new AsciiEngine.GL.SpriteStyle();
+  const greenBackground = new AsciiEngine.GL.Style();
   greenBackground.setStyle("backgroundColor", "green");
   greenBackground.fillRemainder();
   
-  const yellow = new AsciiEngine.GL.SpriteStyle();
+  const yellow = new AsciiEngine.GL.Style();
   yellow.setStyle("backgroundColor", "yellow");
   
-  const fenceColor = new AsciiEngine.GL.SpriteStyle();
+  const fenceColor = new AsciiEngine.GL.Style();
   fenceColor.setStyle("backgroundColor", "brown");
   let iteration = 0;
   function tick() {

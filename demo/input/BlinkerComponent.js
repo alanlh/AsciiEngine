@@ -1,3 +1,5 @@
+import AsciiEngine from "../../dist/engine.js";
+
 export default class BlinkerComponent extends AsciiEngine.Component {
   constructor(duration) {
     super();

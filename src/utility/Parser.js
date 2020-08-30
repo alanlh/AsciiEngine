@@ -1,5 +1,5 @@
 import Sprite from "../graphics/Sprite.js";
-import SpriteStyle from "../graphics/SpriteStyle.js";
+import Style from "../graphics/Style.js";
 import AsciiAnimateComponent from "../engine/components/AsciiAnimateComponent.js";
 
 /**
@@ -37,7 +37,7 @@ const Parser = {
     let styleData = json.styles;
     let styles = {};
     for (let styleName in styleData) {
-      let spriteStyle = new SpriteStyle();
+      let spriteStyle = new Style();
       for (let style in styleData[styleName]) {
         spriteStyle.setStyle(style, styleData[styleName][style]);
       }

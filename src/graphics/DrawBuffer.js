@@ -1,6 +1,6 @@
 // Only importing Sprite due to type checking in vs code...
 import Sprite from "./Sprite.js";
-import SpriteStyle from "./SpriteStyle.js";
+import Style from "./Style.js";
 
 export default class DrawBuffer {
   constructor() {
@@ -11,7 +11,7 @@ export default class DrawBuffer {
     this.sprites = {};
     this.locations = {};
     
-    this.backgroundStyle = new SpriteStyle();
+    this.backgroundStyle = new Style();
     this.backgroundStyle.fillRemainder();
   }
   
@@ -44,7 +44,7 @@ export default class DrawBuffer {
    * 
    * @param {Sprite} sprite The sprite to draw
    * @param {Array<number>} location The position to draw at
-   * @param {SpriteStyle} style The corresponding style
+   * @param {Style} style The corresponding style
    * @param {string} id The unique id associated with the draw
    */
   draw(sprite, location, style, id) {
@@ -71,7 +71,7 @@ class RowSegmentBuffer {
    * 
    * @param {number} rowNumber The row number of this buffer
    * @param {number} width The width of the row
-   * @param {SpriteStyle} defaultStyle A REFERENCE of the default style.
+   * @param {Style} defaultStyle A REFERENCE of the default style.
    */
   constructor(rowNumber, width, defaultStyle) {
     this._width = width;
@@ -174,7 +174,7 @@ class ComputedSegmentData {
   }
   
   copy(other) {
-    for (let styleName in SpriteStyle.defaultValues) {
+    for (let styleName in Style.defaultValues) {
       this._styleValues[styleName] = other._styleValues[styleName];
       this._stylePriorities[styleName] = other._stylePriorities[styleName];
     }
@@ -186,7 +186,7 @@ class ComputedSegmentData {
   }
   
   clear() {
-    for (let styleName in SpriteStyle.defaultValues) {
+    for (let styleName in Style.defaultValues) {
       this._styleValues[styleName] = this._default.getStyle(styleName);
       this._stylePriorities[styleName] = Number.POSITIVE_INFINITY;
     }
@@ -214,7 +214,7 @@ class ComputedSegmentData {
    * 
    * @param {string} segmentId 
    * @param {boolean} hasText 
-   * @param {SpriteStyle} style 
+   * @param {Style} style 
    * @param {number} priority 
    */
   addStyle(segmentId, hasText, style, priority) {

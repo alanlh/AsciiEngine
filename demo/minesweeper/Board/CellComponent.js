@@ -1,3 +1,5 @@
+import AsciiEngine from "../../../dist/engine.js";
+
 export default class CellComponent extends AsciiEngine.Component {
   constructor() {
     super();

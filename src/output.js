@@ -23,6 +23,16 @@ const AsciiEngine = {
   Utility: Utility,
 }
 
-Object.freeze(AsciiEngine);
-
 export default AsciiEngine;
+
+export {
+  Engine,
+  Entity,
+  Component,
+  Components,
+  System,
+  Systems,
+  Modules,
+  ModuleSlots,
+};
+

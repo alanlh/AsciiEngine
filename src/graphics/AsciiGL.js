@@ -1,5 +1,5 @@
 import Sprite from "./Sprite.js";
-import SpriteStyle from "./SpriteStyle.js";
+import Style from "./Style.js";
 import SpriteBuilder from "./SpriteBuilder.js";
 import DOMBuffer from "./DomBuffer.js";
 import DrawBuffer from "./DrawBuffer.js";
@@ -270,7 +270,7 @@ Object.freeze(EventTypes);
 const AsciiGL = {
   Instance: AsciiGLInstance,
   Sprite: Sprite,
-  SpriteStyle: SpriteStyle,
+  Style: Style,
   SpriteBuilder: SpriteBuilder,
   EventTypes: EventTypes,
 }
@@ -278,3 +278,4 @@ const AsciiGL = {
 Object.freeze(AsciiGL);
 
 export default AsciiGL;
+export { AsciiGLInstance as AsciiGL, Sprite, Style as Style, SpriteBuilder };

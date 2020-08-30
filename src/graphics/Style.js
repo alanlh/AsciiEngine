@@ -1,7 +1,7 @@
-export default class SpriteStyle {
+export default class Style {
   constructor() {
     this._styles = {};
-    for (let styleName in SpriteStyle.defaultValues) {
+    for (let styleName in Style.defaultValues) {
       this._styles[styleName] = null;
     }
   }
@@ -17,13 +17,13 @@ export default class SpriteStyle {
   }
   
   clear() {
-    for (let styleName in SpriteStyle.defaultValues) {
+    for (let styleName in Style.defaultValues) {
       this._styles[styleName] = null;
     }
   }
   
   /**
-   * Copies the data from the other SpriteStyle object.
+   * Copies the data from the other Style object.
    */
   copy(other) {
     this.clear();
@@ -35,7 +35,7 @@ export default class SpriteStyle {
   // ---- PUBLIC API ---- // 
   
   sameAs(other) {
-    for (let styleName in SpriteStyle.defaultValues) {
+    for (let styleName in Style.defaultValues) {
       if (
         (this.hasStyle(styleName) !== other.hasStyle(styleName)) || 
         (this.getStyle(styleName) !== other.getStyle(styleName))
@@ -47,7 +47,7 @@ export default class SpriteStyle {
   }
   
   setStyle(styleName, value) {
-    if (!(styleName in SpriteStyle.defaultValues)) {
+    if (!(styleName in Style.defaultValues)) {
       console.warn("AsciiGL currently does not support the style", styleName);
     }
     this._styles[styleName] = value || null;
@@ -65,7 +65,7 @@ export default class SpriteStyle {
   }
   
   /**
-   * Allows for iterating over the specified properties of this SpriteStyle.
+   * Allows for iterating over the specified properties of this Style.
    */
   *[Symbol.iterator]() {
     for (let styleName in this._styles) {
@@ -83,19 +83,19 @@ export default class SpriteStyle {
    * The parameter, if passed, specifies the default values to use.
    */
   fillRemainder(base) {
-    for (let styleName in SpriteStyle.defaultValues) {
+    for (let styleName in Style.defaultValues) {
       if (!this.hasStyle(styleName)) {
         if (base && base.hasStyle(styleName)) {
           this.setStyle(styleName, base.getStyle(styleName));
         } else {
-          this.setStyle(styleName, SpriteStyle.defaultValues[styleName]);
+          this.setStyle(styleName, Style.defaultValues[styleName]);
         }
       }
     }
   }
 }
 
-SpriteStyle.defaultValues = {
+Style.defaultValues = {
   color: "black",
   backgroundColor: "transparent",
   fontWeight: "normal",
@@ -104,11 +104,11 @@ SpriteStyle.defaultValues = {
   cursor: "default",
 }
 
-SpriteStyle.setDefaultStyle = function(styleName, value) {
-  if (styleName in SpriteStyle.defaultValues) {
+Style.setDefaultStyle = function(styleName, value) {
+  if (styleName in Style.defaultValues) {
     // TODO: Verify value.
-    SpriteStyle.defaultValues[styleName] = value;
+    Style.defaultValues[styleName] = value;
   } else {
-    console.warn("SpriteStyle does not support", styleName);
+    console.warn("Style does not support", styleName);
   }
 }

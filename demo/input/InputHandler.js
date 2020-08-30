@@ -1,3 +1,4 @@
+import AsciiEngine from "../../dist/engine.js";
 import CursorComponent from "./CursorComponent.js";
 
 export default class InputHandler extends AsciiEngine.System {

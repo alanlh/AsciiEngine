@@ -1,3 +1,5 @@
+import AsciiEngine from "../../../dist/engine.js";
+
 import BoardSystem from "../Board/BoardSystem.js";
 
 export default class MenuSystem extends AsciiEngine.System {

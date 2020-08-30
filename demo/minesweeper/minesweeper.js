@@ -1,3 +1,5 @@
+import AsciiEngine from "../../dist/engine.js";
+
 import BoardSystem from "./Board/BoardSystem.js";
 import MenuSystem from "./Menu/MenuSystem.js";
 
@@ -34,7 +36,7 @@ function loadSprites(resourceManager) {
   let titleSprite = new AsciiEngine.GL.Sprite("MINESWEEPER!");
   resourceManager.add("title", titleSprite);
   
-  let titleStyle = new AsciiEngine.GL.SpriteStyle();
+  let titleStyle = new AsciiEngine.GL.Style();
   titleStyle.setStyle("fontWeight", "bold");
   resourceManager.add("title-style", titleStyle);
   
@@ -57,7 +59,7 @@ function loadSprites(resourceManager) {
   resourceManager.add("hard_game_button", hardGameSprite);
 
 
-  let emptyTextStyle = new AsciiEngine.GL.SpriteStyle();
+  let emptyTextStyle = new AsciiEngine.GL.Style();
   resourceManager.add("empty-style", emptyTextStyle);
   
   let winsSprite = new AsciiEngine.GL.Sprite("Wins: ", {
@@ -73,7 +75,7 @@ function loadSprites(resourceManager) {
   let zeroTextSprite = new AsciiEngine.GL.Sprite("0");
   resourceManager.add("text-0", zeroTextSprite);
   
-  let buttonStyle = new AsciiEngine.GL.SpriteStyle();
+  let buttonStyle = new AsciiEngine.GL.Style();
   buttonStyle.setStyle("backgroundColor", "#CCCCCC");
   buttonStyle.setStyle("cursor", "pointer");
   resourceManager.add("button-style", buttonStyle);
@@ -88,30 +90,30 @@ function loadSprites(resourceManager) {
   let flagSprite = new AsciiEngine.GL.Sprite("F");
   resourceManager.add("CellSprite-Flag", flagSprite);
   
-  let unclickedStyle = new AsciiEngine.GL.SpriteStyle();
+  let unclickedStyle = new AsciiEngine.GL.Style();
   unclickedStyle.setStyle("backgroundColor", "#00BB00");
   resourceManager.add("CellStyle-Unrevealed", unclickedStyle);
   
-  let unclickedHoverStyle = new AsciiEngine.GL.SpriteStyle();
+  let unclickedHoverStyle = new AsciiEngine.GL.Style();
   unclickedHoverStyle.setStyle("backgroundColor", "#44FF44");
   unclickedHoverStyle.setStyle("cursor", "pointer");
   resourceManager.add("CellStyle-Unrevealed-Hover", unclickedHoverStyle);
   
-  let emptyStyle = new AsciiEngine.GL.SpriteStyle();
+  let emptyStyle = new AsciiEngine.GL.Style();
   emptyStyle.setStyle("backgroundColor", "blue")
   resourceManager.add("CellStyle-Empty", emptyStyle);
   // Create sprites for every block with neighboring mines.
   for (let i = 1; i < 10; i ++) {
     let sprite = new AsciiEngine.GL.Sprite(i.toString());
     resourceManager.add("CellSprite-" + i.toString(), sprite);
-    let style = new AsciiEngine.GL.SpriteStyle();
+    let style = new AsciiEngine.GL.Style();
     style.setStyle("backgroundColor", "blue");
     style.setStyle("color", "white");
     resourceManager.add("CellStyle-" + i.toString(), style);
   }
   let mineSprite = new AsciiEngine.GL.Sprite("M");
   resourceManager.add("CellSprite-Mine", mineSprite);
-  let mineStyle = new AsciiEngine.GL.SpriteStyle();
+  let mineStyle = new AsciiEngine.GL.Style();
   mineStyle.setStyle("backgroundColor", "red");
   mineStyle.setStyle("color", "white");
   resourceManager.add("CellStyle-Mine", mineStyle);

@@ -1,3 +1,5 @@
+import AsciiEngine from "../../dist/engine.js";
+
 import BlinkerComponent from "./BlinkerComponent.js";
 
 export default class BlinkerSystem extends AsciiEngine.Systems.Set {

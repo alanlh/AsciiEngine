@@ -1,3 +1,5 @@
+import AsciiEngine from "../../dist/engine.js";
+
 import CursorSystem from "./CursorSystem.js";
 import BlinkerSystem from "./BlinkerSystem.js";
 import InputHandler from "./InputHandler.js";
