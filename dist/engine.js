@@ -820,7 +820,7 @@ class RootedSearchTreeNode {
    * @param {T?} value The value to remove
    */
   delete(path, value) {
-    if (value === undefined) {
+    if (path.length === 0 && value === undefined) {
       // This should only be called on the root node. 
       // Must be handled separately because the implementation in _delete
       // relies on a parent node to clean it up.
@@ -844,8 +844,9 @@ class RootedSearchTreeNode {
     if (index >= path.length) {
       if (value === undefined) {
         // Quick way to have the parent completely remove it. 
+        let deleted = this.size;
         this.size = 0;
-        return;
+        return deleted;
       }
       if (this.data.has(value)) {
         this.data.delete(value);
@@ -862,6 +863,9 @@ class RootedSearchTreeNode {
     }
     if (path[index] in this.children) {
       deleted = this.children[path[index]]._delete(path, index + 1, value);
+      if (this.children[path[index]].size === 0) {
+        delete this.children[path[index]];
+      }
       this.size -= deleted;
     }
     return deleted;
@@ -1008,6 +1012,9 @@ class MessageBoard {
       delete this._listeners[key];
     }
     this._subscribers[name].delete(descriptor);
+    if (this._subscribers[name].size === 0) {
+      delete this._subscribers[name];
+    }
   }
 
   /**
@@ -1732,7 +1739,7 @@ class AsciiInputHandlerSystem extends System {
     if (this.mouseEventsEnabled && this.keyboardEventsEnabled) {
       this.subscribe(["InputHandlerRequest", "AddFocusable"], this._handleAddFocusable, true);
       this.subscribe(["InputHandlerRequest", "RemoveFocusable"], this._handleRemoveFocusable, true);
-      this.subscribe(["InputHandlerRequest", "SetFocusRequest", this._handleSetFocusRequest], true);
+      this.subscribe(["InputHandlerRequest", "SetFocusRequest"], this._handleSetFocusRequest, true);
       this.subscribe(["InputHandlerRequest", "ReleaseFocus"], this._handleReleaseFocus, true);
     }
   }

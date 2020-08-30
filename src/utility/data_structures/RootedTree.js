@@ -62,7 +62,7 @@ export default class RootedSearchTreeNode {
    * @param {T?} value The value to remove
    */
   delete(path, value) {
-    if (value === undefined) {
+    if (path.length === 0 && value === undefined) {
       // This should only be called on the root node. 
       // Must be handled separately because the implementation in _delete
       // relies on a parent node to clean it up.
@@ -86,8 +86,9 @@ export default class RootedSearchTreeNode {
     if (index >= path.length) {
       if (value === undefined) {
         // Quick way to have the parent completely remove it. 
+        let deleted = this.size;
         this.size = 0;
-        return;
+        return deleted;
       }
       if (this.data.has(value)) {
         this.data.delete(value);
@@ -104,6 +105,9 @@ export default class RootedSearchTreeNode {
     }
     if (path[index] in this.children) {
       deleted = this.children[path[index]]._delete(path, index + 1, value);
+      if (this.children[path[index]].size === 0) {
+        delete this.children[path[index]];
+      }
       this.size -= deleted;
     }
     return deleted;
@@ -135,7 +139,7 @@ export default class RootedSearchTreeNode {
       }
     }
     if (path[index] in this.children) {
-      yield* this.children[path[key]]._getDescIt(path, index + 1);
+      yield* this.children[path[index]]._getDescIt(path, index + 1);
     }
   }
 

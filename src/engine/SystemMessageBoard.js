@@ -88,6 +88,9 @@ export default class MessageBoard {
       delete this._listeners[key];
     }
     this._subscribers[name].delete(descriptor);
+    if (this._subscribers[name].size === 0) {
+      delete this._subscribers[name];
+    }
   }
 
   /**

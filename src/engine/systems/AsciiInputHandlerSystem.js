@@ -44,7 +44,7 @@ export default class AsciiInputHandlerSystem extends System {
     if (this.mouseEventsEnabled && this.keyboardEventsEnabled) {
       this.subscribe(["InputHandlerRequest", "AddFocusable"], this._handleAddFocusable, true);
       this.subscribe(["InputHandlerRequest", "RemoveFocusable"], this._handleRemoveFocusable, true);
-      this.subscribe(["InputHandlerRequest", "SetFocusRequest", this._handleSetFocusRequest], true);
+      this.subscribe(["InputHandlerRequest", "SetFocusRequest"], this._handleSetFocusRequest, true);
       this.subscribe(["InputHandlerRequest", "ReleaseFocus"], this._handleReleaseFocus, true);
     }
   }
