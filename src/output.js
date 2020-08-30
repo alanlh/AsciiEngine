@@ -9,6 +9,7 @@ import ModuleSlots from "./engine/modules/ModuleSlots.js";
 import Utility from "./utility/Utility.js";
 
 import AsciiGL from "./graphics/AsciiGL.js";
+import GuiElements from "./gui/output.js";
 
 const AsciiEngine = {
   Engine: Engine,
@@ -20,6 +21,7 @@ const AsciiEngine = {
   Modules: Modules,
   ModuleSlots: ModuleSlots,
   GL: AsciiGL,
+  Gui: GuiElements,
   Utility: Utility,
 }
 
@@ -34,5 +36,7 @@ export {
   Systems,
   Modules,
   ModuleSlots,
+  GuiElements as Gui,
+  AsciiGL as GL,
 };
 

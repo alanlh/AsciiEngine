@@ -1,15 +1,5 @@
 import {terser} from 'rollup-plugin-terser';
 
-
-import includePaths from 'rollup-plugin-includepaths';
-
-let includePathOptions = {
-  include: {},
-  paths: ['src/lib', 'src/other'],
-  external: [],
-  extensions: ['.js', '.json', '.html']
-};
-
 export default [
   {
     input: "src/output.js",
