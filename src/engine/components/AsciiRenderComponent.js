@@ -10,6 +10,7 @@ export default class AsciiRenderComponent extends Component {
     this.relativePositionList = relativePositionList || [];
     
     this.visible = true;
+    this.dataIsLocal = false;
   }
 }
 

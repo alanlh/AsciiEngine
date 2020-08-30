@@ -1,5 +1,4 @@
 import Component from "./Component.js";
-import AsciiRenderComponent from "./AsciiRenderComponent.js";
 
 export default class AsciiAnimateComponent extends Component {
   constructor() {
@@ -10,6 +9,7 @@ export default class AsciiAnimateComponent extends Component {
     this._relativePositionList = {};
     
     this.visible = true;
+    this.dataIsLocal = false;
   }
   
   get currentFrame() {
@@ -54,5 +54,4 @@ export default class AsciiAnimateComponent extends Component {
   }
 }
 
-// Utilize the same type so that AsciiRenderSystem recognizes it.
 AsciiAnimateComponent.type = "AsciiAnimate";

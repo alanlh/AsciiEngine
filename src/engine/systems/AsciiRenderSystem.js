@@ -35,14 +35,20 @@ export default class AsciiRenderSystem extends SetSystem {
         continue;
       }
       let entityAbsolutePosition = this.getEntityAbsolutePosition(entity);
-      for (let i = 0; i < renderComponent.spriteNameList.length; i ++) {
-        let sprite = resourceManager.get(renderComponent.spriteNameList[i]);
+      for (let i = 0; i < renderComponent.spriteNameList.length; i++) {
+        let sprite, style;
+        if (renderComponent.dataIsLocal) {
+          sprite = renderComponent.spriteNameList[i];
+          style = renderComponent.styleNameList[i];
+        } else {
+          sprite = resourceManager.get(renderComponent.spriteNameList[i]);
+          style = resourceManager.get(renderComponent.styleNameList[i]);
+        }
         let location = [
           entityAbsolutePosition[0] + renderComponent.relativePositionList[i][0],
           entityAbsolutePosition[1] + renderComponent.relativePositionList[i][1],
           entityAbsolutePosition[2] + renderComponent.relativePositionList[i][2],
-        ]
-        let style = resourceManager.get(renderComponent.styleNameList[i]);
+        ];
         this._asciiGl.draw(sprite, location, style, entity.id);
       }
     }

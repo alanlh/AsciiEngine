@@ -1489,6 +1489,7 @@ var AsciiEngine = (function () {
       this.relativePositionList = relativePositionList || [];
       
       this.visible = true;
+      this.dataIsLocal = false;
     }
   }
 
@@ -1503,6 +1504,7 @@ var AsciiEngine = (function () {
       this._relativePositionList = {};
       
       this.visible = true;
+      this.dataIsLocal = false;
     }
     
     get currentFrame() {
@@ -1547,7 +1549,6 @@ var AsciiEngine = (function () {
     }
   }
 
-  // Utilize the same type so that AsciiRenderSystem recognizes it.
   AsciiAnimateComponent.type = "AsciiAnimate";
 
   class PositionComponent extends Component {
@@ -1653,14 +1654,20 @@ var AsciiEngine = (function () {
           continue;
         }
         let entityAbsolutePosition = this.getEntityAbsolutePosition(entity);
-        for (let i = 0; i < renderComponent.spriteNameList.length; i ++) {
-          let sprite = resourceManager.get(renderComponent.spriteNameList[i]);
+        for (let i = 0; i < renderComponent.spriteNameList.length; i++) {
+          let sprite, style;
+          if (renderComponent.dataIsLocal) {
+            sprite = renderComponent.spriteNameList[i];
+            style = renderComponent.styleNameList[i];
+          } else {
+            sprite = resourceManager.get(renderComponent.spriteNameList[i]);
+            style = resourceManager.get(renderComponent.styleNameList[i]);
+          }
           let location = [
             entityAbsolutePosition[0] + renderComponent.relativePositionList[i][0],
             entityAbsolutePosition[1] + renderComponent.relativePositionList[i][1],
             entityAbsolutePosition[2] + renderComponent.relativePositionList[i][2],
           ];
-          let style = resourceManager.get(renderComponent.styleNameList[i]);
           this._asciiGl.draw(sprite, location, style, entity.id);
         }
       }
