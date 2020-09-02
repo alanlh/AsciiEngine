@@ -20,6 +20,11 @@ export default class ButtonSystem extends System {
     this.buttonEntities = {};
     this.buttonSubentities = {};
     this.childMap = {};
+
+    this.defaultTextColor = "#222222";
+    this.defaultBackgroundColor = "#dddddd";
+    this.defaultHoverColor = "#bbbbbb";
+    this.defaultActiveColor = "#aaaaaa";
   }
 
   check(entity) {
@@ -75,26 +80,29 @@ export default class ButtonSystem extends System {
     let asciiAnimateComponent = new AsciiAnimateComponent();
     asciiAnimateComponent.dataIsLocal = true;
 
+    let textColor = buttonData.textColor || this.defaultTextColor;
+
     let defaultStyle = new Style();
     defaultStyle.setStyle("cursor", "pointer");
-    defaultStyle.setStyle("color", buttonData.textColor);
-    defaultStyle.setStyle("backgroundColor", buttonData.backgroundColor);
+    defaultStyle.setStyle("color", textColor);
+    let backgroundColor = buttonData.backgroundColor || this.defaultBackgroundColor;
+    defaultStyle.setStyle("backgroundColor", backgroundColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Default,
       [buttonData.sprite], [defaultStyle], [[0, 0, 0]]);
 
     let hoverStyle = new Style();
     hoverStyle.setStyle("cursor", "pointer");
-    hoverStyle.setStyle("color", buttonData.textColor);
-    hoverStyle.setStyle("backgroundColor",
-      buttonData.hoverColor || buttonData.backgroundColor);
+    hoverStyle.setStyle("color", textColor);
+    let hoverColor = buttonData.hoverColor || backgroundColor;
+    hoverStyle.setStyle("backgroundColor", hoverColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Hover,
       [buttonData.sprite], [hoverStyle], [[0, 0, 0]]);
 
     let activeStyle = new Style();
     activeStyle.setStyle("cursor", "pointer");
-    activeStyle.setStyle("color", buttonData.textColor);
-    activeStyle.setStyle("backgroundColor",
-      buttonData.activeColor || buttonData.hoverColor || buttonData.backgroundColor);
+    activeStyle.setStyle("color", textColor);
+    let activeColor = buttonData.activeColor || hoverColor;
+    activeStyle.setStyle("backgroundColor", activeColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Active,
       [buttonData.sprite], [activeStyle], [[0, 0, 0]]);
     subEntity.setComponent(asciiAnimateComponent);

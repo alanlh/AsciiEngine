@@ -7,10 +7,6 @@ export default class FormManager extends System {
     this.button = new Entity("SubmitButton");
     let buttonComponent = new Gui.Components.Button();
     buttonComponent.sprite = new GL.Sprite("Submit");
-    buttonComponent.textColor = "#444444";
-    buttonComponent.backgroundColor = "#dddddd";
-    buttonComponent.hoverColor = "#bbbbbb";
-    buttonComponent.activeColor = "#aaaaaa";
 
     let positionComponent = new Components.Position(2, 3, 2);
     this.button.setComponent(positionComponent);
