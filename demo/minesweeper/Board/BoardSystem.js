@@ -91,10 +91,10 @@ export default class BoardSystem extends AsciiEngine.System {
 
     for (let y = 0; y < this.height; y ++) {
       for (let x = 0; x < this.width; x++) {
-        this.subscribe(["MouseEvent", "click", this.cells[y][x].id], this._handleMouseClick.bind(this, x, y));
-        this.subscribe(["MouseEvent", "mouseenter", this.cells[y][x].id], this._handleMouseEnter.bind(this, x, y));
-        this.subscribe(["MouseEvent", "mouseleave", this.cells[y][x].id], this._handleMouseLeave.bind(this, x, y));
-        this.subscribe(["MouseEvent", "contextmenu", this.cells[y][x].id], this._handleContextMenu.bind(this, x, y));
+        this.subscribe(["MouseEvent", this.cells[y][x].id, "click"], this._handleMouseClick.bind(this, x, y));
+        this.subscribe(["MouseEvent", this.cells[y][x].id, "mouseenter"], this._handleMouseEnter.bind(this, x, y));
+        this.subscribe(["MouseEvent", this.cells[y][x].id, "mouseleave"], this._handleMouseLeave.bind(this, x, y));
+        this.subscribe(["MouseEvent", this.cells[y][x].id, "contextmenu"], this._handleContextMenu.bind(this, x, y));
       }
     }
   }

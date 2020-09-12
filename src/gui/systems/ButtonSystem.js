@@ -93,7 +93,7 @@ export default class ButtonSystem extends System {
     let hoverStyle = new Style();
     hoverStyle.setStyle("cursor", "pointer");
     hoverStyle.setStyle("color", textColor);
-    let hoverColor = buttonData.hoverColor || backgroundColor;
+    let hoverColor = buttonData.hoverColor || this.defaultHoverColor;
     hoverStyle.setStyle("backgroundColor", hoverColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Hover,
       [buttonData.sprite], [hoverStyle], [[0, 0, 0]]);
@@ -101,7 +101,7 @@ export default class ButtonSystem extends System {
     let activeStyle = new Style();
     activeStyle.setStyle("cursor", "pointer");
     activeStyle.setStyle("color", textColor);
-    let activeColor = buttonData.activeColor || hoverColor;
+    let activeColor = buttonData.activeColor || this.defaultActiveColor;
     activeStyle.setStyle("backgroundColor", activeColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Active,
       [buttonData.sprite], [activeStyle], [[0, 0, 0]]);
@@ -110,11 +110,11 @@ export default class ButtonSystem extends System {
     let buttonInternalComponent = new ButtonInternalComponent();
     subEntity.setComponent(buttonInternalComponent);
 
-    this.subscribe(["MouseEvent", "click", subEntity.id], this._handleMouseClick, false);
-    this.subscribe(["MouseEvent", "mouseenter", subEntity.id], this._handleMouseEnter, false);
-    this.subscribe(["MouseEvent", "mouseleave", subEntity.id], this._handleMouseLeave, false);
-    this.subscribe(["MouseEvent", "mousedown", subEntity.id], this._handleMouseDown, false);
-    this.subscribe(["MouseEvent", "mouseup", subEntity.id], this._handleMouseUp, false);
+    this.subscribe(["MouseEvent", subEntity.id, "click"], this._handleMouseClick, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseenter"], this._handleMouseEnter, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseleave"], this._handleMouseLeave, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mousedown"], this._handleMouseDown, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseup"], this._handleMouseUp, false);
     
     entity.addChild(subEntity);
   }
@@ -126,20 +126,20 @@ export default class ButtonSystem extends System {
    */
   _deconstructButtonSubentities(entity) {
     let childId = this.childMap[entity.id];
-    this.unsubscribe(["MouseEvent", "click", childId]);
-    this.unsubscribe(["MouseEvent", "mouseenter", childId]);
-    this.unsubscribe(["MouseEvent", "mouseleave", childId]);
-    this.unsubscribe(["MouseEvent", "mousedown", childId]);
-    this.unsubscribe(["MouseEvent", "mouseup", childId]);
+    this.unsubscribe(["MouseEvent", childId, "click"]);
+    this.unsubscribe(["MouseEvent", childId, "mouseenter"]);
+    this.unsubscribe(["MouseEvent", childId, "mouseleave"]);
+    this.unsubscribe(["MouseEvent", childId, "mousedown"]);
+    this.unsubscribe(["MouseEvent", childId, "mouseup"]);
   }
 
   _handleMouseClick(_event, descriptor) {
-    let parentId = this.buttonSubentities[descriptor[2]].getParent().id;
+    let parentId = this.buttonSubentities[descriptor[1]].getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "click"]);
   }
 
   _handleMouseEnter(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mouseenter"]);
@@ -148,7 +148,7 @@ export default class ButtonSystem extends System {
   }
 
   _handleMouseLeave(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mouseleave"]);
@@ -157,7 +157,7 @@ export default class ButtonSystem extends System {
   }
 
   _handleMouseDown(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mousedown"]);
@@ -167,7 +167,7 @@ export default class ButtonSystem extends System {
   }
 
   _handleMouseUp(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mouseup"]);

@@ -69,10 +69,17 @@ export default class Entity {
     } 
   }
   
+  /**
+   * Sets the parent entity of the current entity.
+   * @param {Entity} parent The parent entity
+   */
   setParent(parent) {
     this._parent = parent;
   }
   
+  /**
+   * @returns {Entity} This entity's parent, or undefined if there isn't one.
+   */
   getParent() {
     return this._parent;
   }

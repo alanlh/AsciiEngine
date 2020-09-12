@@ -61,7 +61,7 @@ export default class InputHandler extends AsciiEngine.System {
       this.getEntityManager().requestAddEntity(rowEntity);
     }
     
-    this.subscribe(["KeyboardEvent", "keydown", "Visible"], this._handleKeyDown, true);
+    this.subscribe(["KeyboardEvent", undefined, "keydown", "Visible"], this._handleKeyDown, true);
   }
       
   update() {
@@ -74,8 +74,8 @@ export default class InputHandler extends AsciiEngine.System {
     }
   }
   
-  _handleKeyDown(event) {
-    let key = event.key;
+  _handleKeyDown(body) {
+    let key = body.event.key;
     let position = this._cursor.getComponent(AsciiEngine.Components.Position.type);
     this.paramArrays[position.y - 1][position.x - 1] = key;
 

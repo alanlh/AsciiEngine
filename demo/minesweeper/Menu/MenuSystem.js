@@ -72,9 +72,9 @@ export default class MenuSystem extends AsciiEngine.System {
     this.getSystemManager().addSystem(new BoardSystem(10, 10, 10));
     
     let newGameHandler = this._handleNewGameClick.bind(this);
-    this.subscribe(["MouseEvent", "click", this.easyGameButton.id], newGameHandler);
-    this.subscribe(["MouseEvent", "click", this.mediumGameButton.id], newGameHandler);
-    this.subscribe(["MouseEvent", "click", this.hardGameButton.id], newGameHandler);
+    this.subscribe(["MouseEvent", this.easyGameButton.id, "click"], newGameHandler);
+    this.subscribe(["MouseEvent", this.mediumGameButton.id, "click"], newGameHandler);
+    this.subscribe(["MouseEvent", this.hardGameButton.id, "click"], newGameHandler);
     
     this.subscribe(["Game", "End"], this._handleGameEnd, true);
   }
@@ -115,13 +115,13 @@ export default class MenuSystem extends AsciiEngine.System {
     if (descriptor.length !== 3) {
       return;
     }
-    if (descriptor[2] === this.easyGameButton.id) {
+    if (descriptor[1] === this.easyGameButton.id) {
       this.getSystemManager().removeSystem("Board");
       this.getSystemManager().addSystem(new BoardSystem(10, 10, 10));
-    } else if (descriptor[2] === this.mediumGameButton.id) {
+    } else if (descriptor[1] === this.mediumGameButton.id) {
       this.getSystemManager().removeSystem("Board");
       this.getSystemManager().addSystem(new BoardSystem(15, 15, 40));
-    } else if (descriptor[2] === this.hardGameButton.id) {
+    } else if (descriptor[1] === this.hardGameButton.id) {
       this.getSystemManager().removeSystem("Board");
       this.getSystemManager().addSystem(new BoardSystem(20, 20, 100));
     }

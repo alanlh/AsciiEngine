@@ -12,6 +12,57 @@ const Functions = {
   })(),
   clamp: function(num, min, max) {
     return Math.max(min, Math.min(num, max));
+  },
+  /**
+   * @todo Optimize and clean up.
+   * @param {string} line A line of text
+   * @param {number} width The max number of chars on each row.
+   * @returns {Array<string>} The line broken up into rows.
+   */
+  breakLineIntoRows: (line, width) => {
+    let words = line.split(" ");
+    let rows = [];
+
+    let currRowLength = 0;
+    let rowStartIdx = 0;
+    let rowStartCharIdx = 0;
+    for (let i = 0; i < words.length; i++) {
+      // TODO: Is there any easier way to express this logic?
+      if (i > rowStartIdx) {
+        if (currRowLength + 1 + words[i].length <= width) {
+          currRowLength += 1 + words[i].length;
+          continue;
+        }
+        rows.push(words.slice(rowStartIdx, i).join(" ").substr(rowStartCharIdx));
+        currRowLength = 0;
+        rowStartIdx = i;
+        rowStartCharIdx = 0;
+      }
+      // For the first word only, break into multiple lines if too long.
+      if (words[i].length > width) {
+        let c = 0;
+        for (; c < words[i].length - width; c += width) {
+          rows.push(words[i].substr(c, width));
+        }
+        currRowLength = words[i].length - c;
+        rowStartCharIdx = c;
+      } else {
+        currRowLength = words[i].length;
+      }
+    }
+
+    rows.push(words.slice(rowStartIdx, words.length).join(" ").substr(rowStartCharIdx));
+    return rows;
+  },
+  /**
+   * Splices a string. 
+   * @param {string} string The string to splice
+   * @param {number} index The start index from which to remove characters
+   * @param {number} count The number of characters to remove
+   * @param {string?} add The string to insert in its place
+   */
+  stringSplice(string, index, count, add) {
+    return string.substring(0, index) + (add || "") + string.substring(index + count);
   }
 };
 
@@ -86,10 +137,17 @@ class Entity {
     } 
   }
   
+  /**
+   * Sets the parent entity of the current entity.
+   * @param {Entity} parent The parent entity
+   */
   setParent(parent) {
     this._parent = parent;
   }
   
+  /**
+   * @returns {Entity} This entity's parent, or undefined if there isn't one.
+   */
   getParent() {
     return this._parent;
   }
@@ -758,6 +816,7 @@ class System {
 
 /**
  * @template T
+ * @todo OPTIMIZE!!!!!!!
  */
 class RootedSearchTreeNode {
   constructor() {
@@ -772,16 +831,44 @@ class RootedSearchTreeNode {
     this.size = 0;
   }
 
+  /**
+   * Checks if the value appears in the subtree specified by the path.
+   * If undefined, only checks if the path exists.
+   * @param {Array<string>} path The path descriptor
+   * @param {T?} value The value to check
+   */
   has(path, value) {
     this._has(path, 0, value);
   }
 
   _has(path, index, value) {
-    if (index === path.length) {
-      return this.data.has(value);
+    if (index >= path.length) {
+      if (value === undefined || this.data.has(value)) {
+        return true;
+      }
+      for (let key in this.children) {
+        if (this.children[key]._has(path, index + 1, value)) {
+          return true;
+        }
+      }
+      return MATCH_ANY in this.children
+        && this.children[MATCH_ANY]._has(path, index + 1, value);
     }
-    return path[index] in this.children
-      && this.children[path[index]]._has(path, index + 1, value);
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        if (this.children[key]._has(path, index + 1, value)) {
+          return true;
+        }
+      }
+      return MATCH_ANY in this.children
+        && this.children[MATCH_ANY]._has(path, index + 1, value);
+    }
+    if (path[index] in this.children
+      && this.children[path[index]]._has(path, index + 1, value)) {
+      return true;
+    }
+    return MATCH_ANY in this.children
+      && this.children[MATCH_ANY]._has(path, index + 1, value);
   }
 
   /**
@@ -806,6 +893,9 @@ class RootedSearchTreeNode {
       return;
     }
     let key = path[index];
+    if (key === undefined) {
+      key = MATCH_ANY;
+    }
     if (!(key in this.children)) {
       this.children[key] = new RootedSearchTreeNode();
     }
@@ -848,26 +938,42 @@ class RootedSearchTreeNode {
         this.size = 0;
         return deleted;
       }
-      if (this.data.has(value)) {
-        this.data.delete(value);
+      if (this.data.delete(value)) {
         deleted++;
       }
-      for (let childKey in this.children) {
-        deleted += this.children[childKey]._delete(path, index + 1, value);
-        if (this.children[childKey].size === 0) {
-          delete this.children[childKey];
-        }
-      }
       this.size -= deleted;
+      for (let childKey in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, childKey);
+      }
+      if (MATCH_ANY in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+      }
+      return deleted;
+    }
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, key);
+      }
+      if (MATCH_ANY in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+      }
       return deleted;
     }
     if (path[index] in this.children) {
-      deleted = this.children[path[index]]._delete(path, index + 1, value);
-      if (this.children[path[index]].size === 0) {
-        delete this.children[path[index]];
-      }
-      this.size -= deleted;
+      deleted += this._deleteHelper(path, index + 1, value, path[index]);
     }
+    if (MATCH_ANY in this.children) {
+      deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+    }
+    return deleted;
+  }
+
+  _deleteHelper(path, index, value, key) {
+    let deleted = this.children[key]._delete(path, index + 1, value);
+    if (this.children[key].size === 0) {
+      delete this.children[key];
+    }
+    this.size -= deleted;
     return deleted;
   }
 
@@ -895,9 +1001,25 @@ class RootedSearchTreeNode {
       for (let childKey in this.children) {
         yield* this.children[childKey]._getDescIt(path, index + 1);
       }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getDescIt(path, index + 1);
+      }
+      return;
     }
-    if (path[index] in this.children) {
-      yield* this.children[path[index]]._getDescIt(path, index + 1);
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        yield* this.children[key]._getDescIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getDescIt(path, index + 1);
+      }
+    } else {
+      if (path[index] in this.children) {
+        yield* this.children[path[index]]._getDescIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getDescIt(path, index + 1);
+      }
     }
   }
 
@@ -917,14 +1039,28 @@ class RootedSearchTreeNode {
       }
       return;
     }
-    if (path[index] in this.children) {
-      yield* this.children[path[index]]._getAnscIt(path, index + 1);
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        yield* this.children[key]._getAnscIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getAnscIt(path, index + 1);
+      }
+    } else {
+      if (path[index] in this.children) {
+        yield* this.children[path[index]]._getAnscIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getAnscIt(path, index + 1);
+      }
     }
     for (let value of this.data) {
       yield value;
     }
   }
 }
+
+const MATCH_ANY = Symbol("ANY");
 
 /**
  * @typedef {(event: any, descriptor: Array<string>, sender: string) => void} EventHandler
@@ -1719,7 +1855,7 @@ class AsciiInputHandlerSystem extends System {
     this._keyboardEventsEnabled = false;
 
     this._focusedElement = undefined;
-    this._focusableEntities = {};
+    this._focusableEntityOwners = {};
   }
 
   startup() {
@@ -1763,20 +1899,15 @@ class AsciiInputHandlerSystem extends System {
    * @param {{x: number, y: number}} coords The location of the mouse event on the screen.
    */
   _mouseEventHandler(event, type, target, coords) {
-    let eventDescriptor = (target !== undefined) ? [
-      "MouseEvent", type, target
-    ] : [
-      "MouseEvent", type
-    ];
     this.postMessage(
-      eventDescriptor,
+      ["MouseEvent", target || "", type],
       {
         event: event,
         coords: coords,
       },
     );
-    if (type === "click" && target in this._focusableEntities) {
-      this._switchFocus(target);
+    if (type === "click") {
+      this._switchFocus(target, coords);
     }
   }
 
@@ -1798,34 +1929,38 @@ class AsciiInputHandlerSystem extends System {
    * @param {KeyboardEvent} event The event object generated by the browser.
    */
   _keyboardEventHandler(eventName, eventKey, event) {
+    let target = (this._focusedElement !== undefined) ? this._focusedElement : "";
     let eventDescriptor = undefined;
     if (eventKey.length === 1) {
       let keyCode = eventKey.charCodeAt(0);
       if (keyCode >= 48 && keyCode <= 57) {
-        eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Numeric", eventKey];
+        eventDescriptor = ["KeyboardEvent", target, eventName, "Visible", "Numeric", eventKey];
       } else if (keyCode >= 65 && keyCode <= 90) {
-        eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Alphabetical", "Upper", eventKey];
+        eventDescriptor = ["KeyboardEvent", target, eventName, "Visible", "Alphabetical", "Upper", eventKey];
       } else if (keyCode >= 97 && keyCode <= 122) {
-        eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Alphabetical", "Lower", eventKey];
+        eventDescriptor = ["KeyboardEvent", target, eventName, "Visible", "Alphabetical", "Lower", eventKey];
       } else {
-        eventDescriptor = ["KeyboardEvent", eventName, "Visible", "Symbol", eventKey];
+        eventDescriptor = ["KeyboardEvent", target, eventName, "Visible", "Symbol", eventKey];
       }
-      eventDescriptor = ["KeyboardEvent", eventName, "Visible", eventKey];
     } else if (eventKey.startsWith("Arrow")) {
-      eventDescriptor = ["KeyboardEvent", eventName, "Arrow", eventKey];
+      eventDescriptor = ["KeyboardEvent", target, eventName, "Arrow", eventKey];
     } else {
-      eventDescriptor = ["KeyboardEvent", eventName, eventKey];
+      eventDescriptor = ["KeyboardEvent", target, eventName, eventKey];
     }
+    let body = {
+      event: event,
+    };
     if (this._focusedElement !== undefined) {
+      body.targetEntity = this._focusedElement;
       this.postMessage(
         eventDescriptor,
-        event,
-        this._focusableEntities[this._focusedElement]
+        body,
+        this._focusableEntityOwners[this._focusedElement]
       );
     } else {
       this.postMessage(
         eventDescriptor,
-        event,
+        body,
       );
     }
   }
@@ -1838,8 +1973,8 @@ class AsciiInputHandlerSystem extends System {
    * @param {string} sender The name of the System registering the entity
    */
   _handleAddFocusable(entityId, _descriptor, sender) {
-    if (!(entityId in this._focusableEntities)) {
-      this._focusableEntities[entityId] = sender;
+    if (!(entityId in this._focusableEntityOwners)) {
+      this._focusableEntityOwners[entityId] = sender;
     }
   }
 
@@ -1852,11 +1987,11 @@ class AsciiInputHandlerSystem extends System {
    *    Should be the id of the entity to unregister
    */
   _handleRemoveFocusable(entityId) {
-    if (entityId in this._focusableEntities) {
+    if (entityId in this._focusableEntityOwners) {
       if (this._focusedElement === entityId) {
         this._switchFocus();
       }
-      delete this._focusableEntities[entityId];
+      delete this._focusableEntityOwners[entityId];
     }
   }
 
@@ -1874,7 +2009,7 @@ class AsciiInputHandlerSystem extends System {
    *    Should be the id of the entity to focus.
    */
   _handleSetFocusRequest(entityId) {
-    if (entityId in this._focusableEntities) {
+    if (entityId in this._focusableEntityOwners) {
       this._switchFocus(entityId);
     }
   }
@@ -1897,17 +2032,24 @@ class AsciiInputHandlerSystem extends System {
    * Switches focus to the specified id. That id should be registered already.
    * Does not do error checking.
    * @param {string} newFocusedId The new id to focus on.
+   * @param {{x: number, y: number}?} coords The global location being focused.
    */
-  _switchFocus(newFocusedId) {
+  _switchFocus(newFocusedId, coords) {
     let currFocusedId = this._focusedElement;
     if (currFocusedId !== undefined && currFocusedId !== newFocusedId) {
-      this.postMessage(["InputHandlerFocusEvent", "FocusLost"],
-        currFocusedId, this._focusableEntities[currFocusedId]);
+      this.postMessage(["InputHandlerFocusEvent", currFocusedId, "FocusLost"],
+        {
+          entityId: currFocusedId
+        }, this._focusableEntityOwners[currFocusedId]);
       this._focusedElement = undefined;
     }
-    if (newFocusedId !== undefined) {
-      this._focusedElement = entityId;
-      this.postMessage(["InputHandlerFocusEvent", "FocusSet"], entityId, this._focusableEntities[entityId]);
+    if (newFocusedId !== undefined && currFocusedId !== newFocusedId) {
+      this._focusedElement = newFocusedId;
+      this.postMessage(["InputHandlerFocusEvent", newFocusedId, "FocusSet"],
+        {
+          entityId: newFocusedId,
+          coords: coords,
+        }, this._focusableEntityOwners[newFocusedId]);
     }
   }
 }
@@ -3521,6 +3663,34 @@ class ButtonComponent extends Component {
 
 ButtonComponent.type = "AsciiButton";
 
+class InputFieldComponent extends Component {
+  constructor() {
+    super();
+
+    this.width = 0;
+    this.height = 1;
+
+    this.initialText = "";
+
+    this._currentText = "";
+
+    this.textColor = undefined;
+    this.backgroundColor = undefined;
+    this.focusedColor = undefined;
+    this.cursorColor = undefined;
+
+    this.editable = false;
+
+    this.maxLength = 0;
+  }
+
+  get currentText() {
+    return this._currentText;
+  }
+}
+
+InputFieldComponent.type = "AsciiInputField";
+
 class ButtonInternalComponent extends Component {
   constructor() {
     super();
@@ -3623,7 +3793,7 @@ class ButtonSystem extends System {
     let hoverStyle = new Style();
     hoverStyle.setStyle("cursor", "pointer");
     hoverStyle.setStyle("color", textColor);
-    let hoverColor = buttonData.hoverColor || backgroundColor;
+    let hoverColor = buttonData.hoverColor || this.defaultHoverColor;
     hoverStyle.setStyle("backgroundColor", hoverColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Hover,
       [buttonData.sprite], [hoverStyle], [[0, 0, 0]]);
@@ -3631,7 +3801,7 @@ class ButtonSystem extends System {
     let activeStyle = new Style();
     activeStyle.setStyle("cursor", "pointer");
     activeStyle.setStyle("color", textColor);
-    let activeColor = buttonData.activeColor || hoverColor;
+    let activeColor = buttonData.activeColor || this.defaultActiveColor;
     activeStyle.setStyle("backgroundColor", activeColor);
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Active,
       [buttonData.sprite], [activeStyle], [[0, 0, 0]]);
@@ -3640,11 +3810,11 @@ class ButtonSystem extends System {
     let buttonInternalComponent = new ButtonInternalComponent();
     subEntity.setComponent(buttonInternalComponent);
 
-    this.subscribe(["MouseEvent", "click", subEntity.id], this._handleMouseClick, false);
-    this.subscribe(["MouseEvent", "mouseenter", subEntity.id], this._handleMouseEnter, false);
-    this.subscribe(["MouseEvent", "mouseleave", subEntity.id], this._handleMouseLeave, false);
-    this.subscribe(["MouseEvent", "mousedown", subEntity.id], this._handleMouseDown, false);
-    this.subscribe(["MouseEvent", "mouseup", subEntity.id], this._handleMouseUp, false);
+    this.subscribe(["MouseEvent", subEntity.id, "click"], this._handleMouseClick, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseenter"], this._handleMouseEnter, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseleave"], this._handleMouseLeave, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mousedown"], this._handleMouseDown, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseup"], this._handleMouseUp, false);
     
     entity.addChild(subEntity);
   }
@@ -3656,20 +3826,20 @@ class ButtonSystem extends System {
    */
   _deconstructButtonSubentities(entity) {
     let childId = this.childMap[entity.id];
-    this.unsubscribe(["MouseEvent", "click", childId]);
-    this.unsubscribe(["MouseEvent", "mouseenter", childId]);
-    this.unsubscribe(["MouseEvent", "mouseleave", childId]);
-    this.unsubscribe(["MouseEvent", "mousedown", childId]);
-    this.unsubscribe(["MouseEvent", "mouseup", childId]);
+    this.unsubscribe(["MouseEvent", childId, "click"]);
+    this.unsubscribe(["MouseEvent", childId, "mouseenter"]);
+    this.unsubscribe(["MouseEvent", childId, "mouseleave"]);
+    this.unsubscribe(["MouseEvent", childId, "mousedown"]);
+    this.unsubscribe(["MouseEvent", childId, "mouseup"]);
   }
 
   _handleMouseClick(_event, descriptor) {
-    let parentId = this.buttonSubentities[descriptor[2]].getParent().id;
+    let parentId = this.buttonSubentities[descriptor[1]].getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "click"]);
   }
 
   _handleMouseEnter(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mouseenter"]);
@@ -3678,7 +3848,7 @@ class ButtonSystem extends System {
   }
 
   _handleMouseLeave(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mouseleave"]);
@@ -3687,7 +3857,7 @@ class ButtonSystem extends System {
   }
 
   _handleMouseDown(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mousedown"]);
@@ -3697,7 +3867,7 @@ class ButtonSystem extends System {
   }
 
   _handleMouseUp(_event, descriptor) {
-    let childId = descriptor[2];
+    let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
     let parentId = childEntity.getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "mouseup"]);
@@ -3706,12 +3876,429 @@ class ButtonSystem extends System {
   }
 }
 
+class InputFieldInternalComponent extends Component {
+  constructor(data) {
+    super();
+
+    this.width = data.width;
+    this.height = data.height;
+
+    this.defaultStyle = undefined;
+    this.focusedStyle = undefined;
+    this.cursorStyle = undefined;
+
+    /**
+     * Hard-coded to false for now because we don't support multi-line input fields.
+     */
+    this.multiLine = false;
+
+    this.lines = [];
+    this.data = "";
+    this.changed = true;
+
+    this.viewX = 0;
+    this.viewY = 0;
+
+    this.cursorX = 0;
+    this.cursorY = 0;
+
+    if (this.multiLine) {
+      this.initRows(data.initialText);
+    } else {
+      this.data = data.initialText.replace("\n", " ");
+    }
+  }
+
+  /**
+   * 
+   * @param {string} text 
+   */
+  initRows(text) {
+    let lines = text.split("\n");
+    for (let y = 0; y < lines.length; y++) {
+      this.rows.push(Functions.breakLineIntoRows(lines[y], this.width));
+    }
+    this.changed = true;
+  }
+
+  /**
+   * Gets the text to display as an array of strings.
+   * Each string is less than the width of the input field.
+   * 
+   * @returns {string} The string used to generate the output sprite
+   */
+  getDisplayString() {
+    if (this.multiLine) {
+      return this.lines.slice(this.viewY, this.viewY + this.height)
+        .map((value) => {
+          let rowStr = value.join(" ").substr(this.viewX, this.width);
+          if (rowStr.length < this.width) {
+            rowStr += " ".repeat(this.width - rowStr.length);
+          }
+          return rowStr;
+        })
+        .join("\n");
+    }
+    // No special formatting needed if only one line.
+    let filledString = this.data.substr(this.viewX, this.width);
+    return filledString + " ".repeat(this.width - filledString.length);
+  }
+
+  getTextString() {
+    if (this.multiLine) {
+      return this.lines.map((value) => value.join(" ")).join("\n");
+    }
+    // No special formatting needed if only one line.
+    return this.data;
+  }
+
+  handleCharacterInput(body) {
+    if (this.multiLine) ; else {
+      this.data = Functions.stringSplice(this.data, this.cursorX, 0, body.event.key);
+      this.shiftCursor(1, 0);
+      this.changed = true;
+    }
+  }
+
+  handleArrowInput(body, descriptor) {
+    if (this.multiLine) ; else {
+      if (body.event.key === "ArrowLeft") {
+        this.shiftCursor(-1, 0);
+        this.changed = true;
+      } else if (body.event.key === "ArrowRight") {
+        this.shiftCursor(1, 0);
+        this.changed = true;
+      }
+    }
+  }
+
+  handleBackspaceInput() {
+    if (this.multiLine) ; else {
+      if (this.cursorX > 0) {
+        this.shiftCursor(-1, 0);
+        if (this.viewX === this.cursorX && this.viewX > 0) {
+          this.viewX--;
+        }
+        this.data = Functions.stringSplice(this.data, this.cursorX, 1);
+        this.changed = true;
+      }
+    }
+  }
+
+  handleEnterInput() {
+    if (this.multiLine) ;
+  }
+
+  handleDeleteInput() {
+    if (this.multiLine) ; else {
+      if (this.cursorX < this.data.length) {
+        this.data = Functions.stringSplice(this.data, this.cursorX, 1);
+        this.changed = true;
+      }
+    }
+  }
+
+  shiftCursor(x, y) {
+    if (this.multiLine) ; else {
+      // Not this.data.length - 1 because we want cursor to go behind text.
+      this.cursorX = Math.max(0, Math.min(this.data.length, this.cursorX + x));
+      if (this.cursorX < this.viewX) {
+        this.viewX = this.cursorX;
+      } else if (this.cursorX >= this.viewX + this.width) {
+        this.viewX = this.cursorX - this.width + 1;
+      }
+    }
+  }
+
+  placeCursor(x, y) {
+    if (this.multiLine) ; else {
+      this.cursorX = Math.max(0, Math.min(this.data.length, x));
+      this.cursorY = 0;
+    }
+  }
+}
+
+InputFieldInternalComponent.type = "AsciiInputFieldInternal";
+
+class CursorComponent extends Component {
+  constructor() {
+    super();
+
+    this.screenX = undefined;
+    this.screenY = undefined;
+    this.fieldX = undefined;
+    this.fieldY = undefined;
+    this.placedEntityKey = undefined;
+  }
+}
+
+CursorComponent.type = "TextFieldCursor";
+
+/**
+ * Controls all text fields.
+ * 
+ * Listens for three types of events from AsciiInputHandler.
+ * Focus events decide the background UI and whether the cursor appears.
+ * Mouse events determine where the cursor appears, if it should appear.
+ *    It also controls where keyboard events take effect.
+ * Keyboard events control the text in the focused keyboard event.
+ */
+class InputFieldSystem extends System {
+  constructor() {
+    super("InputFields");
+
+    this.parentEntities = {};
+    this.childEntities = {};
+    this.childMap = {};
+
+    this.defaultTextColor = "#222222";
+    this.defaultBackgroundColor = "#dddddd";
+    this.defaultFocusedColor = "#bbbbbb";
+    this.defaultCursorColor = "#888888";
+
+    this.cursorEntity = new Entity("AsciiCursor");
+    this.cursorComponent = new CursorComponent();
+    this.cursorEntity.setComponent(this.cursorComponent);
+
+    let cursorPositionComponent = new PositionComponent(0, 0, 0);
+    this.cursorEntity.setComponent(cursorPositionComponent);
+
+    let cursorStyle = new Style();
+    cursorStyle.setStyle("backgroundColor", this.defaultCursorColor);
+    let cursorRenderComponent = new AsciiRenderComponent([
+      new Sprite(" ", {
+        ignoreLeadingSpaces: false,
+        spaceIsTransparent: true,
+        spaceHasFormatting: true,
+      })
+    ], [
+      cursorStyle
+    ], [
+      [0, 0, 0]
+    ]);
+    cursorRenderComponent.visible = false;
+    cursorRenderComponent.dataIsLocal = true;
+    this.cursorEntity.setComponent(cursorRenderComponent);
+
+    this._focusSet = this._focusSet.bind(this);
+    this._focusLost = this._focusLost.bind(this);
+
+    this._handleMouseClick = this._handleMouseClick.bind(this);
+  }
+
+  check(entity) {
+    return entity.hasComponent(InputFieldComponent.type)
+      || entity.hasComponent(InputFieldInternalComponent.type)
+      || (entity.hasComponent(CursorComponent.type)
+      && entity.id === this.cursorEntity.id);
+  }
+
+  has(entity) {
+    return entity.id in this.parentEntities || entity.id in this.childEntities;
+  }
+
+  add(entity) {
+    if (entity.hasComponent(InputFieldComponent.type)) {
+      this.parentEntities[entity.id] = entity;
+      this._constructChildEntity(entity);
+    } else if (entity.hasComponent(InputFieldInternalComponent.type)) {
+      this.childEntities[entity.id] = entity;
+      this.childMap[entity.getParent().id] = entity.id;
+    }
+  }
+
+  remove(entity) {
+    if (entity.hasComponent(InputFieldComponent.type)) {
+      this._deconstructChildEntity(entity);
+      delete this.childMap[entity.id];
+      delete this.parentEntities[entity.id];
+    } else if (entity.hasComponent(InputFieldInternalComponent.type)) {
+      delete this.childEntities[entity.id];
+    }
+  }
+
+  startup() {
+    this.getEntityManager().requestAddEntity(this.cursorEntity);
+  }
+
+  shutdown() {
+    this.getEntityManager().requestDeleteEntity(this.cursorEntity);
+  }
+
+  postUpdate() {
+    for (let parentId in this.childMap) {
+      let childId = this.childMap[parentId];
+      let childEntity = this.childEntities[childId];
+      let parentEntity = this.parentEntities[parentId];
+
+      let publicComponent = parentEntity.getComponent(InputFieldComponent.type);
+      let internalComponent = childEntity.getComponent(InputFieldInternalComponent.type);
+
+      if (!internalComponent.changed) {
+        continue;
+      }
+
+      publicComponent._currentText = internalComponent.getTextString();
+
+      let renderComponent = childEntity.getComponent(AsciiRenderComponent.type);
+      renderComponent.spriteNameList[0] = new Sprite(
+        internalComponent.getDisplayString(), {
+        ignoreLeadingSpaces: false,
+        spaceIsTransparent: false,
+      });
+      let style = internalComponent.defaultStyle;
+      if (this.cursorComponent.placedEntityKey === childId) {
+        style = internalComponent.focusedStyle;
+      }
+      renderComponent.styleNameList[0] = style;
+
+      if (this.cursorComponent.placedEntityKey !== childEntity.id) {
+        continue;
+      }
+
+      let positionComponent = this._getChildGlobalPositionComponent(childId);
+      let globalCursorX = positionComponent.x + internalComponent.cursorX - internalComponent.viewX;
+      let globalCursorY = positionComponent.y + internalComponent.cursorY - internalComponent.viewY;
+      
+      let cursorPosition = this.cursorEntity.getComponent(PositionComponent.type);
+      cursorPosition.x = globalCursorX;
+      cursorPosition.y = globalCursorY;
+
+      internalComponent.changed = false;
+    }
+  }
+
+  /**
+   * Performs setup work for a newly registered Text Field.
+   * The child entity should only be managed by TextFieldSystem. 
+   * @param {Entity} entity The newly added entity to initialize
+   */
+  _constructChildEntity(entity) {
+    let textFieldData = entity.getComponent(InputFieldComponent.type);
+
+    let child = new Entity(entity.id);
+    let positionComponent = new PositionComponent(0, 0, 0);
+    child.setComponent(positionComponent);
+
+    let internalComponent = new InputFieldInternalComponent(textFieldData);
+    child.setComponent(internalComponent);
+
+    let sprite = new Sprite(internalComponent.getDisplayString(), {
+      ignoreLeadingSpaces: false,
+      spaceIsTransparent: false,
+    });
+
+    let textColor = textFieldData.textColor || this.defaultTextColor;
+    let backgroundColor = textFieldData.backgroundColor || this.defaultBackgroundColor;
+    let focusedColor = textFieldData.focusedColor || this.defaultFocusedColor;
+    let cursorColor = textFieldData.cursorColor || this.defaultCursorColor;
+
+    let defaultStyle = new Style();
+    defaultStyle.setStyle("cursor", "text");
+    defaultStyle.setStyle("color", textColor);
+    defaultStyle.setStyle("backgroundColor", backgroundColor);
+    
+    let focusedStyle = new Style();
+    focusedStyle.setStyle("cursor", "text");
+    focusedStyle.setStyle("color", textColor);
+    focusedStyle.setStyle("backgroundColor", focusedColor);
+
+    let cursorStyle = new Style();
+    cursorStyle.setStyle("backgroundColor", cursorColor);
+
+    internalComponent.defaultStyle = defaultStyle;
+    internalComponent.focusedStyle = focusedStyle;
+    internalComponent.cursorStyle = cursorStyle;
+
+    let asciiRenderComponent = new AsciiRenderComponent([sprite], [defaultStyle], [[0, 0, 0]]);
+    asciiRenderComponent.dataIsLocal = true;
+    child.setComponent(asciiRenderComponent);
+
+    entity.addChild(child);
+
+    // TODO: Set focusable.
+    this.postMessage(["InputHandlerRequest", "AddFocusable"], child.id);
+    this.subscribe(["InputHandlerFocusEvent", child.id, "FocusSet"], this._focusSet);
+    this.subscribe(["InputHandlerFocusEvent", child.id, "FocusLost"], this._focusLost);
+    this.subscribe(["KeyboardEvent", child.id, "keydown", "Visible"], 
+      internalComponent.handleCharacterInput.bind(internalComponent));
+    this.subscribe(["KeyboardEvent", child.id, "keydown", "Arrow"], 
+      internalComponent.handleArrowInput.bind(internalComponent));
+    this.subscribe(["KeyboardEvent", child.id, "keydown", "Enter"], 
+      internalComponent.handleEnterInput.bind(internalComponent));
+    this.subscribe(["KeyboardEvent", child.id, "keydown", "Backspace"], 
+      internalComponent.handleBackspaceInput.bind(internalComponent));
+    this.subscribe(["KeyboardEvent", child.id, "keydown", "Delete"], 
+      internalComponent.handleDeleteInput.bind(internalComponent));
+    this.subscribe(["MouseEvent", child.id, "click"], this._handleMouseClick);
+  }
+
+  _deconstructChildEntity(entity) {
+    let child = this.childMap[entity.id];
+    this.unsubscribe(["InputHandlerFocusEvent", child.id]);
+    this.unsubscribe(["KeyboardEvent", child.id]);
+    this.postMessage(["InputHandlerRequest", "RemoveFocusable"], child.id);
+  }
+
+  _focusSet(body) {
+    let focusedEntityId = body.entityId;
+    this.cursorComponent.placedEntityKey = focusedEntityId;
+    let cursorRender = this.cursorEntity.getComponent(AsciiRenderComponent.type);
+    cursorRender.visible = true;
+    let focusedEntity = this.childEntities[focusedEntityId];
+    this._placeCursor(body.coords, focusedEntity);
+    this._markChildEntityChanged(focusedEntityId);
+  }
+
+  _focusLost() {
+    this._markChildEntityChanged(this.cursorComponent.placedEntityKey);
+    this.cursorComponent.placedEntityKey = undefined;
+    let cursorRender = this.cursorEntity.getComponent(AsciiRenderComponent.type);
+    cursorRender.visible = false;
+  }
+
+  _handleMouseClick(body) {
+    if (this.cursorComponent.placedEntityKey) {
+      let placedEntity = this.childEntities[this.cursorComponent.placedEntityKey];
+      this._placeCursor(body.coords, placedEntity);
+      this._markChildEntityChanged(this.cursorComponent.placedEntityKey);
+    }
+  }
+
+  /**
+   * 
+   * @param {[number, number]} clickPosition The global click position
+   * @param {Entity} targetEntity The child entity being clicked
+   */
+  _placeCursor(clickPosition, targetEntity) {
+    let targetData = targetEntity.getComponent(InputFieldInternalComponent.type);
+    let targetPosition = this._getChildGlobalPositionComponent(targetEntity.id);
+
+    targetData.placeCursor(clickPosition.x - targetPosition.x,
+      clickPosition.y - targetPosition.y);
+  }
+
+  _markChildEntityChanged(entityId) {
+    let childEntity = this.childEntities[entityId];
+    let internalComponent = childEntity.getComponent(InputFieldInternalComponent.type);
+    internalComponent.changed = true;
+  }
+
+  _getChildGlobalPositionComponent(childId) {
+    let childEntity = this.childEntities[childId];
+    let parentEntity = childEntity.getParent();
+    return parentEntity.getComponent(PositionComponent.type);
+  }
+}
+
 const GuiElements = {
   Components: {
     Button: ButtonComponent,
+    InputField: InputFieldComponent,
   },
   Systems: {
     Button: ButtonSystem,
+    InputField: InputFieldSystem,
   }
 };
 

@@ -1,5 +1,6 @@
 /**
  * @template T
+ * @todo OPTIMIZE!!!!!!!
  */
 export default class RootedSearchTreeNode {
   constructor() {
@@ -14,16 +15,44 @@ export default class RootedSearchTreeNode {
     this.size = 0;
   }
 
+  /**
+   * Checks if the value appears in the subtree specified by the path.
+   * If undefined, only checks if the path exists.
+   * @param {Array<string>} path The path descriptor
+   * @param {T?} value The value to check
+   */
   has(path, value) {
     this._has(path, 0, value);
   }
 
   _has(path, index, value) {
-    if (index === path.length) {
-      return this.data.has(value);
+    if (index >= path.length) {
+      if (value === undefined || this.data.has(value)) {
+        return true;
+      }
+      for (let key in this.children) {
+        if (this.children[key]._has(path, index + 1, value)) {
+          return true;
+        }
+      }
+      return MATCH_ANY in this.children
+        && this.children[MATCH_ANY]._has(path, index + 1, value);
     }
-    return path[index] in this.children
-      && this.children[path[index]]._has(path, index + 1, value);
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        if (this.children[key]._has(path, index + 1, value)) {
+          return true;
+        }
+      }
+      return MATCH_ANY in this.children
+        && this.children[MATCH_ANY]._has(path, index + 1, value);
+    }
+    if (path[index] in this.children
+      && this.children[path[index]]._has(path, index + 1, value)) {
+      return true;
+    }
+    return MATCH_ANY in this.children
+      && this.children[MATCH_ANY]._has(path, index + 1, value);
   }
 
   /**
@@ -48,6 +77,9 @@ export default class RootedSearchTreeNode {
       return;
     }
     let key = path[index];
+    if (key === undefined) {
+      key = MATCH_ANY;
+    }
     if (!(key in this.children)) {
       this.children[key] = new RootedSearchTreeNode();
     }
@@ -90,26 +122,42 @@ export default class RootedSearchTreeNode {
         this.size = 0;
         return deleted;
       }
-      if (this.data.has(value)) {
-        this.data.delete(value);
+      if (this.data.delete(value)) {
         deleted++;
       }
-      for (let childKey in this.children) {
-        deleted += this.children[childKey]._delete(path, index + 1, value);
-        if (this.children[childKey].size === 0) {
-          delete this.children[childKey];
-        }
-      }
       this.size -= deleted;
+      for (let childKey in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, childKey);
+      }
+      if (MATCH_ANY in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+      }
+      return deleted;
+    }
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, key);
+      }
+      if (MATCH_ANY in this.children) {
+        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+      }
       return deleted;
     }
     if (path[index] in this.children) {
-      deleted = this.children[path[index]]._delete(path, index + 1, value);
-      if (this.children[path[index]].size === 0) {
-        delete this.children[path[index]];
-      }
-      this.size -= deleted;
+      deleted += this._deleteHelper(path, index + 1, value, path[index]);
     }
+    if (MATCH_ANY in this.children) {
+      deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+    }
+    return deleted;
+  }
+
+  _deleteHelper(path, index, value, key) {
+    let deleted = this.children[key]._delete(path, index + 1, value);
+    if (this.children[key].size === 0) {
+      delete this.children[key];
+    }
+    this.size -= deleted;
     return deleted;
   }
 
@@ -137,9 +185,25 @@ export default class RootedSearchTreeNode {
       for (let childKey in this.children) {
         yield* this.children[childKey]._getDescIt(path, index + 1);
       }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getDescIt(path, index + 1);
+      }
+      return;
     }
-    if (path[index] in this.children) {
-      yield* this.children[path[index]]._getDescIt(path, index + 1);
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        yield* this.children[key]._getDescIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getDescIt(path, index + 1);
+      }
+    } else {
+      if (path[index] in this.children) {
+        yield* this.children[path[index]]._getDescIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getDescIt(path, index + 1);
+      }
     }
   }
 
@@ -159,11 +223,25 @@ export default class RootedSearchTreeNode {
       }
       return;
     }
-    if (path[index] in this.children) {
-      yield* this.children[path[index]]._getAnscIt(path, index + 1);
+    if (path[index] === undefined) {
+      for (let key in this.children) {
+        yield* this.children[key]._getAnscIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getAnscIt(path, index + 1);
+      }
+    } else {
+      if (path[index] in this.children) {
+        yield* this.children[path[index]]._getAnscIt(path, index + 1);
+      }
+      if (MATCH_ANY in this.children) {
+        yield* this.children[MATCH_ANY]._getAnscIt(path, index + 1);
+      }
     }
     for (let value of this.data) {
       yield value;
     }
   }
 }
+
+const MATCH_ANY = Symbol("ANY");

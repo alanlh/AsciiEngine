@@ -21,8 +21,8 @@ export default class CursorSystem extends AsciiEngine.System {
     this._cursor.setComponent(new BlinkerComponent(5));
     entityManager.requestAddEntity(this._cursor);
     
-    this.subscribe(["MouseEvent", "click"], this._mouseHandler, true);
-    this.subscribe(["KeyboardEvent", "keydown", "Arrow"], this._arrowKeyHandler, true)
+    this.subscribe(["MouseEvent", undefined, "click"], this._mouseHandler, true);
+    this.subscribe(["KeyboardEvent", undefined, "keydown", "Arrow"], this._arrowKeyHandler, true)
   }
   
   shutdown() {
@@ -33,14 +33,14 @@ export default class CursorSystem extends AsciiEngine.System {
     this._setPosition(event.coords.x, event.coords.y);
   }
 
-  _arrowKeyHandler(event, descriptor) {
-    if (event.key === "ArrowDown") {
+  _arrowKeyHandler(body, descriptor) {
+    if (body.event.key === "ArrowDown") {
       this._incrementPosition(0, 1);
-    } else if (event.key === "ArrowUp") {
+    } else if (body.event.key === "ArrowUp") {
       this._incrementPosition(0, -1);
-    } else if (event.key === "ArrowRight") {
+    } else if (body.event.key === "ArrowRight") {
       this._incrementPosition(1, 0);
-    } else if (event.key === "ArrowLeft") {
+    } else if (body.event.key === "ArrowLeft") {
       this._incrementPosition(-1, 0);
     }
   }

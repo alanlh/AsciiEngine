@@ -4,25 +4,47 @@ export default class FormManager extends System {
   constructor() {
     super("FormManager");
 
-    this.button = new Entity("SubmitButton");
-    let buttonComponent = new Gui.Components.Button();
-    buttonComponent.sprite = new GL.Sprite("Submit");
+    this.submitButton = this._createButtonEntity("Submit", "Submit", [20, 20, 0]);
 
-    let positionComponent = new Components.Position(2, 3, 2);
-    this.button.setComponent(positionComponent);
+    this.nameField = this._createInputFieldEntity(
+      "NameField", "Bob", 20, [30, 10, 0]);
 
-    this.button.setComponent(buttonComponent);
+    this.foodField = this._createInputFieldEntity(
+      "FoodField", "Pizza", 20, [30, 12, 0]);
   }
 
   startup() {
-    this.getEntityManager().requestAddEntity(this.button);
+    this.getEntityManager().requestAddEntity(this.submitButton);
+    this.getEntityManager().requestAddEntity(this.nameField);
+    this.getEntityManager().requestAddEntity(this.foodField);
 
-    this.subscribe(["AsciiButtonElement", this.button.id, "click"], this._onSubmit, true);
+    this.subscribe(["AsciiButtonElement", this.submitButton.id, "click"], this._onSubmit, true);
   }
 
   _onSubmit() {
-    console.log("Form submitted!!!");
-    this.getEntityManager().requestDeleteEntity(this.button);
-    this.unsubscribe(["AsciiButtonElement", this.button.id, "click"]);
+    console.log("Mad Lib submitted!!!");
+  }
+
+  _createButtonEntity(name, text, [x, y, z]) {
+    let buttonEntity = new Entity(name);
+    let submitButtonPosition = new Components.Position(x, y, z);
+    buttonEntity.setComponent(submitButtonPosition);
+
+    let submitButtonComponent = new Gui.Components.Button();
+    submitButtonComponent.sprite = new GL.Sprite(text);
+    buttonEntity.setComponent(submitButtonComponent);
+    return buttonEntity;
+  }
+
+  _createInputFieldEntity(name, initialText, width, [x, y, z]) {
+    let inputFieldEntity = new Entity(name);
+    let nameFieldPosition = new Components.Position(x, y, z);
+    inputFieldEntity.setComponent(nameFieldPosition);
+
+    let nameFieldComponent = new Gui.Components.InputField();
+    nameFieldComponent.width = width;
+    nameFieldComponent.initialText = initialText;
+    inputFieldEntity.setComponent(nameFieldComponent);
+    return inputFieldEntity;
   }
 }
