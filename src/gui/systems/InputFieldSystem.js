@@ -83,11 +83,15 @@ export default class InputFieldSystem extends System {
   }
 
   remove(entity) {
-    if (entity.hasComponent(InputFieldComponent.type)) {
+    if (entity.id in this.parentEntities) {
       this._deconstructChildEntity(entity);
+      if (this.childMap[entity.id] in this.childEntities) {
+        this.getEntityManager()
+          .requestDeleteEntity(this.childEntities[this.childMap[entity.id]]);
+      }
       delete this.childMap[entity.id];
       delete this.parentEntities[entity.id];
-    } else if (entity.hasComponent(InputFieldInternalComponent.type)) {
+    } else if (entity.id in this.childEntities) {
       delete this.childEntities[entity.id];
     }
   }
@@ -209,10 +213,10 @@ export default class InputFieldSystem extends System {
   }
 
   _deconstructChildEntity(entity) {
-    let child = this.childMap[entity.id];
-    this.unsubscribe(["InputHandlerFocusEvent", child.id]);
-    this.unsubscribe(["KeyboardEvent", child.id]);
-    this.postMessage(["InputHandlerRequest", "RemoveFocusable"], child.id);
+    let childId = this.childMap[entity.id];
+    this.unsubscribe(["InputHandlerFocusEvent", childId]);
+    this.unsubscribe(["KeyboardEvent", childId]);
+    this.postMessage(["InputHandlerRequest", "RemoveFocusable"], childId);
   }
 
   _focusSet(body) {

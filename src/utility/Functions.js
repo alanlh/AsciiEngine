@@ -14,12 +14,18 @@ const Functions = {
     return Math.max(min, Math.min(num, max));
   },
   /**
+   * Splits a single line of text (no \n) into an array of strings
+   * such that each individual string has length at most the specified width.
+   * Does not append white-space if the row is less than the desired width.
+   * 
    * @todo Optimize and clean up.
    * @param {string} line A line of text
    * @param {number} width The max number of chars on each row.
+   * @param {boolean?} fillWidth Whether or not lines with less than the specified width
+   * should have spaces appended to them. Default false.
    * @returns {Array<string>} The line broken up into rows.
    */
-  breakLineIntoRows: (line, width) => {
+  breakLineIntoRows: (line, width, fillWidth = false) => {
     let words = line.split(" ");
     let rows = [];
 
@@ -33,7 +39,11 @@ const Functions = {
           currRowLength += 1 + words[i].length;
           continue;
         }
-        rows.push(words.slice(rowStartIdx, i).join(" ").substr(rowStartCharIdx));
+        let row = words.slice(rowStartIdx, i).join(" ").substr(rowStartCharIdx);
+        if (row.length < width && fillWidth) {
+          row += " ".repeat(width - row.length);
+        }
+        rows.push(row);
         currRowLength = 0;
         rowStartIdx = i;
         rowStartCharIdx = 0;

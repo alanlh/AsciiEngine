@@ -6,7 +6,7 @@ export default function form() {
   let systemManager = engine.getSystemManager();
 
   let gl = new GL.Instance("form");
-  gl.init(60, 30);
+  gl.init(60, 25);
   engine.setModule(ModuleSlots.Graphics, gl);
 
   // TODO: Is this needed?
@@ -27,6 +27,9 @@ export default function form() {
 
   let inputFieldSystem = new Gui.Systems.InputField();
   systemManager.addSystem(inputFieldSystem);
+
+  let textBoxSystem = new Gui.Systems.TextBox();
+  systemManager.addSystem(textBoxSystem);
 
   let formManager = new FormManager();
   systemManager.addSystem(formManager);

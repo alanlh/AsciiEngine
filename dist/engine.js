@@ -14,12 +14,18 @@ const Functions = {
     return Math.max(min, Math.min(num, max));
   },
   /**
+   * Splits a single line of text (no \n) into an array of strings
+   * such that each individual string has length at most the specified width.
+   * Does not append white-space if the row is less than the desired width.
+   * 
    * @todo Optimize and clean up.
    * @param {string} line A line of text
    * @param {number} width The max number of chars on each row.
+   * @param {boolean?} fillWidth Whether or not lines with less than the specified width
+   * should have spaces appended to them. Default false.
    * @returns {Array<string>} The line broken up into rows.
    */
-  breakLineIntoRows: (line, width) => {
+  breakLineIntoRows: (line, width, fillWidth = false) => {
     let words = line.split(" ");
     let rows = [];
 
@@ -33,7 +39,11 @@ const Functions = {
           currRowLength += 1 + words[i].length;
           continue;
         }
-        rows.push(words.slice(rowStartIdx, i).join(" ").substr(rowStartCharIdx));
+        let row = words.slice(rowStartIdx, i).join(" ").substr(rowStartCharIdx);
+        if (row.length < width && fillWidth) {
+          row += " ".repeat(width - row.length);
+        }
+        rows.push(row);
         currRowLength = 0;
         rowStartIdx = i;
         rowStartCharIdx = 0;
@@ -3691,6 +3701,21 @@ class InputFieldComponent extends Component {
 
 InputFieldComponent.type = "AsciiInputField";
 
+class TextBoxComponent extends Component {
+  constructor() {
+    super();
+
+    this.text = "";
+    this.width = 0;
+    this.height = 1;
+
+    this.textColor = undefined;
+    this.backgroundColor = undefined;
+  }
+}
+
+TextBoxComponent.type = "TextBox";
+
 class ButtonInternalComponent extends Component {
   constructor() {
     super();
@@ -3747,11 +3772,15 @@ class ButtonSystem extends System {
   }
 
   remove(entity) {
-    if (entity.hasComponent(ButtonComponent.type)) {
+    if (entity.id in this.buttonEntities) {
       this._deconstructButtonSubentities(entity);
+      if (this.childMap[entity.id] in this.buttonSubentities) {
+        this.getEntityManager()
+          .requestDeleteEntity(this.buttonSubentities[this.childMap[entity.id]]);
+      }
       delete this.childMap[entity.id];
       delete this.buttonEntities[entity.id];
-    } else if (entity.hasComponent(ButtonInternalComponent.type)) {
+    } else if (entity.id in this.buttonSubentities) {
       delete this.buttonSubentities[entity.id];
     }
   }
@@ -4012,7 +4041,7 @@ class InputFieldInternalComponent extends Component {
 
   placeCursor(x, y) {
     if (this.multiLine) ; else {
-      this.cursorX = Math.max(0, Math.min(this.data.length, x));
+      this.cursorX = this.viewX + Math.max(0, Math.min(this.data.length, x));
       this.cursorY = 0;
     }
   }
@@ -4108,11 +4137,15 @@ class InputFieldSystem extends System {
   }
 
   remove(entity) {
-    if (entity.hasComponent(InputFieldComponent.type)) {
+    if (entity.id in this.parentEntities) {
       this._deconstructChildEntity(entity);
+      if (this.childMap[entity.id] in this.childEntities) {
+        this.getEntityManager()
+          .requestDeleteEntity(this.childEntities[this.childMap[entity.id]]);
+      }
       delete this.childMap[entity.id];
       delete this.parentEntities[entity.id];
-    } else if (entity.hasComponent(InputFieldInternalComponent.type)) {
+    } else if (entity.id in this.childEntities) {
       delete this.childEntities[entity.id];
     }
   }
@@ -4234,10 +4267,10 @@ class InputFieldSystem extends System {
   }
 
   _deconstructChildEntity(entity) {
-    let child = this.childMap[entity.id];
-    this.unsubscribe(["InputHandlerFocusEvent", child.id]);
-    this.unsubscribe(["KeyboardEvent", child.id]);
-    this.postMessage(["InputHandlerRequest", "RemoveFocusable"], child.id);
+    let childId = this.childMap[entity.id];
+    this.unsubscribe(["InputHandlerFocusEvent", childId]);
+    this.unsubscribe(["KeyboardEvent", childId]);
+    this.postMessage(["InputHandlerRequest", "RemoveFocusable"], childId);
   }
 
   _focusSet(body) {
@@ -4291,14 +4324,136 @@ class InputFieldSystem extends System {
   }
 }
 
+class TextBoxInternalComponent extends Component {
+  constructor() {
+    super();
+  }
+}
+
+TextBoxInternalComponent.type = "TextBoxInternal";
+
+class TextBoxSystem extends System {
+  constructor() {
+    super("TextBox");
+
+    this.parentEntities = {};
+    this.childEntities = {};
+    this.childMap = {};
+
+    this.defaultTextColor = "#000000";
+    this.defaultBackgroundColor = "#ffffff";
+  }
+
+  /**
+   * 
+   * @param {Entity} entity 
+   */
+  check(entity) {
+    return entity.hasComponent(TextBoxComponent.type)
+      || entity.hasComponent(TextBoxInternalComponent.type);
+  }
+
+  /**
+   * 
+   * @param {Entity} entity 
+   */
+  has(entity) {
+    return entity.id in this.parentEntities
+      || entity.id in this.childEntities;
+  }
+
+  /**
+   * 
+   * @param {Entity} entity 
+   */
+  add(entity) {
+    if (entity.hasComponent(TextBoxComponent.type)) {
+      this.parentEntities[entity.id] = entity;
+      this._constructChildEntity(entity);
+    } else if (entity.hasComponent(TextBoxInternalComponent.type)) {
+      this.childEntities[entity.id] = entity;
+      this.childMap[entity.getParent().id] = entity.id;
+    }
+  }
+
+  remove(entity) {
+    if (entity.id in this.parentEntities) {
+      this._deconstructChildEntity(entity);
+      if (this.childMap[entity.id] in this.childEntities) {
+        this.getEntityManager()
+          .requestDeleteEntity(this.childEntities[this.childMap[entity.id]]);
+      }
+      delete this.childMap[entity.id];
+      delete this.parentEntities[entity.id];
+    } else if (entity.id in this.childEntities) {
+      delete this.childEntities[entity.id];
+    }
+  }
+
+  /**
+   * 
+   * @param {Entity} parentEntity 
+   */
+  _constructChildEntity(parentEntity) {
+    let textBoxData = parentEntity.getComponent(TextBoxComponent.type);
+
+    let childEntity = new Entity(parentEntity.id);
+    let positionComponent = new PositionComponent(0, 0, 0);
+    childEntity.setComponent(positionComponent);
+
+    let lines = textBoxData.text.split("\n");
+    let rows = [];
+    for (let i = 0; i < lines.length; i++) {
+      let lineRows = Functions.breakLineIntoRows(lines[i], textBoxData.width, true);
+      if (rows.length + lineRows.length > textBoxData.height) {
+        lineRows = lineRows.slice(0, textBoxData.height - rows.length);
+      }
+      rows.push(...lineRows);
+      if (rows.length >= textBoxData.height) {
+        break;
+      }
+    }
+    while (rows.length < textBoxData.height) {
+      rows.push(" ".repeat(textBoxData.width));
+    }
+    let text = rows.join("\n");
+
+    let sprite = new Sprite(text, {
+      spaceIsTransparent: false,
+      ignoreLeadingSpaces: false,
+    });
+
+    let textColor = textBoxData.textColor || this.defaultTextColor;
+    let backgroundColor = textBoxData.backgroundColor || this.defaultBackgroundColor;
+    let style = new Style();
+    style.setStyle("color", textColor);
+    style.setStyle("backgroundColor", backgroundColor);
+
+    let asciiRenderComponent = new AsciiRenderComponent([sprite], [style], [[0, 0, 0]]);
+    asciiRenderComponent.dataIsLocal = true;
+    childEntity.setComponent(asciiRenderComponent);
+
+    let internalComponent = new TextBoxInternalComponent();
+    childEntity.setComponent(internalComponent);
+
+    parentEntity.addChild(childEntity);
+  }
+
+  _deconstructChildEntity(parentEntity) {
+    // TODO: Is there anything to do, since it doesn't listen for any events?
+  }
+}
+
 const GuiElements = {
   Components: {
     Button: ButtonComponent,
     InputField: InputFieldComponent,
+    TextBox: TextBoxComponent,
   },
   Systems: {
     Button: ButtonSystem,
     InputField: InputFieldSystem,
+    TextBox: TextBoxSystem,
   }
 };
 

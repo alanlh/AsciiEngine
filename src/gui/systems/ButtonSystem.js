@@ -47,11 +47,15 @@ export default class ButtonSystem extends System {
   }
 
   remove(entity) {
-    if (entity.hasComponent(ButtonComponent.type)) {
+    if (entity.id in this.buttonEntities) {
       this._deconstructButtonSubentities(entity);
+      if (this.childMap[entity.id] in this.buttonSubentities) {
+        this.getEntityManager()
+          .requestDeleteEntity(this.buttonSubentities[this.childMap[entity.id]]);
+      }
       delete this.childMap[entity.id];
       delete this.buttonEntities[entity.id];
-    } else if (entity.hasComponent(ButtonInternalComponent.type)) {
+    } else if (entity.id in this.buttonSubentities) {
       delete this.buttonSubentities[entity.id];
     }
   }

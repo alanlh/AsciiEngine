@@ -154,7 +154,7 @@ export default class InputFieldInternalComponent extends Component {
     if (this.multiLine) {
 
     } else {
-      this.cursorX = Math.max(0, Math.min(this.data.length, x));
+      this.cursorX = this.viewX + Math.max(0, Math.min(this.data.length, x));
       this.cursorY = 0;
     }
   }
