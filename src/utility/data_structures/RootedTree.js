@@ -4,7 +4,7 @@
  */
 export default class RootedSearchTreeNode {
   constructor() {
-    /** @type {Object.<string, RootedSearchTreeNode>} */
+    /** @type {Object.<string, RootedSearchTreeNode<T>>} */
     this.children = {};
     /** @type {Set<T>} */
     this.data = new Set();
@@ -19,7 +19,7 @@ export default class RootedSearchTreeNode {
    * Checks if the value appears in the subtree specified by the path.
    * If undefined, only checks if the path exists.
    * @param {Array<string>} path The path descriptor
-   * @param {T?} value The value to check
+   * @param {T} [value] The value to check
    */
   has(path, value) {
     this._has(path, 0, value);
@@ -91,7 +91,7 @@ export default class RootedSearchTreeNode {
    * Removes all instances of value in the subtree rooted at the specified path.
    * If path is the empty array, will remove all instances of value in the tree.
    * @param {Array<string>} path The path in which to remove the elements
-   * @param {T?} value The value to remove
+   * @param {T} [value] The value to remove
    */
   delete(path, value) {
     if (path.length === 0 && value === undefined) {
@@ -110,7 +110,7 @@ export default class RootedSearchTreeNode {
    * 
    * @param {Array<string>} path 
    * @param {number} index 
-   * @param {T?} value If undefined, removes everything.
+   * @param {T} [value] If undefined, removes everything.
    * @returns {number} The number of times value was deleted.
    */
   _delete(path, index, value) {

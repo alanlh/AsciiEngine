@@ -26,32 +26,65 @@ class Sprite {
     settings = settings || {};
 
     this._text = text;
-    /** @type {Array<number>} */
+    /** 
+     * @type {Array<number>} 
+     * @private
+     */
     this._rowIndices = [];
-    /** @type {Array<number>} */
+    /**
+     * @type {Array<number>}
+     * @private
+     */
     this._firstVisibleChar = [];
+    /**
+     * @private
+     */
     this._width = 0;
+    /**
+     * @private
+     */
     this._height = 1;
-    /** @type {Array<Array<SegmentData>>} */
+    /** 
+     * @type {Array<Array<SegmentData>>}
+     * @private 
+     */
     this._segments = undefined;
 
     // All characters in this set are replaced with a blank space when being drawn.
     // These characters are not transparent.
+    /**
+     * @private
+     */
     this._setAsBlank = "";
+    /**
+     * @private
+     */
     this._setAsBlankRegexp = null;
     // By default, all spaces (in the string) are transparent, 
     // i.e. they take the formatting of the sprite behind them.
+    /**
+     * @private
+     */
     this._spaceIsTransparent = true;
     // By default, leading spaces in each line are ignored.
+    /**
+     * @private
+     */
     this._ignoreLeadingSpaces = true;
     // If ignoreLeadingSpaces is true but spaceIsTransparent is false, leading spaces are still ignored.
     // i.e. ignoreLeadingSpaces takes precedence. 
+    /**
+     * @private
+     */
     this._spaceHasFormatting = false;
 
     if ("setAsBlank" in settings) {
       this._setAsBlank = settings.setAsBlank;
     }
     this._setAsBlankRegexp = new RegExp("[" + this._setAsBlank + "]", "g");
+    /**
+     * @private
+     */
     this._processedText = this._text.replace(this._setAsBlankRegexp, " ");
 
     if ("spaceIsTransparent" in settings) {
@@ -73,6 +106,9 @@ class Sprite {
     Object.freeze(this);
   }
 
+  /**
+   * @private
+   */
   _parseSpriteShape() {
     let visibleCharFound = false;
     let textIdx = 0;
@@ -111,6 +147,9 @@ class Sprite {
 
   }
 
+  /**
+   * @private
+   */
   _parseSegmentData() {
     this._segments = new Array(this.height);
     for (let y = 0; y < this.height; y++) {
@@ -139,6 +178,14 @@ class Sprite {
     }
   }
 
+  /**
+   * 
+   * @private
+   * @param {number} startX 
+   * @param {number} currX 
+   * @param {number} y 
+   * @param {SegmentState} state 
+   */
   _addSegment(startX, currX, y, state) {
     if (state !== SegmentState.BLANK) {
       this._segments[y].push({
@@ -150,38 +197,57 @@ class Sprite {
     }
   }
 
+  /**
+   * @returns {String} The original text within the Sprite
+   */
   get text() {
     return this._text;
   }
 
+  /**
+   * @returns {number} The width of the Sprite
+   */
   get width() {
     return this._width;
   }
 
+  /**
+   * @returns {number} The height of the Sprite
+   */
   get height() {
     return this._height;
   }
 
   /**
-   * Returns a set containing the characters that should be replaced with a space.
+   * @returns {string} The set of characters in the Sprite which will be rendered as blanks.
    */
   get setAsBlank() {
     return this._setAsBlank;
   }
 
+  /**
+   * @returns {boolean} Whether or not spaces are rendered in the Sprite
+   */
   get spaceIsTransparent() {
     return this._spaceIsTransparent;
   }
 
+  /**
+   * @returns {boolean} Whether or not leading spaces are rendered
+   */
   get ignoreLeadingSpaces() {
     return this._ignoreLeadingSpaces;
   }
 
+  /**
+   * @returns {boolean} Whether or not the associated Style is still rendered, if spaceIsTransparent is true
+   */
   get spaceHasFormatting() {
     return this._spaceHasFormatting;
   }
 
   /**
+   * Iterates over the segments of the Sprite
    * 
    * @param {number} left The leftmost allowed column in sprite coordinates
    * @param {number} right 
@@ -255,14 +321,28 @@ class Sprite {
     }
   }
 
+  /**
+   * @private
+   * @param {string} c A string of length one
+   */
   _charHasFormatting(c) {
     return c !== " " || !this.spaceIsTransparent || this.spaceHasFormatting;
   }
 
+  /**
+   * @private
+   * @param {string} c
+   * @returns {boolean}
+   */
   _charHasText(c) {
     return c !== " " || !this.spaceIsTransparent;
   }
 
+  /**
+   * @private
+   * @param {string} c 
+   * @returns {boolean}
+   */
   _charState(c) {
     return this._charHasText(c) ? SegmentState.HAS_TEXT :
       this._charHasFormatting(c) ? SegmentState.HAS_FORMATTING :
@@ -275,6 +355,7 @@ class Sprite {
    * If the starting character has neither text nor formatting, returns 0.
    * 
    * TODO: REPLACE WITH METHOD THAT USES this._segments
+   * @deprecated
    */
   segmentLengthAt(x, y) {
     // TODO: Store this data?
@@ -315,6 +396,9 @@ class Sprite {
   }
 }
 
+/**
+ * @enum
+ */
 const SegmentState = {
   BLANK: 0,
   HAS_FORMATTING: 1,
@@ -322,7 +406,13 @@ const SegmentState = {
 };
 
 class Style {
+  /**
+   * Creates a new blank Style object
+   */
   constructor() {
+    /**
+     * @private
+     */
     this._styles = {};
     for (let styleName in Style.defaultValues) {
       this._styles[styleName] = null;
@@ -331,14 +421,15 @@ class Style {
   
   /**
    * Prevents this Style from being changed in the future.
-   * 
-   * Called by AsciiGL after the style has been inserted.
    */
   freeze() {
     Object.freeze(this._styles);
     Object.freeze(this);
   }
   
+  /**
+   * Resets all of the properties in the Style
+   */
   clear() {
     for (let styleName in Style.defaultValues) {
       this._styles[styleName] = null;
@@ -347,6 +438,8 @@ class Style {
   
   /**
    * Copies the data from the other Style object.
+   * 
+   * @param {Style} other The Style to copy from
    */
   copy(other) {
     this.clear();
@@ -357,6 +450,11 @@ class Style {
   
   // ---- PUBLIC API ---- // 
   
+  /**
+   * Checks if the two styles are the same
+   * @param {Style} other The Style to compare to
+   * @returns {boolean} True if they are the same, false otherwise
+   */
   sameAs(other) {
     for (let styleName in Style.defaultValues) {
       if (
@@ -369,6 +467,11 @@ class Style {
     return true;
   }
   
+  /**
+   * Sets a single property in the Style
+   * @param {string} styleName The name of the property to set
+   * @param {string} value The value to set to
+   */
   setStyle(styleName, value) {
     if (!(styleName in Style.defaultValues)) {
       console.warn("AsciiGL currently does not support the style", styleName);
@@ -376,10 +479,20 @@ class Style {
     this._styles[styleName] = value || null;
   }
   
+  /**
+   * Checks if the property is specified
+   * @param {string} styleName The name of a Style property
+   * @returns {boolean} True if the property is set, false otherwise
+   */
   hasStyle(styleName) {
     return this._styles[styleName] !== null;
   }
   
+  /**
+   * Returns the value of the a single Style property
+   * @param {string} styleName The name of the Style property
+   * @returns {string} The property value, or "" if it's not set
+   */
   getStyle(styleName) {
     if (this.hasStyle(styleName)) {
       return this._styles[styleName];
@@ -404,6 +517,8 @@ class Style {
    * Ensures that all formatting comes from the current sprite, not ones behind it.
    * 
    * The parameter, if passed, specifies the default values to use.
+   * 
+   * @param {Style} base The style to copy from
    */
   fillRemainder(base) {
     for (let styleName in Style.defaultValues) {
@@ -418,6 +533,9 @@ class Style {
   }
 }
 
+/**
+ * @enum {String} A list of supported style properties
+ */
 Style.defaultValues = {
   color: "black",
   backgroundColor: "transparent",
@@ -427,6 +545,11 @@ Style.defaultValues = {
   cursor: "default",
 };
 
+/**
+ * Sets the default property value for ALL Styles
+ * @param {string} styleName The style property
+ * @param {string} value The value to set to
+ */
 Style.setDefaultStyle = function(styleName, value) {
   if (styleName in Style.defaultValues) {
     // TODO: Verify value.
@@ -447,6 +570,11 @@ class SpriteBuilder {
     this._paramCount = templateArray.length - 1;
   }
   
+  /**
+   * Builds a new Sprite using the template and parameters.
+   * @param {Array<string>} paramArray The array of parameters used to build the new Sprite
+   * @returns {Sprite} A new Sprite
+   */
   construct(paramArray) {
     // TODO: Optimize.
     let result = "";
@@ -461,6 +589,11 @@ class SpriteBuilder {
 }
 
 class DOMBuffer {
+  /**
+   * A wrapper around the DOM elements which are rendered.
+   * 
+   * Maintains a virtual DOM for performance.
+   */
   constructor() {
     this.primaryElement = document.createElement("pre");
     this._width = 0;
@@ -474,6 +607,12 @@ class DOMBuffer {
     this.primaryElement.style.margin = "0";
   }
   
+  /**
+   * Initializes the DOMBuffer.
+   * Creates the necessary DOM elements and supporting data structures.
+   * @param {number} width The width of the canvas
+   * @param {number} height The height of the canvas
+   */
   init(width, height) {
     this._width = width;
     this._height = height;
@@ -493,20 +632,32 @@ class DOMBuffer {
     }
   }
   
+  /**
+   * @return {number} The width of the canvas
+   */
   get width() {
     return this._width;
   }
   
+  /**
+   * @return {number} The height of the canvas
+   */
   get height() {
     return this._height;
   }
   
+  /**
+   * @returns {HTMLElement} The primary HTML element which should be used for rendering.
+   */
   getDomElement() {
     return this.primaryElement;
   }
   
   /**
    * Causes the number of span elements attached to a row to change.
+   * 
+   * @param {number} row The row number
+   * @param {number} length The number of elements that should be used.
    */
   setRowLength(row, length) {
     if (length < this.activeRowLength[row]) {
@@ -521,6 +672,10 @@ class DOMBuffer {
     this.activeRowLength[row] = length;
   }
   
+  /**
+   * Loads rendering information from a DrawBuffer and updates the DOM.
+   * @param {DrawBuffer} drawBuffer The drawbuffer to get rendering information from
+   */
   bind(drawBuffer) {
     for (let y = 0; y < this.height; y ++) {
       let x = 0;
@@ -877,7 +1032,7 @@ const Functions = {
    * @todo Optimize and clean up.
    * @param {string} line A line of text
    * @param {number} width The max number of chars on each row.
-   * @param {boolean?} fillWidth Whether or not lines with less than the specified width
+   * @param {boolean} [fillWidth] Whether or not lines with less than the specified width
    * should have spaces appended to them. Default false.
    * @returns {Array<string>} The line broken up into rows.
    */
@@ -925,7 +1080,7 @@ const Functions = {
    * @param {string} string The string to splice
    * @param {number} index The start index from which to remove characters
    * @param {number} count The number of characters to remove
-   * @param {string?} add The string to insert in its place
+   * @param {string} [add] The string to insert in its place
    */
   stringSplice(string, index, count, add) {
     return string.substring(0, index) + (add || "") + string.substring(index + count);
@@ -963,28 +1118,65 @@ class AsciiGLInstance {
     
     outerContainer.appendChild(container);
     
+    /**
+     * @type {HTMLDivElement}
+     * @private
+     */
     this._container = container;
     
     // Have two so that only one is modified at any given time.
     // TODO: Later, do more testing on using 2 DOMBuffers.
+    /**
+     * @private
+     */
     this._domBuffer = new DOMBuffer();
     // For now, just use simple objects to hold.
+    /**
+     * @private
+     */
     this._nameBuffers = [{}, {}];
+    /**
+     * @private
+     */
     this._drawBufferIdx = 0;
+    /**
+     * @private
+     */
     this._activeBufferIdx = 1;
     
+    /**
+     * @private
+     */
     this._width = 0;
+    /**
+     * @private
+     */
     this._height = 0;
     
+    /**
+     * @private
+     */
     this._drawBuffer = new DrawBuffer();
     
+    /**
+     * @private
+     */
     this._currMouseOver = undefined;
+    /**
+     * @private
+     */
     this._currMouseDown = undefined;
+    /**
+     * @private
+     */
     this._handler = () => {};
   }
   
   /**
    * Initializes the pre element for rendering.
+   * 
+   * @param {number} width The width of the canvas in characters
+   * @param {number} height The height of the canvas in characters
    */
   init(width, height) {
     console.assert(width > 0 && height > 0, "AsciiGL must have positive dimensions.");
@@ -1080,6 +1272,10 @@ class AsciiGLInstance {
   
   /**
    * Converts mouse position viewport coordinates into asciiengine coordinates.
+   * 
+   * @param {number} mouseX The x-coordinate of the mouse in the canvas
+   * @param {number} mouseY The y-coordinate of the mouse in the canvas
+   * @returns {{x: number, y: number}} The coordinate of the mouse in AsciiGL
    */
   mousePositionToCoordinates(mouseX, mouseY) {
     // TODO: Find a more efficient method.
@@ -1095,22 +1291,41 @@ class AsciiGLInstance {
     this._activeBufferIdx = 1 - this._activeBufferIdx;
   }
   
+  /**
+   * @returns {number} The width of the canvas in characters
+   */
   get width() {
     return this._width;
   }
   
+  /**
+  * @returns {number} The height of the canvas in characters
+  */
   get height() {
     return this._height;
   }
   
+  /**
+   * @returns {Style} The current set of background style properties.
+   */
   get backgroundStyles() {
     return this._drawBuffer.backgroundStyle;
   }
   
+  /**
+   * Returns a single style property
+   * 
+   * @param {String} styleName The name of the style to return
+   */
   getBackgroundStyle(styleName) {
     return this._drawBuffer.backgroundStyle.getStyle(styleName);
   }
   
+  /**
+   * Sets a single background style property
+   * @param {String} styleName The name of the style to set
+   * @param {String} value The value to set to
+   */
   setBackgroundStyle(styleName, value) {
     this._drawBuffer.backgroundStyle.setStyle(styleName, value);
   }
@@ -1118,7 +1333,7 @@ class AsciiGLInstance {
   /**
    * Set by user code. handlerFunc is called when an AsciiGL mouse event occurs. 
    * 
-   * handlerFunc takes in (event, target, type, coords).
+   * handlerFunc takes in (event, type, target, coords).
    * event is the original MouseEvent object that triggered the AsiiGL event.
    * type is the name of the triggered event, with respect to AsciiGL.
    * target is the name of the element which the event was triggered on (may be undefined)
@@ -1137,6 +1352,7 @@ class AsciiGLInstance {
    * mouseup: Mousebutton is released in the AsciiGL canvas
    * click: A click event was registered in the AsciiGL canvas
    * 
+   * @param {(event: MouseEvent, type: String, target: String, coords: {x: number, y: number}) => void} handlerFunc The mouse handler function
    */
   setHandler(handlerFunc) {
     this._handler = handlerFunc;
@@ -1148,6 +1364,11 @@ class AsciiGLInstance {
    * Style determines what the text looks like.
    * name is optional, and allows it to be referenced in event listeners.
    * Different sprites may share the same name.
+   * 
+   * @param {Sprite} sprite The sprite to render
+   * @param {{x: number, y: number, z: number}} location The location to draw
+   * @param {Style} style How the sprite is styled
+   * @param {String} [name] A name associated with the sprite. Does not need to be unique.
    */
   draw(sprite, location, style, name) {
     let id = Functions.generateId(name);
@@ -1193,7 +1414,6 @@ const EventTypes = {
 };
 
 Object.freeze(EventTypes);
-
 
 const AsciiGL = {
   Instance: AsciiGLInstance,

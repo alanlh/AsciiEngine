@@ -20,10 +20,22 @@ export default class AsciiInputHandlerSystem extends System {
   constructor(name) {
     super(name || "AsciiInputHandler");
     // TODO: Do we actually need to keep track of this?
+    /**
+     * @private
+     */
     this._mouseEventsEnabled = false;
+    /**
+     * @private
+     */
     this._keyboardEventsEnabled = false;
 
+    /**
+     * @private
+     */
     this._focusedElement = undefined;
+    /**
+     * @private
+     */
     this._focusableEntityOwners = {};
   }
 
@@ -49,10 +61,16 @@ export default class AsciiInputHandlerSystem extends System {
     }
   }
 
+  /**
+   * @returns {boolean}
+   */
   get mouseEventsEnabled() {
     return this._mouseEventsEnabled;
   }
 
+  /**
+   * @returns {boolean}
+   */
   get keyboardEventsEnabled() {
     return this._keyboardEventsEnabled;
   }
@@ -201,7 +219,7 @@ export default class AsciiInputHandlerSystem extends System {
    * Switches focus to the specified id. That id should be registered already.
    * Does not do error checking.
    * @param {string} newFocusedId The new id to focus on.
-   * @param {{x: number, y: number}?} coords The global location being focused.
+   * @param {{x: number, y: number}} [coords] The global location being focused.
    */
   _switchFocus(newFocusedId, coords) {
     let currFocusedId = this._focusedElement;

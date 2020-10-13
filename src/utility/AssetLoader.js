@@ -1,4 +1,8 @@
 const AssetLoader = {
+  /**
+   * 
+   * @param {string} filename The file name to load
+   */
   loadFileAsString: async function(filename) {
     let request = async function(filename) {
       return new Promise(function(resolve, reject) {

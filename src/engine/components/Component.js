@@ -9,6 +9,9 @@ export default class Component {
     }
   }
   
+  /**
+   * @returns {string} The type of the Component
+   */
   get type() {
     return this.constructor.type;
   }

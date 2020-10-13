@@ -13,24 +13,31 @@ export default class SystemManager {
     
     /**
      * @type {OrderedMultiMap<number, System>}
+     * @private
      */
     this._activeSystems = new OrderedMultiMap();
     /**
      * @type {Object.<string, System>}
+     * @private
      */
     this._systems = {};
     /**
      * @type {Object.<string, number>}
+     * @private
      */
     this._systemPriorities = {};
     
+    /**
+     * @type {SystemMessageBoard}
+     * @private
+     */
     this._messageBoard = new SystemMessageBoard();
   }
   
   /**
    * Sets the configuration values. 
    * 
-   * @param {Object} config The values to set.
+   * @param {Object} [config] The values to set.
    */
   init(config) {
     // TODO: Implement.
@@ -80,6 +87,9 @@ export default class SystemManager {
     this._engine.getEntityManager().markEntityChangesAsHandled();
   }
   
+  /**
+   * @returns {Engine}
+   */
   getEngine() {
     return this._engine;
   }
@@ -101,8 +111,8 @@ export default class SystemManager {
    * By default, the system is added immediately. (DELAY NOT IMPLEMENTED)
    * 
    * @param {System} system The system to add
-   * @param {number} priority The priority of the system. Lower priorities are run first.
-   * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
+   * @param {number} [priority] The priority of the system. Lower priorities are run first.
+   * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    */
   addSystem(system, priority, delay) {
     priority = priority || 0;
@@ -123,7 +133,7 @@ export default class SystemManager {
    * Removes a system specified by the name.
    * 
    * @param {String} name The name of the system to remove
-   * @param {Boolean} delay If true, the System is not removed until the end of the cycle.
+   * @param {Boolean} [delay] If true, the System is not removed until the end of the cycle.
    */
   removeSystem(name, delay) {
     if (name in this._systems) {
@@ -141,7 +151,7 @@ export default class SystemManager {
    * Enables a system for processing.
    * 
    * @param {String} name The name of the system to enable.
-   * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
+   * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    * @return {Boolean} true if a system with the specified name was found.
    */
   enableSystem(name, delay) {
@@ -160,7 +170,7 @@ export default class SystemManager {
    * Disables a system for processing.
    * 
    * @param {String} name The name of the system to enable.
-   * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
+   * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    * @return {Boolean} true if a system with the specified name was found.
    */
   disableSystem(name, delay) {
@@ -175,6 +185,9 @@ export default class SystemManager {
     return false;
   }
   
+  /**
+   * @returns {SystemMessageBoard} The system's message board
+   */
   getMessageBoard() {
     return this._messageBoard;
   }

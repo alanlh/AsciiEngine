@@ -1,6 +1,6 @@
 const ModuleSlots = {
   Graphics: Symbol("GraphicsLibrary"),
-  ResourceManager: Symbol("ResourceManager"),
+  Resources: Symbol("ResourceManager"),
   KeyboardInput: Symbol("KeyboardInput"),
 };
 

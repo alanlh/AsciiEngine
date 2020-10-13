@@ -12,6 +12,11 @@ import AsciiAnimateComponent from "../engine/components/AsciiAnimateComponent.js
  * These specify how to construct specific classes of AsciiAnimateComponents.
  */
 const Parser = {
+  /**
+   * 
+   * @param {string} fileString The file to load
+   * @returns {{sprites: Object<string, Sprite>, styles: Object<string, Style}}
+   */
   getSpriteData: function(fileString) {
     let json = JSON.parse(fileString);
     //  JSON structure:
@@ -50,6 +55,8 @@ const Parser = {
   },
   /**
    * Returns a function that builds AsciiAnimateComponents specified by fileString.
+   * @param {string} The file to load
+   * @returns {Object<string, AsciiAnimateComponentFactory>}
    */
   getComponentFactories: function(fileString) {
     let json = JSON.parse(fileString);

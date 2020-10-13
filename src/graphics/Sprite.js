@@ -26,32 +26,65 @@ export default class Sprite {
     settings = settings || {};
 
     this._text = text;
-    /** @type {Array<number>} */
+    /** 
+     * @type {Array<number>} 
+     * @private
+     */
     this._rowIndices = [];
-    /** @type {Array<number>} */
+    /**
+     * @type {Array<number>}
+     * @private
+     */
     this._firstVisibleChar = [];
+    /**
+     * @private
+     */
     this._width = 0;
+    /**
+     * @private
+     */
     this._height = 1;
-    /** @type {Array<Array<SegmentData>>} */
+    /** 
+     * @type {Array<Array<SegmentData>>}
+     * @private 
+     */
     this._segments = undefined;
 
     // All characters in this set are replaced with a blank space when being drawn.
     // These characters are not transparent.
+    /**
+     * @private
+     */
     this._setAsBlank = "";
+    /**
+     * @private
+     */
     this._setAsBlankRegexp = null;
     // By default, all spaces (in the string) are transparent, 
     // i.e. they take the formatting of the sprite behind them.
+    /**
+     * @private
+     */
     this._spaceIsTransparent = true;
     // By default, leading spaces in each line are ignored.
+    /**
+     * @private
+     */
     this._ignoreLeadingSpaces = true;
     // If ignoreLeadingSpaces is true but spaceIsTransparent is false, leading spaces are still ignored.
     // i.e. ignoreLeadingSpaces takes precedence. 
+    /**
+     * @private
+     */
     this._spaceHasFormatting = false;
 
     if ("setAsBlank" in settings) {
       this._setAsBlank = settings.setAsBlank;
     }
     this._setAsBlankRegexp = new RegExp("[" + this._setAsBlank + "]", "g");
+    /**
+     * @private
+     */
     this._processedText = this._text.replace(this._setAsBlankRegexp, " ");
 
     if ("spaceIsTransparent" in settings) {
@@ -73,6 +106,9 @@ export default class Sprite {
     Object.freeze(this);
   }
 
+  /**
+   * @private
+   */
   _parseSpriteShape() {
     let visibleCharFound = false;
     let textIdx = 0;
@@ -111,6 +147,9 @@ export default class Sprite {
 
   }
 
+  /**
+   * @private
+   */
   _parseSegmentData() {
     this._segments = new Array(this.height);
     for (let y = 0; y < this.height; y++) {
@@ -139,6 +178,14 @@ export default class Sprite {
     }
   }
 
+  /**
+   * 
+   * @private
+   * @param {number} startX 
+   * @param {number} currX 
+   * @param {number} y 
+   * @param {SegmentState} state 
+   */
   _addSegment(startX, currX, y, state) {
     if (state !== SegmentState.BLANK) {
       this._segments[y].push({
@@ -150,38 +197,57 @@ export default class Sprite {
     }
   }
 
+  /**
+   * @returns {String} The original text within the Sprite
+   */
   get text() {
     return this._text;
   }
 
+  /**
+   * @returns {number} The width of the Sprite
+   */
   get width() {
     return this._width;
   }
 
+  /**
+   * @returns {number} The height of the Sprite
+   */
   get height() {
     return this._height;
   }
 
   /**
-   * Returns a set containing the characters that should be replaced with a space.
+   * @returns {string} The set of characters in the Sprite which will be rendered as blanks.
    */
   get setAsBlank() {
     return this._setAsBlank;
   }
 
+  /**
+   * @returns {boolean} Whether or not spaces are rendered in the Sprite
+   */
   get spaceIsTransparent() {
     return this._spaceIsTransparent;
   }
 
+  /**
+   * @returns {boolean} Whether or not leading spaces are rendered
+   */
   get ignoreLeadingSpaces() {
     return this._ignoreLeadingSpaces;
   }
 
+  /**
+   * @returns {boolean} Whether or not the associated Style is still rendered, if spaceIsTransparent is true
+   */
   get spaceHasFormatting() {
     return this._spaceHasFormatting;
   }
 
   /**
+   * Iterates over the segments of the Sprite
    * 
    * @param {number} left The leftmost allowed column in sprite coordinates
    * @param {number} right 
@@ -255,14 +321,28 @@ export default class Sprite {
     }
   }
 
+  /**
+   * @private
+   * @param {string} c A string of length one
+   */
   _charHasFormatting(c) {
     return c !== " " || !this.spaceIsTransparent || this.spaceHasFormatting;
   }
 
+  /**
+   * @private
+   * @param {string} c
+   * @returns {boolean}
+   */
   _charHasText(c) {
     return c !== " " || !this.spaceIsTransparent;
   }
 
+  /**
+   * @private
+   * @param {string} c 
+   * @returns {boolean}
+   */
   _charState(c) {
     return this._charHasText(c) ? SegmentState.HAS_TEXT :
       this._charHasFormatting(c) ? SegmentState.HAS_FORMATTING :
@@ -275,6 +355,7 @@ export default class Sprite {
    * If the starting character has neither text nor formatting, returns 0.
    * 
    * TODO: REPLACE WITH METHOD THAT USES this._segments
+   * @deprecated
    */
   segmentLengthAt(x, y) {
     // TODO: Store this data?
@@ -315,6 +396,9 @@ export default class Sprite {
   }
 }
 
+/**
+ * @enum
+ */
 const SegmentState = {
   BLANK: 0,
   HAS_FORMATTING: 1,

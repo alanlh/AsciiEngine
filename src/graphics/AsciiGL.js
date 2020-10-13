@@ -35,28 +35,65 @@ class AsciiGLInstance {
     
     outerContainer.appendChild(container);
     
+    /**
+     * @type {HTMLDivElement}
+     * @private
+     */
     this._container = container;
     
     // Have two so that only one is modified at any given time.
     // TODO: Later, do more testing on using 2 DOMBuffers.
+    /**
+     * @private
+     */
     this._domBuffer = new DOMBuffer();
     // For now, just use simple objects to hold.
+    /**
+     * @private
+     */
     this._nameBuffers = [{}, {}]
+    /**
+     * @private
+     */
     this._drawBufferIdx = 0;
+    /**
+     * @private
+     */
     this._activeBufferIdx = 1;
     
+    /**
+     * @private
+     */
     this._width = 0;
+    /**
+     * @private
+     */
     this._height = 0;
     
+    /**
+     * @private
+     */
     this._drawBuffer = new DrawBuffer();
     
+    /**
+     * @private
+     */
     this._currMouseOver = undefined;
+    /**
+     * @private
+     */
     this._currMouseDown = undefined;
+    /**
+     * @private
+     */
     this._handler = () => {};
   }
   
   /**
    * Initializes the pre element for rendering.
+   * 
+   * @param {number} width The width of the canvas in characters
+   * @param {number} height The height of the canvas in characters
    */
   init(width, height) {
     console.assert(width > 0 && height > 0, "AsciiGL must have positive dimensions.");
@@ -152,6 +189,10 @@ class AsciiGLInstance {
   
   /**
    * Converts mouse position viewport coordinates into asciiengine coordinates.
+   * 
+   * @param {number} mouseX The x-coordinate of the mouse in the canvas
+   * @param {number} mouseY The y-coordinate of the mouse in the canvas
+   * @returns {{x: number, y: number}} The coordinate of the mouse in AsciiGL
    */
   mousePositionToCoordinates(mouseX, mouseY) {
     // TODO: Find a more efficient method.
@@ -167,22 +208,41 @@ class AsciiGLInstance {
     this._activeBufferIdx = 1 - this._activeBufferIdx;
   }
   
+  /**
+   * @returns {number} The width of the canvas in characters
+   */
   get width() {
     return this._width;
   }
   
+  /**
+  * @returns {number} The height of the canvas in characters
+  */
   get height() {
     return this._height;
   }
   
+  /**
+   * @returns {Style} The current set of background style properties.
+   */
   get backgroundStyles() {
     return this._drawBuffer.backgroundStyle;
   }
   
+  /**
+   * Returns a single style property
+   * 
+   * @param {String} styleName The name of the style to return
+   */
   getBackgroundStyle(styleName) {
     return this._drawBuffer.backgroundStyle.getStyle(styleName);
   }
   
+  /**
+   * Sets a single background style property
+   * @param {String} styleName The name of the style to set
+   * @param {String} value The value to set to
+   */
   setBackgroundStyle(styleName, value) {
     this._drawBuffer.backgroundStyle.setStyle(styleName, value);
   }
@@ -190,7 +250,7 @@ class AsciiGLInstance {
   /**
    * Set by user code. handlerFunc is called when an AsciiGL mouse event occurs. 
    * 
-   * handlerFunc takes in (event, target, type, coords).
+   * handlerFunc takes in (event, type, target, coords).
    * event is the original MouseEvent object that triggered the AsiiGL event.
    * type is the name of the triggered event, with respect to AsciiGL.
    * target is the name of the element which the event was triggered on (may be undefined)
@@ -209,6 +269,7 @@ class AsciiGLInstance {
    * mouseup: Mousebutton is released in the AsciiGL canvas
    * click: A click event was registered in the AsciiGL canvas
    * 
+   * @param {(event: MouseEvent, type: String, target: String, coords: {x: number, y: number}) => void} handlerFunc The mouse handler function
    */
   setHandler(handlerFunc) {
     this._handler = handlerFunc;
@@ -220,6 +281,11 @@ class AsciiGLInstance {
    * Style determines what the text looks like.
    * name is optional, and allows it to be referenced in event listeners.
    * Different sprites may share the same name.
+   * 
+   * @param {Sprite} sprite The sprite to render
+   * @param {{x: number, y: number, z: number}} location The location to draw
+   * @param {Style} style How the sprite is styled
+   * @param {String} [name] A name associated with the sprite. Does not need to be unique.
    */
   draw(sprite, location, style, name) {
     let id = Functions.generateId(name);
@@ -265,7 +331,6 @@ const EventTypes = {
 }
 
 Object.freeze(EventTypes);
-
 
 const AsciiGL = {
   Instance: AsciiGLInstance,

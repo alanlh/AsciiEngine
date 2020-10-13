@@ -16,7 +16,7 @@ export default async function inputField() {
   engine.setModule(AsciiEngine.ModuleSlots.Graphics, gl);
 
   let resourceManager = new AsciiEngine.Modules.ResourceManager();
-  engine.setModule(AsciiEngine.ModuleSlots.ResourceManager, resourceManager);
+  engine.setModule(AsciiEngine.ModuleSlots.Resources, resourceManager);
   await resourceManager.loadSpriteFiles([
     "./demo/input/assets/sprites.json",
   ]);

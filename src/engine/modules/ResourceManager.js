@@ -3,23 +3,45 @@ import Parser from "../../utility/Parser.js";
 
 export default class ResourceManager {
   constructor() {
+    /**
+     * @private
+     */
     this.data = {};
   }
   
+  /**
+   * 
+   * @param {string | symbol} key The key of the item to store
+   * @param {any} value The value to store
+   */
   add(key, value) {
     this.data[key] = value;
   }
   
+  /**
+   * Deletes an item
+   * @param {string | symbol} key 
+   */
   delete(key) {
     if (this.has(key)) {
       delete this.data[key];
     }
   }
   
+  /**
+   * 
+   * @param {string | symbol} key 
+   * @returns {boolean}
+   */
   has(key) {
     return key in this.data;
   }
   
+  /**
+   * 
+   * @param {string | symbol} key 
+   * @returns {any}
+   */
   get(key) {
     if (!(key in this.data)) {
       console.warn("Resource key: ", key, "not found");
@@ -27,6 +49,10 @@ export default class ResourceManager {
     return this.data[key];
   }
   
+  /**
+   * 
+   * @param {Array<string>} fileList 
+   */
   async loadSpriteFiles(fileList) {
     for (let spriteFile of fileList) {
       let fileString = await AssetLoader.loadFileAsString(spriteFile);
@@ -41,6 +67,10 @@ export default class ResourceManager {
     }
   }
   
+  /**
+   * 
+   * @param {Array<string>} fileList 
+   */
   async loadTemplateFiles(fileList) {
     for (let templateFile of fileList) {
       let fileString = await AssetLoader.loadFileAsString(templateFile);

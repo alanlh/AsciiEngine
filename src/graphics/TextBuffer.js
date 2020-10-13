@@ -1,4 +1,7 @@
 class TextBuffer {
+  /**
+   * @deprecated Do NOT use. 
+   */
   constructor() {
     this._width = 0;
     this._height = 0;

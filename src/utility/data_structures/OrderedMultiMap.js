@@ -27,7 +27,7 @@ export default class OrderedMultiMap {
    * Checks if the key and value appear in this collection.
    * If value is not specified, only searches for the key.
    * @param {K} key The key to search for
-   * @param {V?} value The value to search for (optional)
+   * @param {V} [value] The value to search for (optional)
    * @returns {boolean}
    */
   has(key, value) {

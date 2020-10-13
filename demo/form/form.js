@@ -11,7 +11,7 @@ export default function form() {
 
   // TODO: Is this needed?
   let resourceManager = new Modules.ResourceManager();
-  engine.setModule(ModuleSlots.ResourceManager, resourceManager);
+  engine.setModule(ModuleSlots.Resources, resourceManager);
 
   let keyboardInput = new Modules.KeyboardInput();
   engine.setModule(ModuleSlots.KeyboardInput, keyboardInput);

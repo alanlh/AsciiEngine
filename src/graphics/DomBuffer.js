@@ -1,4 +1,9 @@
 export default class DOMBuffer {
+  /**
+   * A wrapper around the DOM elements which are rendered.
+   * 
+   * Maintains a virtual DOM for performance.
+   */
   constructor() {
     this.primaryElement = document.createElement("pre");
     this._width = 0;
@@ -12,6 +17,12 @@ export default class DOMBuffer {
     this.primaryElement.style.margin = "0";
   }
   
+  /**
+   * Initializes the DOMBuffer.
+   * Creates the necessary DOM elements and supporting data structures.
+   * @param {number} width The width of the canvas
+   * @param {number} height The height of the canvas
+   */
   init(width, height) {
     this._width = width;
     this._height = height;
@@ -31,20 +42,32 @@ export default class DOMBuffer {
     }
   }
   
+  /**
+   * @return {number} The width of the canvas
+   */
   get width() {
     return this._width;
   }
   
+  /**
+   * @return {number} The height of the canvas
+   */
   get height() {
     return this._height;
   }
   
+  /**
+   * @returns {HTMLElement} The primary HTML element which should be used for rendering.
+   */
   getDomElement() {
     return this.primaryElement;
   }
   
   /**
    * Causes the number of span elements attached to a row to change.
+   * 
+   * @param {number} row The row number
+   * @param {number} length The number of elements that should be used.
    */
   setRowLength(row, length) {
     if (length < this.activeRowLength[row]) {
@@ -61,6 +84,10 @@ export default class DOMBuffer {
     this.activeRowLength[row] = length;
   }
   
+  /**
+   * Loads rendering information from a DrawBuffer and updates the DOM.
+   * @param {DrawBuffer} drawBuffer The drawbuffer to get rendering information from
+   */
   bind(drawBuffer) {
     for (let y = 0; y < this.height; y ++) {
       let x = 0;

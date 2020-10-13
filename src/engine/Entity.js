@@ -1,20 +1,65 @@
 import Functions from "../utility/Functions.js"
 
 export default class Entity {
+  /**
+   * Creates a new Entity
+   * @param {string} name The name of the entity
+   */
   constructor(name) {
+    /**
+     * @type {string}
+     * @private
+     */
     this._name = name;
+    /**
+     * @type {string}
+     * @private
+     */
     this._id = Functions.generateId(this._name);
     
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._initialized = false;
+    /**
+     * @type {EntityManager}
+     * @private
+     */
     this._entityManager = undefined;
     
+    /**
+     * @type {Object<string, Component>}
+     * @private
+     */
     this._components = {};
+    /**
+     * @type {Entity | undefined}
+     * @private
+     */
     this._parent = undefined;
+
+    /**
+     * @type {Object<string, Entity>}
+     * @private
+     */
     this._children = {};
     
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._changed = true;
     
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._enabled = true;
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._ancestorsEnabled = true;
   }
   
@@ -23,14 +68,18 @@ export default class Entity {
    * 
    * TODO: Implement.
    * 
+   * @param {string} [name] The name of the new Entity. Otherwise defaults to the existing entity's name
    * @return {Entity} The clone.
+   * @deprecated
    */
-  clone() {
+  clone(name) {
     
   }
   
   /**
    * Called by the entityManager after being inserted.
+   * Should ONLY be called by the Entity Manager
+   * @param {EntityManager} entityManager The entityManager caller
    */
   init(entityManager) {
     this._initialized = true;
@@ -42,6 +91,9 @@ export default class Entity {
     }
   }
   
+  /**
+   * @returns {boolean} Whether the Entity is initialized
+   */
   get initialized() {
     return this._initialized;
   }
@@ -84,10 +136,18 @@ export default class Entity {
     return this._parent;
   }
   
+  /**
+   * The name of the Entity
+   * @returns {string}
+   */
   get name() {
     return this._name;
   }
   
+  /**
+   * The id of the entity
+   * @returns {string}
+   */
   get id() {
     return this._id;
   }
@@ -107,6 +167,8 @@ export default class Entity {
    * 
    * Public version of this method. 
    * Passes to EntityManager.requestSetComponent if initialized already.
+   * 
+   * @param {Component} component The component to add
    */ 
   setComponent(component) {
     if (this.initialized) {
@@ -120,6 +182,7 @@ export default class Entity {
    * Sets the component of the entity. Notifies entityManager of change.
    * 
    * Private version of this method. Should not be called directly.
+   * @private
    */
   _setComponent(component) {
     this._components[component.type] = component;
@@ -132,6 +195,8 @@ export default class Entity {
    * Returns the component of the specified type associated with this entity.
    * 
    * Should be called in Systems to get the relevant data.
+   * @param {string} type The type of the component to return
+   * @returns {Component} The component specified by the type string
    */
   getComponent(type) {
     if (this.hasComponent(type)) {
@@ -144,6 +209,8 @@ export default class Entity {
    * Returns true if this entity has a component of the specified type.
    * 
    * Useful for checking if this entity should be processed by a System.
+   * @param {string} type
+   * @returns {boolean}
    */
   hasComponent(type) {
     return type in this._components;
@@ -153,6 +220,7 @@ export default class Entity {
    * Deletes a component from the entity.
    * 
    * Public version of this method. Passes to EntityManager.requestDeleteComponent if initialized.
+   * @param {string} type
    */
   deleteComponent(type) {
     if (this.initialized && this.hasComponent(type)) {
@@ -166,6 +234,7 @@ export default class Entity {
    * Deletes a component from the entity. Notifies EntityManager of change if initialized.
    * 
    * The private version of this method. Should not be called directly.
+   * @private
    */
   _deleteComponent(type) {
     if (this.hasComponent(type)) {
@@ -183,6 +252,7 @@ export default class Entity {
    * 
    * Public version of this method.
    * Passes to EntityManager.requestAddChild if initialized already.
+   * @param {Entity} childEntity
    */
   addChild(childEntity) {
     if (this.initialized) {
@@ -198,6 +268,7 @@ export default class Entity {
    * The EntityManager is responsible for initializing it.
    * 
    * Private version of this method. Should not be called directly.
+   * @private
    */
   _addChild(childEntity) {
     this._children[childEntity.id] = childEntity;
@@ -206,6 +277,7 @@ export default class Entity {
   
   /**
    * TODO: What should this method do?
+   * @deprecated
    */
   removeChild(id) {
     if (this.initialized && id in this._children) {
@@ -213,6 +285,11 @@ export default class Entity {
     }
   }
   
+  /**
+   * @private
+   * @deprecated
+   * @param {string} id 
+   */
   _removeChild(id) {
     
   }
@@ -238,6 +315,7 @@ export default class Entity {
    * Note that it's possible for children to already be enabled.
    * 
    * Public version of this method. Calls Entity.requestEnable if initialized.
+   * @param {boolean} [shouldEnableChildren] Whether the children of this entity should be enabled as well
    */
   enable(shouldEnableChildren) {
     if (this.initialized) {
@@ -253,6 +331,7 @@ export default class Entity {
   * Note that it's possible for children to already be enabled.
   * 
   * Private version of this method. Do not call directly.
+  * @private
   */
   _enable(shouldEnableChildren) {
     this._entityManager.notifyEnable(this);
@@ -271,6 +350,7 @@ export default class Entity {
    *  regardless of whether they are enabled/disabled.
    * 
    * Public version of this method. Calls Entity.requestDisable if initialized.
+   * @param {boolean} [shouldDisableChildren] Whether or not to disable the children
    */
   disable(shouldDisableChildren) {
     if (this.initialized) {

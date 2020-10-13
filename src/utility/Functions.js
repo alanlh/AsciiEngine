@@ -21,7 +21,7 @@ const Functions = {
    * @todo Optimize and clean up.
    * @param {string} line A line of text
    * @param {number} width The max number of chars on each row.
-   * @param {boolean?} fillWidth Whether or not lines with less than the specified width
+   * @param {boolean} [fillWidth] Whether or not lines with less than the specified width
    * should have spaces appended to them. Default false.
    * @returns {Array<string>} The line broken up into rows.
    */
@@ -69,7 +69,7 @@ const Functions = {
    * @param {string} string The string to splice
    * @param {number} index The start index from which to remove characters
    * @param {number} count The number of characters to remove
-   * @param {string?} add The string to insert in its place
+   * @param {string} [add] The string to insert in its place
    */
   stringSplice(string, index, count, add) {
     return string.substring(0, index) + (add || "") + string.substring(index + count);

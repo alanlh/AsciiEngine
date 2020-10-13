@@ -21,7 +21,7 @@ const Functions = {
    * @todo Optimize and clean up.
    * @param {string} line A line of text
    * @param {number} width The max number of chars on each row.
-   * @param {boolean?} fillWidth Whether or not lines with less than the specified width
+   * @param {boolean} [fillWidth] Whether or not lines with less than the specified width
    * should have spaces appended to them. Default false.
    * @returns {Array<string>} The line broken up into rows.
    */
@@ -69,7 +69,7 @@ const Functions = {
    * @param {string} string The string to splice
    * @param {number} index The start index from which to remove characters
    * @param {number} count The number of characters to remove
-   * @param {string?} add The string to insert in its place
+   * @param {string} [add] The string to insert in its place
    */
   stringSplice(string, index, count, add) {
     return string.substring(0, index) + (add || "") + string.substring(index + count);
@@ -79,20 +79,65 @@ const Functions = {
 Object.freeze(Functions);
 
 class Entity {
+  /**
+   * Creates a new Entity
+   * @param {string} name The name of the entity
+   */
   constructor(name) {
+    /**
+     * @type {string}
+     * @private
+     */
     this._name = name;
+    /**
+     * @type {string}
+     * @private
+     */
     this._id = Functions.generateId(this._name);
     
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._initialized = false;
+    /**
+     * @type {EntityManager}
+     * @private
+     */
     this._entityManager = undefined;
     
+    /**
+     * @type {Object<string, Component>}
+     * @private
+     */
     this._components = {};
+    /**
+     * @type {Entity | undefined}
+     * @private
+     */
     this._parent = undefined;
+
+    /**
+     * @type {Object<string, Entity>}
+     * @private
+     */
     this._children = {};
     
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._changed = true;
     
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._enabled = true;
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._ancestorsEnabled = true;
   }
   
@@ -101,14 +146,18 @@ class Entity {
    * 
    * TODO: Implement.
    * 
+   * @param {string} [name] The name of the new Entity. Otherwise defaults to the existing entity's name
    * @return {Entity} The clone.
+   * @deprecated
    */
-  clone() {
+  clone(name) {
     
   }
   
   /**
    * Called by the entityManager after being inserted.
+   * Should ONLY be called by the Entity Manager
+   * @param {EntityManager} entityManager The entityManager caller
    */
   init(entityManager) {
     this._initialized = true;
@@ -120,6 +169,9 @@ class Entity {
     }
   }
   
+  /**
+   * @returns {boolean} Whether the Entity is initialized
+   */
   get initialized() {
     return this._initialized;
   }
@@ -162,10 +214,18 @@ class Entity {
     return this._parent;
   }
   
+  /**
+   * The name of the Entity
+   * @returns {string}
+   */
   get name() {
     return this._name;
   }
   
+  /**
+   * The id of the entity
+   * @returns {string}
+   */
   get id() {
     return this._id;
   }
@@ -185,6 +245,8 @@ class Entity {
    * 
    * Public version of this method. 
    * Passes to EntityManager.requestSetComponent if initialized already.
+   * 
+   * @param {Component} component The component to add
    */ 
   setComponent(component) {
     if (this.initialized) {
@@ -198,6 +260,7 @@ class Entity {
    * Sets the component of the entity. Notifies entityManager of change.
    * 
    * Private version of this method. Should not be called directly.
+   * @private
    */
   _setComponent(component) {
     this._components[component.type] = component;
@@ -210,6 +273,8 @@ class Entity {
    * Returns the component of the specified type associated with this entity.
    * 
    * Should be called in Systems to get the relevant data.
+   * @param {string} type The type of the component to return
+   * @returns {Component} The component specified by the type string
    */
   getComponent(type) {
     if (this.hasComponent(type)) {
@@ -222,6 +287,8 @@ class Entity {
    * Returns true if this entity has a component of the specified type.
    * 
    * Useful for checking if this entity should be processed by a System.
+   * @param {string} type
+   * @returns {boolean}
    */
   hasComponent(type) {
     return type in this._components;
@@ -231,6 +298,7 @@ class Entity {
    * Deletes a component from the entity.
    * 
    * Public version of this method. Passes to EntityManager.requestDeleteComponent if initialized.
+   * @param {string} type
    */
   deleteComponent(type) {
     if (this.initialized && this.hasComponent(type)) {
@@ -244,6 +312,7 @@ class Entity {
    * Deletes a component from the entity. Notifies EntityManager of change if initialized.
    * 
    * The private version of this method. Should not be called directly.
+   * @private
    */
   _deleteComponent(type) {
     if (this.hasComponent(type)) {
@@ -261,6 +330,7 @@ class Entity {
    * 
    * Public version of this method.
    * Passes to EntityManager.requestAddChild if initialized already.
+   * @param {Entity} childEntity
    */
   addChild(childEntity) {
     if (this.initialized) {
@@ -276,6 +346,7 @@ class Entity {
    * The EntityManager is responsible for initializing it.
    * 
    * Private version of this method. Should not be called directly.
+   * @private
    */
   _addChild(childEntity) {
     this._children[childEntity.id] = childEntity;
@@ -284,11 +355,17 @@ class Entity {
   
   /**
    * TODO: What should this method do?
+   * @deprecated
    */
   removeChild(id) {
     if (this.initialized && id in this._children) ;
   }
   
+  /**
+   * @private
+   * @deprecated
+   * @param {string} id 
+   */
   _removeChild(id) {
     
   }
@@ -314,6 +391,7 @@ class Entity {
    * Note that it's possible for children to already be enabled.
    * 
    * Public version of this method. Calls Entity.requestEnable if initialized.
+   * @param {boolean} [shouldEnableChildren] Whether the children of this entity should be enabled as well
    */
   enable(shouldEnableChildren) {
     if (this.initialized) {
@@ -329,6 +407,7 @@ class Entity {
   * Note that it's possible for children to already be enabled.
   * 
   * Private version of this method. Do not call directly.
+  * @private
   */
   _enable(shouldEnableChildren) {
     this._entityManager.notifyEnable(this);
@@ -347,6 +426,7 @@ class Entity {
    *  regardless of whether they are enabled/disabled.
    * 
    * Public version of this method. Calls Entity.requestDisable if initialized.
+   * @param {boolean} [shouldDisableChildren] Whether or not to disable the children
    */
   disable(shouldDisableChildren) {
     if (this.initialized) {
@@ -468,29 +548,68 @@ EntityOp.DISABLE = Symbol("Disable");
 
 
 class EntityManager {
+  /**
+   * 
+   * @param {Engine} engine The engine creating the EntityManager
+   */
   constructor(engine) {
+    /**
+     * @private
+     */
     this._engine = engine;
     
+    /**
+     * @type {Set<Entity>}
+     * @private
+     */
     this._entities = new Set();
     
+    /**
+     * @type {Set<EntityOp>}
+     * @private
+     */
     this._entityOperations = new Queue();
     
+    /**
+     * @type {Set<Entity>}
+     * @private
+     */
     this._added = new Set();
+    /**
+     * @type {Set<Entity>}
+     * @private
+     */
     this._deleted = new Set();
+    /**
+     * @type {Set<Entity>}
+     * @private
+     */
     this._changed = new Set();
+    /**
+     * @type {Set<Entity>}
+     * @private
+     */
     this._enabled = new Set();
+    /**
+     * @type {Set<Entity>}
+     * @private
+     */
     this._disabled = new Set();
   }
   
   /**
    * Sets the configuration values. 
    * 
-   * @param {Object} config The values to set.
+   * @param {Object} [config] The values to set.
    */
   init(config) {
     // TODO: Implement.
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to initialize
+   */
   initEntity(entity) {
     entity.init(this);
   }
@@ -565,6 +684,10 @@ class EntityManager {
     ));
   }
   
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   [EntityOp.ADD_ENTITY](entity, parent) {
     if (parent) {
       parent._addChild(entity);
@@ -573,43 +696,75 @@ class EntityManager {
     this.initEntity(entity);
   }
   
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   notifyAddition(entity) {
     this._added.add(entity);
     this.entities.add(entity);
   }
   
+  /**
+   * Deletes an entity. Removes it from all Systems.
+   * @param {Entity} entity The entity to delete
+   */
   requestDeleteEntity(entity) {
     this._entityOperations.enqueue(new EntityOp(
       EntityOp.DELETE_ENTITY, entity
     ));
   }
   
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   [EntityOp.DELETE_ENTITY](entity) {
     // TODO: Implement based off of how entites are stored in the EntityManager
     entity.destroy();
   }
   
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   notifyDeletion(entity) {
     this._deleted.add(entity);
     this.entities.delete(entity);
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to set the component in
+   * @param {Component} component The component to add to the Entity
+   */
   requestSetComponent(entity, component) {
     this._entityOperations.enqueue(new EntityOp(
       EntityOp.SET_COMPONENT, entity, component
     ));
   }
   
+  /**
+   * @private
+   */
   [EntityOp.SET_COMPONENT](entity, component) {
     entity._setComponent(component);
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to delete the component from
+   * @param {string} type The type of component to delete
+   */
   requestDeleteComponent(entity, type) {
     this._entityOperations.enqueue(new EntityOp(
       EntityOp.DELETE_COMPONENT, entity, type
     ));
   }
   
+  /**
+   * @private
+   */
   [EntityOp.DELETE_COMPONENT](entity, type) {
     target._deleteComponent(type);
   }
@@ -624,30 +779,54 @@ class EntityManager {
     this._changed.add(entity);
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to enable
+   * @param {boolean} [shouldEnableChildren] Whether or not the entity's children should also be enabled
+   */
   requestEnable(entity, shouldEnableChildren) {
     this._entityOperations.enqueue(new EntityOp(
       EntityOp.ENABLE, entity, shouldEnableChildren
     ));
   }
   
+  /**
+   * @private
+   */
   [EntityOp.ENABLE](entity, shouldEnableChildren) {
     entity._enable(shouldEnableChildren);
   }
   
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   notifyEnable(entity) {
     this._enabled.add(entity);
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to disable
+   * @param {boolean} [shouldDisableChildren] Whether or not the entity's children should also be disabled
+   */
   requestDisable(entity, shouldDisableChildren) {
     this._entityOperations.enqueue(new EntityOp(
       EntityOp.DISABLE, entity, shouldDisableChildren
     ));
   }
   
+  /**
+   * @private
+   */
   [EntityOp.DISABLE](target, shouldDisableChildren) {
     entity._disable(shouldDisableChildren);
   }
   
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   notifyDisable(entity) {
     this._disabled.add(entity);
   }
@@ -693,30 +872,48 @@ class System {
 
   // ---------- PUBLIC API --------- //
   
+  /**
+   * @returns {SystemManager}
+   */
   getSystemManager() {
     return this._systemManager;
   }
   
+  /**
+   * @returns {Engine}
+   */
   getEngine() {
     return this._engine;
   }
 
+  /**
+   * @returns {EntityManager}
+   */
   getEntityManager() {
     return this._entityManager;
   }
   
+  /**
+   * @deprecated DO NOT USE. Currently incomplete
+   */
   enable() {
     if (!this._active) {
       this._active = true;
     }
   }
   
+  /**
+   * @deprecated DO NOT USE. Currently incomplete
+   */
   disable() {
     if (this._active) {
       this._active = false;
     }
   }
   
+  /**
+   * @returns {boolean} Whether or not the system is active
+   */
   get active() {
     return this._active;
   }
@@ -726,7 +923,7 @@ class System {
    * @param {Array<string>} descriptor The event path descriptor
    * @param {import("../SystemMessageBoard").EventHandler} handler The event handler
    * @param {boolean} bind Whether or not the event handler should be bound to this.
-   * @param {string?} source The source system. If undefined, will accept any system.
+   * @param {string} [source] The source system. If undefined, will accept any system.
    */
   subscribe(descriptor, handler, bind, source) {
     if (bind) {
@@ -751,7 +948,7 @@ class System {
    * A wrapper around SystemMessageBoard's post.
    * @param {Array<string>} descriptor 
    * @param {any} body 
-   * @param {string?} target 
+   * @param {string} [target] 
    */
   postMessage(descriptor, body, target) {
     this.getSystemManager().getMessageBoard().post(
@@ -764,11 +961,13 @@ class System {
   
   /**
    * Runs when the System is initialized. Should be independent of any entities.
+   * @interface
    */
   startup() {}
   
   /**
    * Runs when the system is removed from the SystemManager.
+   * @interface
    */
   shutdown() {}
   
@@ -777,6 +976,9 @@ class System {
    * Determines of the entity is of importance to the System.
    * 
    * This method should NOT have any side effects. Doing so may result in undefined behavior.
+   * @interface
+   * @param {Entity} entity
+   * @returns {boolean}
    */
   check(entity) {
     return false;
@@ -787,12 +989,17 @@ class System {
    * 
    * This method can be overriden to fit an alternative data structure.
    * However, failure to implement this correctly may result in undefined behavior.
+   * 
+   * @interface
+   * @param {Entity} entity
+   * @returns {boolean}
    */
   has(entity) {}
   
   /**
    * Adds the entity to the system.
    * The implementation should make sense for how the derived system stores its entities.
+   * @param {Entity} entity The entity to add
    */
   add(entity) {}
   
@@ -802,24 +1009,30 @@ class System {
    *
    * Any alternate implementation MUST be defined so that the System no longer processes it.
    * Failure to do so may result in undefined behavior.
+   * 
+   * @interface
+   * @param {Entity} entity
    */
   remove(entity) {}
   
   /**
    * A virtual method Systems can override
    * Called before main update method.
+   * @interface
    */
   preUpdate() {}
   
   /**
    * A virtual method Systems can override.
    * The main update for computation.
+   * @interface
    */
   update() {}
   
   /**
    * A virtual method Systems can override.
    * Called after main update method.
+   * @interface
    */
   postUpdate() {}
 }
@@ -830,7 +1043,7 @@ class System {
  */
 class RootedSearchTreeNode {
   constructor() {
-    /** @type {Object.<string, RootedSearchTreeNode>} */
+    /** @type {Object.<string, RootedSearchTreeNode<T>>} */
     this.children = {};
     /** @type {Set<T>} */
     this.data = new Set();
@@ -845,7 +1058,7 @@ class RootedSearchTreeNode {
    * Checks if the value appears in the subtree specified by the path.
    * If undefined, only checks if the path exists.
    * @param {Array<string>} path The path descriptor
-   * @param {T?} value The value to check
+   * @param {T} [value] The value to check
    */
   has(path, value) {
     this._has(path, 0, value);
@@ -917,7 +1130,7 @@ class RootedSearchTreeNode {
    * Removes all instances of value in the subtree rooted at the specified path.
    * If path is the empty array, will remove all instances of value in the tree.
    * @param {Array<string>} path The path in which to remove the elements
-   * @param {T?} value The value to remove
+   * @param {T} [value] The value to remove
    */
   delete(path, value) {
     if (path.length === 0 && value === undefined) {
@@ -936,7 +1149,7 @@ class RootedSearchTreeNode {
    * 
    * @param {Array<string>} path 
    * @param {number} index 
-   * @param {T?} value If undefined, removes everything.
+   * @param {T} [value] If undefined, removes everything.
    * @returns {number} The number of times value was deleted.
    */
   _delete(path, index, value) {
@@ -1090,31 +1303,49 @@ class MessageBoard {
     /**
      * Keeps track of the information associated with each key.
      * @type {Object.<ListenerKey, ListenerInfo>}
+     * @private
      */
     this._listeners = {};
     /**
      * Keeps track of the events each system is listening to,
      * @type {Object.<string, RootedSearchTreeNode<ListenerKey>>}
+     * @private
      */
     this._subscribers = {};
     /** 
      * Keeps track of the event descriptorss that can trigger an event. 
      * @type {RootedSearchTreeNode<ListenerKey>} 
+     * @private
      */
     this._descriptors = new RootedSearchTreeNode();
 
     /**
      * @type {Queue<Message>}
+     * @private
      */
     this._messageQueue = new Queue();
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._processImmediately = false;
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._currentlyProcessing = false;
   }
 
+  /**
+   * @returns {boolean} True if should process immediately
+   */
   get processImmediately() {
     return this._processImmediately;
   }
 
+  /**
+   * @param {boolean}
+   */
   set processImmediately(value) {
     this._processImmediately = !!value;
     if (this._processImmediately) {
@@ -1178,7 +1409,7 @@ class MessageBoard {
    * @param {string} sender The sender system's name
    * @param {Array<string>} descriptor The path descriptor of the event, in increasing specificity
    * @param {any} body The event body
-   * @param {string?} target The target system's name, or undefined for all systems
+   * @param {string} [target] The target system's name, or undefined for all systems
    */
   post(sender, descriptor, body, target) {
     this._messageQueue.enqueue([
@@ -1248,7 +1479,7 @@ class OrderedMultiMap {
    * Checks if the key and value appear in this collection.
    * If value is not specified, only searches for the key.
    * @param {K} key The key to search for
-   * @param {V?} value The value to search for (optional)
+   * @param {V} [value] The value to search for (optional)
    * @returns {boolean}
    */
   has(key, value) {
@@ -1340,24 +1571,31 @@ class SystemManager {
     
     /**
      * @type {OrderedMultiMap<number, System>}
+     * @private
      */
     this._activeSystems = new OrderedMultiMap();
     /**
      * @type {Object.<string, System>}
+     * @private
      */
     this._systems = {};
     /**
      * @type {Object.<string, number>}
+     * @private
      */
     this._systemPriorities = {};
     
+    /**
+     * @type {SystemMessageBoard}
+     * @private
+     */
     this._messageBoard = new MessageBoard();
   }
   
   /**
    * Sets the configuration values. 
    * 
-   * @param {Object} config The values to set.
+   * @param {Object} [config] The values to set.
    */
   init(config) {
     // TODO: Implement.
@@ -1407,6 +1645,9 @@ class SystemManager {
     this._engine.getEntityManager().markEntityChangesAsHandled();
   }
   
+  /**
+   * @returns {Engine}
+   */
   getEngine() {
     return this._engine;
   }
@@ -1428,8 +1669,8 @@ class SystemManager {
    * By default, the system is added immediately. (DELAY NOT IMPLEMENTED)
    * 
    * @param {System} system The system to add
-   * @param {number} priority The priority of the system. Lower priorities are run first.
-   * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
+   * @param {number} [priority] The priority of the system. Lower priorities are run first.
+   * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    */
   addSystem(system, priority, delay) {
     priority = priority || 0;
@@ -1450,7 +1691,7 @@ class SystemManager {
    * Removes a system specified by the name.
    * 
    * @param {String} name The name of the system to remove
-   * @param {Boolean} delay If true, the System is not removed until the end of the cycle.
+   * @param {Boolean} [delay] If true, the System is not removed until the end of the cycle.
    */
   removeSystem(name, delay) {
     if (name in this._systems) {
@@ -1468,7 +1709,7 @@ class SystemManager {
    * Enables a system for processing.
    * 
    * @param {String} name The name of the system to enable.
-   * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
+   * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    * @return {Boolean} true if a system with the specified name was found.
    */
   enableSystem(name, delay) {
@@ -1487,7 +1728,7 @@ class SystemManager {
    * Disables a system for processing.
    * 
    * @param {String} name The name of the system to enable.
-   * @param {Boolean} delay If true, the System is guaranteed to not run until the next cycle.
+   * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    * @return {Boolean} true if a system with the specified name was found.
    */
   disableSystem(name, delay) {
@@ -1502,6 +1743,9 @@ class SystemManager {
     return false;
   }
   
+  /**
+   * @returns {SystemMessageBoard} The system's message board
+   */
   getMessageBoard() {
     return this._messageBoard;
   }
@@ -1511,20 +1755,50 @@ class Engine {
   /**
    * The overall container for an AsciiEngine instance.
    * 
-   * @param {Object} config The configurations for the Engine 
+   * @param {Object} [config] The configurations for the Engine 
    * (including EntityManager and SystemManager).
    */
   constructor(config) {
+    /**
+     * @type {boolean} Whether or not the engine is initialized.
+     * @private 
+     */
     this._initialized = false;
 
+    /**
+     * @type {EntityManager}
+     * @private
+     */
     this._entityManager = new EntityManager(this);
 
+    /**
+     * @type {SystemManager}
+     * @private
+     */
     this._systemManager = new SystemManager(this);
 
+    /**
+     * @type {Object<string | symbol, any>}
+     * @private
+     */
     this._modules = {};
 
+    /**
+     * @type {number}
+     * @private
+     */
     this._millisecPerUpdate = 1000; // Default to 1 FPS
+
+    /**
+     * @type {number}
+     * @private
+     */
     this._intervalKey = undefined;
+
+    /**
+     * @type {number}
+     * @private
+     */
     this._delta = 0;
   }
 
@@ -1542,20 +1816,34 @@ class Engine {
     return this._systemManager;
   }
 
+  /**
+   * @returns {Object.<string | symbol, any>}
+   */
   get modules() {
     return this._modules;
   }
 
+  /**
+   * 
+   * @param {string | symbol} type The name of the module being added
+   * @param {any} module The module
+   */
   setModule(type, module) {
     this.modules[type] = module;
   }
 
+  /**
+   * Returns a module
+   * @param {string | symbol} type The name of the module to retrieve
+   * @returns {any}
+   */
   getModule(type) {
     return this.modules[type];
   }
 
   /**
    * Currently unused. TODO: Remove?
+   * @deprecated
    */
   applyModuleConfig(config) {
     for (let type in this._modules) {
@@ -1573,7 +1861,7 @@ class Engine {
 
   /**
    * Starts the game loop
-   * @param {number} updateRate Number of milliseconds between updates
+   * @param {number} [updateRate] Number of milliseconds between updates
    */
   startLoop(updateRate) {
     if (updateRate !== undefined) {
@@ -1582,6 +1870,9 @@ class Engine {
     this._intervalKey = setInterval(() => { this.update(); }, this._millisecPerUpdate);
   }
 
+  /**
+   * Pauses the game loop.
+   */
   pauseLoop() {
     clearInterval(this._intervalKey);
     this._intervalKey = undefined;
@@ -1624,12 +1915,22 @@ class Component {
     }
   }
   
+  /**
+   * @returns {string} The type of the Component
+   */
   get type() {
     return this.constructor.type;
   }
 }
 
 class AsciiRenderComponent extends Component {
+  /**
+   * Creates a new Component that can be used by AsciiRenderSystem
+   * 
+   * @param {string[] | Sprite[]} spriteNameList The list of sprites or sprite names in the frame
+   * @param {string[] | Style[]} styleNameList The list of styles or style names in the frame
+   * @param {[number, number, number][]} relativePositionList The list of positions to render at
+   */
   constructor(spriteNameList, styleNameList, relativePositionList) {
     super();
     // All these arrays should all be of the same length. Otherwise may cause problems.
@@ -1638,7 +1939,13 @@ class AsciiRenderComponent extends Component {
     this.styleNameList = styleNameList || [];
     this.relativePositionList = relativePositionList || [];
     
+    /**
+     * @type {boolean} Whether or not the component should be rendered
+     */
     this.visible = true;
+    /**
+     * @type {boolean} Whether or not the render information is located in the Component or should be retrieved in the ResourceManager
+     */
     this.dataIsLocal = false;
   }
 }
@@ -1646,33 +1953,73 @@ class AsciiRenderComponent extends Component {
 AsciiRenderComponent.type = "AsciiRender";
 
 class AsciiAnimateComponent extends Component {
+  /**
+   * A Component usable by AsciiRenderSystem which supports different frames.
+   */
   constructor() {
     super();
+    /**
+     * @private
+     */
     this._name = undefined;
+    /**
+     * @private
+     */
     this._spriteNameList = {};
+    /**
+     * @private
+     */
     this._styleNameList = {};
+    /**
+     * @private
+     */
     this._relativePositionList = {};
     
+    /**
+     * @type {boolean} Whether or not the component should be rendered
+     */
     this.visible = true;
+    /**
+     * @type {boolean} Whether or not the data is contained locally or should be retrieved from the Resource Manager
+     */
     this.dataIsLocal = false;
   }
   
+  /**
+   * @returns {string} The name of the current frame
+   */
   get currentFrame() {
     return this._name;
   }
   
+  /**
+   * @returns {string[] | Sprite[]} The list of sprite names or Sprites to render
+   */
   get spriteNameList() {
     return this._spriteNameList[this.currentFrame];
   }
   
+  /**
+   * @returns {string[] | Style[]} The list of style names or Styles to render
+   */
   get styleNameList() {
     return this._styleNameList[this.currentFrame];
   }
-  
+ 
+  /**
+   * @returns {[number, number, number][]} The list of positions to render at
+   */
   get relativePositionList() {
     return this._relativePositionList[this.currentFrame];
   }
   
+  /**
+   * 
+   * @param {string} name The name of the frame
+   * @param {string[] | Sprite[]} spriteNameList The list of sprites or sprite names in the frame
+   * @param {string[] | Style[]} styleNameList The list of styles or style names in the frame
+   * @param {[x: number, y: number, z: number][]} relativePositionList The list of positions to render at
+   */
   addFrame(
     name,
     spriteNameList,
@@ -1692,6 +2039,10 @@ class AsciiAnimateComponent extends Component {
     this._relativePositionList[name] = relativePositionList;
   }
   
+  /**
+   * Sets the current active frame
+   * @param {string} name The frame to set to
+   */
   setFrame(name) {
     if (name in this._spriteNameList) {
       this._name = name;
@@ -1702,10 +2053,25 @@ class AsciiAnimateComponent extends Component {
 AsciiAnimateComponent.type = "AsciiAnimate";
 
 class PositionComponent extends Component {
+  /**
+   * Creates a basic 3D position
+   * @param {number} x 
+   * @param {number} y 
+   * @param {number} z 
+   */
   constructor(x, y, z) {
     super();
+    /**
+     * @type {number} The x coordinate
+     */
     this.x = x || 0;
+    /**
+     * @type {number} The y coordinate
+     */
     this.y = y || 0;
+    /**
+     * @type {number} The z coordinate
+     */
     this.z = z || 0;
   }
 }
@@ -1725,6 +2091,7 @@ class SetSystem extends System {
    * An implementation of System that adds uses a Set to store its entities.
    * 
    * Should not be instantiated directly.
+   * @param {string} name The name of the system
    */
   constructor(name) {
     super(name);
@@ -1734,34 +2101,67 @@ class SetSystem extends System {
     this.entities = new Set();
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to check for
+   * @returns {boolean} Whether or not the System has the given entity
+   */
   has(entity) {
     return this.entities.has(entity);
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to add
+   */
   add(entity) {
     this.entities.add(entity);
   }
 
+  /**
+   * 
+   * @param {Entity} entity The entity to remove
+   */
   remove(entity) {
     this.entities.delete(entity);
   }
 }
 
 class MapSystem extends System {
+  /**
+   * Creates a new System that uses a map to store its entities.
+   * The entities are recorded by ID. 
+   * Useful for systems where the exact entity or order of entities does not matter, 
+   * but it is important to keep track of individuals.
+   * @param {string} name The name of the system
+   */
   constructor(name) {
     super(name);
     
     this.entities = {};
   }
   
+  /**
+   * Checks if the system has a certain Entity 
+   * @param {Entity} entity The entity to check for
+   * @returns {boolean} Whether or not the system has the specified entity
+   */
   has(entity) {
     return entity.id in this.entities;
   };
   
+  /**
+   * 
+   * @param {Entity} entity The entity to add
+   */
   add(entity) {
     this.entities[entity.id] = entity;
   }
   
+  /**
+   * 
+   * @param {Entity} entity The entity to remove
+   */
   remove(entity) {
     delete this.entities[entity.id];
   }
@@ -1769,7 +2169,7 @@ class MapSystem extends System {
 
 const ModuleSlots = {
   Graphics: Symbol("GraphicsLibrary"),
-  ResourceManager: Symbol("ResourceManager"),
+  Resources: Symbol("ResourceManager"),
   KeyboardInput: Symbol("KeyboardInput"),
 };
 
@@ -1778,6 +2178,9 @@ class AsciiRenderSystem extends SetSystem {
     super(name || "AsciiRender");
     // Use the default Set container for all entities.
     
+    /**
+     * @private
+     */
     this._asciiGl = null;
   }
   
@@ -1796,7 +2199,7 @@ class AsciiRenderSystem extends SetSystem {
    * Only render after the main loop.
    */
   postUpdate() {
-    let resourceManager = this.getEngine().getModule(ModuleSlots.ResourceManager);
+    let resourceManager = this.getEngine().getModule(ModuleSlots.Resources);
     
     for (let entity of this.entities) {
       let renderComponent = entity.getComponent(AsciiRenderComponent.type) || entity.getComponent(AsciiAnimateComponent.type);
@@ -1861,10 +2264,22 @@ class AsciiInputHandlerSystem extends System {
   constructor(name) {
     super(name || "AsciiInputHandler");
     // TODO: Do we actually need to keep track of this?
+    /**
+     * @private
+     */
     this._mouseEventsEnabled = false;
+    /**
+     * @private
+     */
     this._keyboardEventsEnabled = false;
 
+    /**
+     * @private
+     */
     this._focusedElement = undefined;
+    /**
+     * @private
+     */
     this._focusableEntityOwners = {};
   }
 
@@ -1890,10 +2305,16 @@ class AsciiInputHandlerSystem extends System {
     }
   }
 
+  /**
+   * @returns {boolean}
+   */
   get mouseEventsEnabled() {
     return this._mouseEventsEnabled;
   }
 
+  /**
+   * @returns {boolean}
+   */
   get keyboardEventsEnabled() {
     return this._keyboardEventsEnabled;
   }
@@ -2042,7 +2463,7 @@ class AsciiInputHandlerSystem extends System {
    * Switches focus to the specified id. That id should be registered already.
    * Does not do error checking.
    * @param {string} newFocusedId The new id to focus on.
-   * @param {{x: number, y: number}?} coords The global location being focused.
+   * @param {{x: number, y: number}} [coords] The global location being focused.
    */
   _switchFocus(newFocusedId, coords) {
     let currFocusedId = this._focusedElement;
@@ -2085,7 +2506,10 @@ Object.freeze(DefaultSystems);
  */
 class KeyboardInputModule {
   constructor() {
-    /** @type {Set<KeyboardEventHandler>} */
+    /**
+     * @type {Set<KeyboardEventHandler>}
+     * @private
+     */
     this.handlers = new Set();
 
     for (let eventType in KeyboardInputModule.EventTypes) {
@@ -2267,32 +2691,65 @@ class Sprite {
     settings = settings || {};
 
     this._text = text;
-    /** @type {Array<number>} */
+    /** 
+     * @type {Array<number>} 
+     * @private
+     */
     this._rowIndices = [];
-    /** @type {Array<number>} */
+    /**
+     * @type {Array<number>}
+     * @private
+     */
     this._firstVisibleChar = [];
+    /**
+     * @private
+     */
     this._width = 0;
+    /**
+     * @private
+     */
     this._height = 1;
-    /** @type {Array<Array<SegmentData>>} */
+    /** 
+     * @type {Array<Array<SegmentData>>}
+     * @private 
+     */
     this._segments = undefined;
 
     // All characters in this set are replaced with a blank space when being drawn.
     // These characters are not transparent.
+    /**
+     * @private
+     */
     this._setAsBlank = "";
+    /**
+     * @private
+     */
     this._setAsBlankRegexp = null;
     // By default, all spaces (in the string) are transparent, 
     // i.e. they take the formatting of the sprite behind them.
+    /**
+     * @private
+     */
     this._spaceIsTransparent = true;
     // By default, leading spaces in each line are ignored.
+    /**
+     * @private
+     */
     this._ignoreLeadingSpaces = true;
     // If ignoreLeadingSpaces is true but spaceIsTransparent is false, leading spaces are still ignored.
     // i.e. ignoreLeadingSpaces takes precedence. 
+    /**
+     * @private
+     */
     this._spaceHasFormatting = false;
 
     if ("setAsBlank" in settings) {
       this._setAsBlank = settings.setAsBlank;
     }
     this._setAsBlankRegexp = new RegExp("[" + this._setAsBlank + "]", "g");
+    /**
+     * @private
+     */
     this._processedText = this._text.replace(this._setAsBlankRegexp, " ");
 
     if ("spaceIsTransparent" in settings) {
@@ -2314,6 +2771,9 @@ class Sprite {
     Object.freeze(this);
   }
 
+  /**
+   * @private
+   */
   _parseSpriteShape() {
     let visibleCharFound = false;
     let textIdx = 0;
@@ -2352,6 +2812,9 @@ class Sprite {
 
   }
 
+  /**
+   * @private
+   */
   _parseSegmentData() {
     this._segments = new Array(this.height);
     for (let y = 0; y < this.height; y++) {
@@ -2380,6 +2843,14 @@ class Sprite {
     }
   }
 
+  /**
+   * 
+   * @private
+   * @param {number} startX 
+   * @param {number} currX 
+   * @param {number} y 
+   * @param {SegmentState} state 
+   */
   _addSegment(startX, currX, y, state) {
     if (state !== SegmentState.BLANK) {
       this._segments[y].push({
@@ -2391,38 +2862,57 @@ class Sprite {
     }
   }
 
+  /**
+   * @returns {String} The original text within the Sprite
+   */
   get text() {
     return this._text;
   }
 
+  /**
+   * @returns {number} The width of the Sprite
+   */
   get width() {
     return this._width;
   }
 
+  /**
+   * @returns {number} The height of the Sprite
+   */
   get height() {
     return this._height;
   }
 
   /**
-   * Returns a set containing the characters that should be replaced with a space.
+   * @returns {string} The set of characters in the Sprite which will be rendered as blanks.
    */
   get setAsBlank() {
     return this._setAsBlank;
   }
 
+  /**
+   * @returns {boolean} Whether or not spaces are rendered in the Sprite
+   */
   get spaceIsTransparent() {
     return this._spaceIsTransparent;
   }
 
+  /**
+   * @returns {boolean} Whether or not leading spaces are rendered
+   */
   get ignoreLeadingSpaces() {
     return this._ignoreLeadingSpaces;
   }
 
+  /**
+   * @returns {boolean} Whether or not the associated Style is still rendered, if spaceIsTransparent is true
+   */
   get spaceHasFormatting() {
     return this._spaceHasFormatting;
   }
 
   /**
+   * Iterates over the segments of the Sprite
    * 
    * @param {number} left The leftmost allowed column in sprite coordinates
    * @param {number} right 
@@ -2496,14 +2986,28 @@ class Sprite {
     }
   }
 
+  /**
+   * @private
+   * @param {string} c A string of length one
+   */
   _charHasFormatting(c) {
     return c !== " " || !this.spaceIsTransparent || this.spaceHasFormatting;
   }
 
+  /**
+   * @private
+   * @param {string} c
+   * @returns {boolean}
+   */
   _charHasText(c) {
     return c !== " " || !this.spaceIsTransparent;
   }
 
+  /**
+   * @private
+   * @param {string} c 
+   * @returns {boolean}
+   */
   _charState(c) {
     return this._charHasText(c) ? SegmentState.HAS_TEXT :
       this._charHasFormatting(c) ? SegmentState.HAS_FORMATTING :
@@ -2516,6 +3020,7 @@ class Sprite {
    * If the starting character has neither text nor formatting, returns 0.
    * 
    * TODO: REPLACE WITH METHOD THAT USES this._segments
+   * @deprecated
    */
   segmentLengthAt(x, y) {
     // TODO: Store this data?
@@ -2556,6 +3061,9 @@ class Sprite {
   }
 }
 
+/**
+ * @enum
+ */
 const SegmentState = {
   BLANK: 0,
   HAS_FORMATTING: 1,
@@ -2563,7 +3071,13 @@ const SegmentState = {
 };
 
 class Style {
+  /**
+   * Creates a new blank Style object
+   */
   constructor() {
+    /**
+     * @private
+     */
     this._styles = {};
     for (let styleName in Style.defaultValues) {
       this._styles[styleName] = null;
@@ -2572,14 +3086,15 @@ class Style {
   
   /**
    * Prevents this Style from being changed in the future.
-   * 
-   * Called by AsciiGL after the style has been inserted.
    */
   freeze() {
     Object.freeze(this._styles);
     Object.freeze(this);
   }
   
+  /**
+   * Resets all of the properties in the Style
+   */
   clear() {
     for (let styleName in Style.defaultValues) {
       this._styles[styleName] = null;
@@ -2588,6 +3103,8 @@ class Style {
   
   /**
    * Copies the data from the other Style object.
+   * 
+   * @param {Style} other The Style to copy from
    */
   copy(other) {
     this.clear();
@@ -2598,6 +3115,11 @@ class Style {
   
   // ---- PUBLIC API ---- // 
   
+  /**
+   * Checks if the two styles are the same
+   * @param {Style} other The Style to compare to
+   * @returns {boolean} True if they are the same, false otherwise
+   */
   sameAs(other) {
     for (let styleName in Style.defaultValues) {
       if (
@@ -2610,6 +3132,11 @@ class Style {
     return true;
   }
   
+  /**
+   * Sets a single property in the Style
+   * @param {string} styleName The name of the property to set
+   * @param {string} value The value to set to
+   */
   setStyle(styleName, value) {
     if (!(styleName in Style.defaultValues)) {
       console.warn("AsciiGL currently does not support the style", styleName);
@@ -2617,10 +3144,20 @@ class Style {
     this._styles[styleName] = value || null;
   }
   
+  /**
+   * Checks if the property is specified
+   * @param {string} styleName The name of a Style property
+   * @returns {boolean} True if the property is set, false otherwise
+   */
   hasStyle(styleName) {
     return this._styles[styleName] !== null;
   }
   
+  /**
+   * Returns the value of the a single Style property
+   * @param {string} styleName The name of the Style property
+   * @returns {string} The property value, or "" if it's not set
+   */
   getStyle(styleName) {
     if (this.hasStyle(styleName)) {
       return this._styles[styleName];
@@ -2645,6 +3182,8 @@ class Style {
    * Ensures that all formatting comes from the current sprite, not ones behind it.
    * 
    * The parameter, if passed, specifies the default values to use.
+   * 
+   * @param {Style} base The style to copy from
    */
   fillRemainder(base) {
     for (let styleName in Style.defaultValues) {
@@ -2659,6 +3198,9 @@ class Style {
   }
 }
 
+/**
+ * @enum {String} A list of supported style properties
+ */
 Style.defaultValues = {
   color: "black",
   backgroundColor: "transparent",
@@ -2668,6 +3210,11 @@ Style.defaultValues = {
   cursor: "default",
 };
 
+/**
+ * Sets the default property value for ALL Styles
+ * @param {string} styleName The style property
+ * @param {string} value The value to set to
+ */
 Style.setDefaultStyle = function(styleName, value) {
   if (styleName in Style.defaultValues) {
     // TODO: Verify value.
@@ -2688,6 +3235,11 @@ class SpriteBuilder {
     this._paramCount = templateArray.length - 1;
   }
   
+  /**
+   * Builds a new Sprite using the template and parameters.
+   * @param {Array<string>} paramArray The array of parameters used to build the new Sprite
+   * @returns {Sprite} A new Sprite
+   */
   construct(paramArray) {
     // TODO: Optimize.
     let result = "";
@@ -2702,6 +3254,11 @@ class SpriteBuilder {
 }
 
 class DOMBuffer {
+  /**
+   * A wrapper around the DOM elements which are rendered.
+   * 
+   * Maintains a virtual DOM for performance.
+   */
   constructor() {
     this.primaryElement = document.createElement("pre");
     this._width = 0;
@@ -2715,6 +3272,12 @@ class DOMBuffer {
     this.primaryElement.style.margin = "0";
   }
   
+  /**
+   * Initializes the DOMBuffer.
+   * Creates the necessary DOM elements and supporting data structures.
+   * @param {number} width The width of the canvas
+   * @param {number} height The height of the canvas
+   */
   init(width, height) {
     this._width = width;
     this._height = height;
@@ -2734,20 +3297,32 @@ class DOMBuffer {
     }
   }
   
+  /**
+   * @return {number} The width of the canvas
+   */
   get width() {
     return this._width;
   }
   
+  /**
+   * @return {number} The height of the canvas
+   */
   get height() {
     return this._height;
   }
   
+  /**
+   * @returns {HTMLElement} The primary HTML element which should be used for rendering.
+   */
   getDomElement() {
     return this.primaryElement;
   }
   
   /**
    * Causes the number of span elements attached to a row to change.
+   * 
+   * @param {number} row The row number
+   * @param {number} length The number of elements that should be used.
    */
   setRowLength(row, length) {
     if (length < this.activeRowLength[row]) {
@@ -2762,6 +3337,10 @@ class DOMBuffer {
     this.activeRowLength[row] = length;
   }
   
+  /**
+   * Loads rendering information from a DrawBuffer and updates the DOM.
+   * @param {DrawBuffer} drawBuffer The drawbuffer to get rendering information from
+   */
   bind(drawBuffer) {
     for (let y = 0; y < this.height; y ++) {
       let x = 0;
@@ -3124,28 +3703,65 @@ class AsciiGLInstance {
     
     outerContainer.appendChild(container);
     
+    /**
+     * @type {HTMLDivElement}
+     * @private
+     */
     this._container = container;
     
     // Have two so that only one is modified at any given time.
     // TODO: Later, do more testing on using 2 DOMBuffers.
+    /**
+     * @private
+     */
     this._domBuffer = new DOMBuffer();
     // For now, just use simple objects to hold.
+    /**
+     * @private
+     */
     this._nameBuffers = [{}, {}];
+    /**
+     * @private
+     */
     this._drawBufferIdx = 0;
+    /**
+     * @private
+     */
     this._activeBufferIdx = 1;
     
+    /**
+     * @private
+     */
     this._width = 0;
+    /**
+     * @private
+     */
     this._height = 0;
     
+    /**
+     * @private
+     */
     this._drawBuffer = new DrawBuffer();
     
+    /**
+     * @private
+     */
     this._currMouseOver = undefined;
+    /**
+     * @private
+     */
     this._currMouseDown = undefined;
+    /**
+     * @private
+     */
     this._handler = () => {};
   }
   
   /**
    * Initializes the pre element for rendering.
+   * 
+   * @param {number} width The width of the canvas in characters
+   * @param {number} height The height of the canvas in characters
    */
   init(width, height) {
     console.assert(width > 0 && height > 0, "AsciiGL must have positive dimensions.");
@@ -3241,6 +3857,10 @@ class AsciiGLInstance {
   
   /**
    * Converts mouse position viewport coordinates into asciiengine coordinates.
+   * 
+   * @param {number} mouseX The x-coordinate of the mouse in the canvas
+   * @param {number} mouseY The y-coordinate of the mouse in the canvas
+   * @returns {{x: number, y: number}} The coordinate of the mouse in AsciiGL
    */
   mousePositionToCoordinates(mouseX, mouseY) {
     // TODO: Find a more efficient method.
@@ -3256,22 +3876,41 @@ class AsciiGLInstance {
     this._activeBufferIdx = 1 - this._activeBufferIdx;
   }
   
+  /**
+   * @returns {number} The width of the canvas in characters
+   */
   get width() {
     return this._width;
   }
   
+  /**
+  * @returns {number} The height of the canvas in characters
+  */
   get height() {
     return this._height;
   }
   
+  /**
+   * @returns {Style} The current set of background style properties.
+   */
   get backgroundStyles() {
     return this._drawBuffer.backgroundStyle;
   }
   
+  /**
+   * Returns a single style property
+   * 
+   * @param {String} styleName The name of the style to return
+   */
   getBackgroundStyle(styleName) {
     return this._drawBuffer.backgroundStyle.getStyle(styleName);
   }
   
+  /**
+   * Sets a single background style property
+   * @param {String} styleName The name of the style to set
+   * @param {String} value The value to set to
+   */
   setBackgroundStyle(styleName, value) {
     this._drawBuffer.backgroundStyle.setStyle(styleName, value);
   }
@@ -3279,7 +3918,7 @@ class AsciiGLInstance {
   /**
    * Set by user code. handlerFunc is called when an AsciiGL mouse event occurs. 
    * 
-   * handlerFunc takes in (event, target, type, coords).
+   * handlerFunc takes in (event, type, target, coords).
    * event is the original MouseEvent object that triggered the AsiiGL event.
    * type is the name of the triggered event, with respect to AsciiGL.
    * target is the name of the element which the event was triggered on (may be undefined)
@@ -3298,6 +3937,7 @@ class AsciiGLInstance {
    * mouseup: Mousebutton is released in the AsciiGL canvas
    * click: A click event was registered in the AsciiGL canvas
    * 
+   * @param {(event: MouseEvent, type: String, target: String, coords: {x: number, y: number}) => void} handlerFunc The mouse handler function
    */
   setHandler(handlerFunc) {
     this._handler = handlerFunc;
@@ -3309,6 +3949,11 @@ class AsciiGLInstance {
    * Style determines what the text looks like.
    * name is optional, and allows it to be referenced in event listeners.
    * Different sprites may share the same name.
+   * 
+   * @param {Sprite} sprite The sprite to render
+   * @param {{x: number, y: number, z: number}} location The location to draw
+   * @param {Style} style How the sprite is styled
+   * @param {String} [name] A name associated with the sprite. Does not need to be unique.
    */
   draw(sprite, location, style, name) {
     let id = Functions.generateId(name);
@@ -3354,7 +3999,6 @@ const EventTypes = {
 };
 
 Object.freeze(EventTypes);
-
 
 const AsciiGL = {
   Instance: AsciiGLInstance,
@@ -3435,6 +4079,10 @@ class AsciiMouseInputModule {
 AsciiMouseInputModule.Global = Symbol("Global");
 
 const AssetLoader = {
+  /**
+   * 
+   * @param {string} filename The file name to load
+   */
   loadFileAsString: async function(filename) {
     let request = async function(filename) {
       return new Promise(function(resolve, reject) {
@@ -3470,6 +4118,11 @@ Object.freeze(AssetLoader);
  * These specify how to construct specific classes of AsciiAnimateComponents.
  */
 const Parser = {
+  /**
+   * 
+   * @param {string} fileString The file to load
+   * @returns {{sprites: Object<string, Sprite>, styles: Object<string, Style}}
+   */
   getSpriteData: function(fileString) {
     let json = JSON.parse(fileString);
     //  JSON structure:
@@ -3508,6 +4161,8 @@ const Parser = {
   },
   /**
    * Returns a function that builds AsciiAnimateComponents specified by fileString.
+   * @param {string} The file to load
+   * @returns {Object<string, AsciiAnimateComponentFactory>}
    */
   getComponentFactories: function(fileString) {
     let json = JSON.parse(fileString);
@@ -3554,23 +4209,45 @@ Object.freeze(Parser);
 
 class ResourceManager {
   constructor() {
+    /**
+     * @private
+     */
     this.data = {};
   }
   
+  /**
+   * 
+   * @param {string | symbol} key The key of the item to store
+   * @param {any} value The value to store
+   */
   add(key, value) {
     this.data[key] = value;
   }
   
+  /**
+   * Deletes an item
+   * @param {string | symbol} key 
+   */
   delete(key) {
     if (this.has(key)) {
       delete this.data[key];
     }
   }
   
+  /**
+   * 
+   * @param {string | symbol} key 
+   * @returns {boolean}
+   */
   has(key) {
     return key in this.data;
   }
   
+  /**
+   * 
+   * @param {string | symbol} key 
+   * @returns {any}
+   */
   get(key) {
     if (!(key in this.data)) {
       console.warn("Resource key: ", key, "not found");
@@ -3578,6 +4255,10 @@ class ResourceManager {
     return this.data[key];
   }
   
+  /**
+   * 
+   * @param {Array<string>} fileList 
+   */
   async loadSpriteFiles(fileList) {
     for (let spriteFile of fileList) {
       let fileString = await AssetLoader.loadFileAsString(spriteFile);
@@ -3592,6 +4273,10 @@ class ResourceManager {
     }
   }
   
+  /**
+   * 
+   * @param {Array<string>} fileList 
+   */
   async loadTemplateFiles(fileList) {
     for (let templateFile of fileList) {
       let fileString = await AssetLoader.loadFileAsString(templateFile);
@@ -3663,10 +4348,25 @@ class ButtonComponent extends Component {
   constructor() {
     super();
     
+    /**
+     * @type {Sprite} The sprite of the button.
+     */
     this.sprite = new Sprite("");
+    /**
+     * @type {string} The text color of the button
+     */
     this.textColor = undefined;
+    /**
+     * @type {string?} The background color of the button
+     */
     this.backgroundColor = undefined;
+    /**
+     * @type {string | undefined} The background color of the button when hovered
+     */
     this.hoverColor = undefined;
+    /**
+     * @type {string | undefined} The background color of the button when clicked
+     */
     this.activeColor = undefined;
   }
 }
@@ -3677,23 +4377,56 @@ class InputFieldComponent extends Component {
   constructor() {
     super();
 
+    /**
+     * @type {number}
+     */
     this.width = 0;
+    /**
+     * @type {number}
+     */
     this.height = 1;
 
+    /**
+     * @type {string}
+     */
     this.initialText = "";
 
+    /**
+     * @private
+     */
     this._currentText = "";
 
+    /**
+     * @type {string}
+     */
     this.textColor = undefined;
+    /**
+     * @type {string}
+     */
     this.backgroundColor = undefined;
+    /**
+     * @type {string}
+     */
     this.focusedColor = undefined;
+    /**
+     * @type {string}
+     */
     this.cursorColor = undefined;
 
+    /**
+     * @type {boolean}
+     */
     this.editable = false;
 
+    /**
+     * @type {number}
+     */
     this.maxLength = 0;
   }
 
+  /**
+   * @returns {boolean}
+   */
   get currentText() {
     return this._currentText;
   }
@@ -3705,11 +4438,26 @@ class TextBoxComponent extends Component {
   constructor() {
     super();
 
+    /**
+     * @type {string}
+     */
     this.text = "";
+    /**
+     * @type {number}
+     */
     this.width = 0;
+    /**
+     * @type {number}
+     */
     this.height = 1;
 
+    /**
+     * @type {string | undefined}
+     */
     this.textColor = undefined;
+    /**
+     * @type {string | undefined}
+     */
     this.backgroundColor = undefined;
   }
 }
@@ -3720,12 +4468,18 @@ class ButtonInternalComponent extends Component {
   constructor() {
     super();
 
+    /**
+     * @type {ButtonInternalComponent.MouseStates}
+     */
     this.mouseState = ButtonInternalComponent.MouseStates.Default;
   }
 }
 
 ButtonInternalComponent.type = "AsciiButtonInternal";
 
+/**
+ * @enum {string} 
+ */
 ButtonInternalComponent.MouseStates = {
   Default: "Default",
   Hover: "Hover",
@@ -3736,19 +4490,55 @@ class ButtonSystem extends System {
   constructor() {
     super("Buttons");
 
+    /**
+     * @private
+     */
     this._handleMouseClick = this._handleMouseClick.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseEnter = this._handleMouseEnter.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseLeave = this._handleMouseLeave.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseDown = this._handleMouseDown.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseUp = this._handleMouseUp.bind(this);
 
+    /**
+     * @private
+     */
     this.buttonEntities = {};
+    /**
+     * @private
+     */
     this.buttonSubentities = {};
+    /**
+     * @private
+     */
     this.childMap = {};
 
+    /**
+     * @type {string}
+     */
     this.defaultTextColor = "#222222";
+    /**
+     * @type {string}
+     */
     this.defaultBackgroundColor = "#dddddd";
+    /**
+     * @type {string}
+     */
     this.defaultHoverColor = "#bbbbbb";
+    /**
+     * @type {string}
+     */
     this.defaultActiveColor = "#aaaaaa";
   }
 
@@ -3796,6 +4586,7 @@ class ButtonSystem extends System {
 
   /**
    * Initializes a button.
+   * @private
    * @param {Entity} entity An Entity, which should hold a ButtonComponent 
    *    containing all the data needed to initialize the button.
    */
@@ -3851,6 +4642,7 @@ class ButtonSystem extends System {
   /**
    * Performs cleanup operations when a button is removed.
    * For now, removes event listeners.
+   * @private
    * @param {Entity} entity The parent entity being removed.
    */
   _deconstructButtonSubentities(entity) {
@@ -3862,11 +4654,23 @@ class ButtonSystem extends System {
     this.unsubscribe(["MouseEvent", childId, "mouseup"]);
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseClick(_event, descriptor) {
     let parentId = this.buttonSubentities[descriptor[1]].getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "click"]);
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseEnter(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -3876,6 +4680,12 @@ class ButtonSystem extends System {
     buttonInternalComponent.mouseState = ButtonInternalComponent.MouseStates.Hover;
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseLeave(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -3885,6 +4695,12 @@ class ButtonSystem extends System {
     buttonInternalComponent.mouseState = ButtonInternalComponent.MouseStates.Default;
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseDown(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -3895,6 +4711,12 @@ class ButtonSystem extends System {
 
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseUp(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -4076,16 +4898,31 @@ class InputFieldSystem extends System {
   constructor() {
     super("InputFields");
 
+    /**
+     * @private
+     */
     this.parentEntities = {};
     this.childEntities = {};
+    /**
+     * @private
+     */
     this.childMap = {};
+    /**
+     * @private
+     */
 
     this.defaultTextColor = "#222222";
     this.defaultBackgroundColor = "#dddddd";
     this.defaultFocusedColor = "#bbbbbb";
     this.defaultCursorColor = "#888888";
 
+    /**
+     * @private
+     */
     this.cursorEntity = new Entity("AsciiCursor");
+    /**
+     * @private
+     */
     this.cursorComponent = new CursorComponent();
     this.cursorEntity.setComponent(this.cursorComponent);
 
@@ -4109,9 +4946,18 @@ class InputFieldSystem extends System {
     cursorRenderComponent.dataIsLocal = true;
     this.cursorEntity.setComponent(cursorRenderComponent);
 
+    /**
+     * @private
+     */
     this._focusSet = this._focusSet.bind(this);
+    /**
+     * @private
+     */
     this._focusLost = this._focusLost.bind(this);
 
+    /**
+     * @private
+     */
     this._handleMouseClick = this._handleMouseClick.bind(this);
   }
 
@@ -4205,6 +5051,7 @@ class InputFieldSystem extends System {
    * Performs setup work for a newly registered Text Field.
    * The child entity should only be managed by TextFieldSystem. 
    * @param {Entity} entity The newly added entity to initialize
+   * @private
    */
   _constructChildEntity(entity) {
     let textFieldData = entity.getComponent(InputFieldComponent.type);
@@ -4266,6 +5113,10 @@ class InputFieldSystem extends System {
     this.subscribe(["MouseEvent", child.id, "click"], this._handleMouseClick);
   }
 
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   _deconstructChildEntity(entity) {
     let childId = this.childMap[entity.id];
     this.unsubscribe(["InputHandlerFocusEvent", childId]);
@@ -4273,6 +5124,10 @@ class InputFieldSystem extends System {
     this.postMessage(["InputHandlerRequest", "RemoveFocusable"], childId);
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _focusSet(body) {
     let focusedEntityId = body.entityId;
     this.cursorComponent.placedEntityKey = focusedEntityId;
@@ -4283,6 +5138,10 @@ class InputFieldSystem extends System {
     this._markChildEntityChanged(focusedEntityId);
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _focusLost() {
     this._markChildEntityChanged(this.cursorComponent.placedEntityKey);
     this.cursorComponent.placedEntityKey = undefined;
@@ -4290,6 +5149,10 @@ class InputFieldSystem extends System {
     cursorRender.visible = false;
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _handleMouseClick(body) {
     if (this.cursorComponent.placedEntityKey) {
       let placedEntity = this.childEntities[this.cursorComponent.placedEntityKey];
@@ -4311,12 +5174,20 @@ class InputFieldSystem extends System {
       clickPosition.y - targetPosition.y);
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _markChildEntityChanged(entityId) {
     let childEntity = this.childEntities[entityId];
     let internalComponent = childEntity.getComponent(InputFieldInternalComponent.type);
     internalComponent.changed = true;
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _getChildGlobalPositionComponent(childId) {
     let childEntity = this.childEntities[childId];
     let parentEntity = childEntity.getParent();
@@ -4336,11 +5207,26 @@ class TextBoxSystem extends System {
   constructor() {
     super("TextBox");
 
+    /**
+     * @private
+     */
     this.parentEntities = {};
+    /**
+     * @private
+     */
     this.childEntities = {};
+    /**
+     * @private
+     */
     this.childMap = {};
-
+    
+    /**
+     * @type {string} 
+     */
     this.defaultTextColor = "#000000";
+    /**
+     * @type {string} 
+     */
     this.defaultBackgroundColor = "#ffffff";
   }
 
@@ -4376,6 +5262,10 @@ class TextBoxSystem extends System {
     }
   }
 
+  /**
+   * 
+   * @param {Entity} entity 
+   */
   remove(entity) {
     if (entity.id in this.parentEntities) {
       this._deconstructChildEntity(entity);
@@ -4392,7 +5282,8 @@ class TextBoxSystem extends System {
 
   /**
    * 
-   * @param {Entity} parentEntity 
+   * @private
+   * @param {Entity} parentEntity
    */
   _constructChildEntity(parentEntity) {
     let textBoxData = parentEntity.getComponent(TextBoxComponent.type);

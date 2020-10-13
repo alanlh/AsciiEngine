@@ -10,7 +10,10 @@
  */
 export default class KeyboardInputModule {
   constructor() {
-    /** @type {Set<KeyboardEventHandler>} */
+    /**
+     * @type {Set<KeyboardEventHandler>}
+     * @private
+     */
     this.handlers = new Set();
 
     for (let eventType in KeyboardInputModule.EventTypes) {

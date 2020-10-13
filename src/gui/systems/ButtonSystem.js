@@ -11,19 +11,55 @@ export default class ButtonSystem extends System {
   constructor() {
     super("Buttons");
 
+    /**
+     * @private
+     */
     this._handleMouseClick = this._handleMouseClick.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseEnter = this._handleMouseEnter.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseLeave = this._handleMouseLeave.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseDown = this._handleMouseDown.bind(this);
+    /**
+     * @private
+     */
     this._handleMouseUp = this._handleMouseUp.bind(this);
 
+    /**
+     * @private
+     */
     this.buttonEntities = {};
+    /**
+     * @private
+     */
     this.buttonSubentities = {};
+    /**
+     * @private
+     */
     this.childMap = {};
 
+    /**
+     * @type {string}
+     */
     this.defaultTextColor = "#222222";
+    /**
+     * @type {string}
+     */
     this.defaultBackgroundColor = "#dddddd";
+    /**
+     * @type {string}
+     */
     this.defaultHoverColor = "#bbbbbb";
+    /**
+     * @type {string}
+     */
     this.defaultActiveColor = "#aaaaaa";
   }
 
@@ -71,6 +107,7 @@ export default class ButtonSystem extends System {
 
   /**
    * Initializes a button.
+   * @private
    * @param {Entity} entity An Entity, which should hold a ButtonComponent 
    *    containing all the data needed to initialize the button.
    */
@@ -126,6 +163,7 @@ export default class ButtonSystem extends System {
   /**
    * Performs cleanup operations when a button is removed.
    * For now, removes event listeners.
+   * @private
    * @param {Entity} entity The parent entity being removed.
    */
   _deconstructButtonSubentities(entity) {
@@ -137,11 +175,23 @@ export default class ButtonSystem extends System {
     this.unsubscribe(["MouseEvent", childId, "mouseup"]);
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseClick(_event, descriptor) {
     let parentId = this.buttonSubentities[descriptor[1]].getParent().id;
     this.postMessage(["AsciiButtonElement", parentId, "click"]);
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseEnter(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -151,6 +201,12 @@ export default class ButtonSystem extends System {
     buttonInternalComponent.mouseState = ButtonInternalComponent.MouseStates.Hover;
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseLeave(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -160,6 +216,12 @@ export default class ButtonSystem extends System {
     buttonInternalComponent.mouseState = ButtonInternalComponent.MouseStates.Default;
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseDown(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];
@@ -170,6 +232,12 @@ export default class ButtonSystem extends System {
 
   }
 
+  /**
+   * 
+   * @private
+   * @param {any} _event The event body
+   * @param {Array<string>} descriptor The event descriptor
+   */
   _handleMouseUp(_event, descriptor) {
     let childId = descriptor[1];
     let childEntity = this.buttonSubentities[childId];

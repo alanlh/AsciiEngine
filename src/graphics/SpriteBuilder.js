@@ -11,6 +11,11 @@ export default class SpriteBuilder {
     this._paramCount = templateArray.length - 1;
   }
   
+  /**
+   * Builds a new Sprite using the template and parameters.
+   * @param {Array<string>} paramArray The array of parameters used to build the new Sprite
+   * @returns {Sprite} A new Sprite
+   */
   construct(paramArray) {
     // TODO: Optimize.
     let result = "";

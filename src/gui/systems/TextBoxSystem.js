@@ -13,11 +13,26 @@ export default class TextBoxSystem extends System {
   constructor() {
     super("TextBox");
 
+    /**
+     * @private
+     */
     this.parentEntities = {};
+    /**
+     * @private
+     */
     this.childEntities = {};
+    /**
+     * @private
+     */
     this.childMap = {};
-
+    
+    /**
+     * @type {string} 
+     */
     this.defaultTextColor = "#000000";
+    /**
+     * @type {string} 
+     */
     this.defaultBackgroundColor = "#ffffff";
   }
 
@@ -53,6 +68,10 @@ export default class TextBoxSystem extends System {
     }
   }
 
+  /**
+   * 
+   * @param {Entity} entity 
+   */
   remove(entity) {
     if (entity.id in this.parentEntities) {
       this._deconstructChildEntity(entity);
@@ -69,7 +88,8 @@ export default class TextBoxSystem extends System {
 
   /**
    * 
-   * @param {Entity} parentEntity 
+   * @private
+   * @param {Entity} parentEntity
    */
   _constructChildEntity(parentEntity) {
     let textBoxData = parentEntity.getComponent(TextBoxComponent.type);

@@ -22,16 +22,31 @@ export default class InputFieldSystem extends System {
   constructor() {
     super("InputFields");
 
+    /**
+     * @private
+     */
     this.parentEntities = {};
     this.childEntities = {};
+    /**
+     * @private
+     */
     this.childMap = {};
+    /**
+     * @private
+     */
 
     this.defaultTextColor = "#222222";
     this.defaultBackgroundColor = "#dddddd";
     this.defaultFocusedColor = "#bbbbbb";
     this.defaultCursorColor = "#888888";
 
+    /**
+     * @private
+     */
     this.cursorEntity = new Entity("AsciiCursor");
+    /**
+     * @private
+     */
     this.cursorComponent = new CursorComponent();
     this.cursorEntity.setComponent(this.cursorComponent);
 
@@ -55,9 +70,18 @@ export default class InputFieldSystem extends System {
     cursorRenderComponent.dataIsLocal = true;
     this.cursorEntity.setComponent(cursorRenderComponent);
 
+    /**
+     * @private
+     */
     this._focusSet = this._focusSet.bind(this);
+    /**
+     * @private
+     */
     this._focusLost = this._focusLost.bind(this);
 
+    /**
+     * @private
+     */
     this._handleMouseClick = this._handleMouseClick.bind(this);
   }
 
@@ -151,6 +175,7 @@ export default class InputFieldSystem extends System {
    * Performs setup work for a newly registered Text Field.
    * The child entity should only be managed by TextFieldSystem. 
    * @param {Entity} entity The newly added entity to initialize
+   * @private
    */
   _constructChildEntity(entity) {
     let textFieldData = entity.getComponent(InputFieldComponent.type);
@@ -212,6 +237,10 @@ export default class InputFieldSystem extends System {
     this.subscribe(["MouseEvent", child.id, "click"], this._handleMouseClick);
   }
 
+  /**
+   * @private
+   * @param {Entity} entity 
+   */
   _deconstructChildEntity(entity) {
     let childId = this.childMap[entity.id];
     this.unsubscribe(["InputHandlerFocusEvent", childId]);
@@ -219,6 +248,10 @@ export default class InputFieldSystem extends System {
     this.postMessage(["InputHandlerRequest", "RemoveFocusable"], childId);
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _focusSet(body) {
     let focusedEntityId = body.entityId;
     this.cursorComponent.placedEntityKey = focusedEntityId;
@@ -229,6 +262,10 @@ export default class InputFieldSystem extends System {
     this._markChildEntityChanged(focusedEntityId);
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _focusLost() {
     this._markChildEntityChanged(this.cursorComponent.placedEntityKey);
     this.cursorComponent.placedEntityKey = undefined;
@@ -236,6 +273,10 @@ export default class InputFieldSystem extends System {
     cursorRender.visible = false;
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _handleMouseClick(body) {
     if (this.cursorComponent.placedEntityKey) {
       let placedEntity = this.childEntities[this.cursorComponent.placedEntityKey];
@@ -257,12 +298,20 @@ export default class InputFieldSystem extends System {
       clickPosition.y - targetPosition.y);
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _markChildEntityChanged(entityId) {
     let childEntity = this.childEntities[entityId];
     let internalComponent = childEntity.getComponent(InputFieldInternalComponent.type);
     internalComponent.changed = true;
   }
 
+  /**
+   * @private
+   * @param {any} entity 
+   */
   _getChildGlobalPositionComponent(childId) {
     let childEntity = this.childEntities[childId];
     let parentEntity = childEntity.getParent();

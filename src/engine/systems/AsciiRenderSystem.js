@@ -9,6 +9,9 @@ export default class AsciiRenderSystem extends SetSystem {
     super(name || "AsciiRender");
     // Use the default Set container for all entities.
     
+    /**
+     * @private
+     */
     this._asciiGl = null;
   }
   
@@ -27,7 +30,7 @@ export default class AsciiRenderSystem extends SetSystem {
    * Only render after the main loop.
    */
   postUpdate() {
-    let resourceManager = this.getEngine().getModule(ModuleSlots.ResourceManager);
+    let resourceManager = this.getEngine().getModule(ModuleSlots.Resources);
     
     for (let entity of this.entities) {
       let renderComponent = entity.getComponent(AsciiRenderComponent.type) || entity.getComponent(AsciiAnimateComponent.type);

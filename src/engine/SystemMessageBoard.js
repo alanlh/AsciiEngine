@@ -20,31 +20,49 @@ export default class MessageBoard {
     /**
      * Keeps track of the information associated with each key.
      * @type {Object.<ListenerKey, ListenerInfo>}
+     * @private
      */
     this._listeners = {};
     /**
      * Keeps track of the events each system is listening to,
      * @type {Object.<string, RootedSearchTreeNode<ListenerKey>>}
+     * @private
      */
     this._subscribers = {};
     /** 
      * Keeps track of the event descriptorss that can trigger an event. 
      * @type {RootedSearchTreeNode<ListenerKey>} 
+     * @private
      */
     this._descriptors = new RootedSearchTreeNode();
 
     /**
      * @type {Queue<Message>}
+     * @private
      */
     this._messageQueue = new Queue();
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._processImmediately = false;
+    /**
+     * @type {boolean}
+     * @private
+     */
     this._currentlyProcessing = false;
   }
 
+  /**
+   * @returns {boolean} True if should process immediately
+   */
   get processImmediately() {
     return this._processImmediately;
   }
 
+  /**
+   * @param {boolean}
+   */
   set processImmediately(value) {
     this._processImmediately = !!value;
     if (this._processImmediately) {
@@ -108,7 +126,7 @@ export default class MessageBoard {
    * @param {string} sender The sender system's name
    * @param {Array<string>} descriptor The path descriptor of the event, in increasing specificity
    * @param {any} body The event body
-   * @param {string?} target The target system's name, or undefined for all systems
+   * @param {string} [target] The target system's name, or undefined for all systems
    */
   post(sender, descriptor, body, target) {
     this._messageQueue.enqueue([

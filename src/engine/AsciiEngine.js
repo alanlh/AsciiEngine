@@ -5,20 +5,50 @@ export default class Engine {
   /**
    * The overall container for an AsciiEngine instance.
    * 
-   * @param {Object} config The configurations for the Engine 
+   * @param {Object} [config] The configurations for the Engine 
    * (including EntityManager and SystemManager).
    */
   constructor(config) {
+    /**
+     * @type {boolean} Whether or not the engine is initialized.
+     * @private 
+     */
     this._initialized = false;
 
+    /**
+     * @type {EntityManager}
+     * @private
+     */
     this._entityManager = new EntityManager(this);
 
+    /**
+     * @type {SystemManager}
+     * @private
+     */
     this._systemManager = new SystemManager(this);
 
+    /**
+     * @type {Object<string | symbol, any>}
+     * @private
+     */
     this._modules = {};
 
+    /**
+     * @type {number}
+     * @private
+     */
     this._millisecPerUpdate = 1000; // Default to 1 FPS
+
+    /**
+     * @type {number}
+     * @private
+     */
     this._intervalKey = undefined;
+
+    /**
+     * @type {number}
+     * @private
+     */
     this._delta = 0;
   }
 
@@ -36,20 +66,34 @@ export default class Engine {
     return this._systemManager;
   }
 
+  /**
+   * @returns {Object.<string | symbol, any>}
+   */
   get modules() {
     return this._modules;
   }
 
+  /**
+   * 
+   * @param {string | symbol} type The name of the module being added
+   * @param {any} module The module
+   */
   setModule(type, module) {
     this.modules[type] = module;
   }
 
+  /**
+   * Returns a module
+   * @param {string | symbol} type The name of the module to retrieve
+   * @returns {any}
+   */
   getModule(type) {
     return this.modules[type];
   }
 
   /**
    * Currently unused. TODO: Remove?
+   * @deprecated
    */
   applyModuleConfig(config) {
     for (let type in this._modules) {
@@ -67,7 +111,7 @@ export default class Engine {
 
   /**
    * Starts the game loop
-   * @param {number} updateRate Number of milliseconds between updates
+   * @param {number} [updateRate] Number of milliseconds between updates
    */
   startLoop(updateRate) {
     if (updateRate !== undefined) {
@@ -76,6 +120,9 @@ export default class Engine {
     this._intervalKey = setInterval(() => { this.update() }, this._millisecPerUpdate);
   }
 
+  /**
+   * Pauses the game loop.
+   */
   pauseLoop() {
     clearInterval(this._intervalKey);
     this._intervalKey = undefined;
