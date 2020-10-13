@@ -14,11 +14,19 @@ import AsciiAnimateComponent from "../engine/components/AsciiAnimateComponent.js
 const Parser = {
   /**
    * 
-   * @param {string} fileString The file to load
+   * @param {string} fileString The file data as a string
    * @returns {{sprites: Object<string, Sprite>, styles: Object<string, Style}}
    */
-  getSpriteData: function(fileString) {
+  getSpriteDataFromString: function (fileString) {
     let json = JSON.parse(fileString);
+    Parser.getSpriteDataFromJson(json);
+  },
+
+  /**
+   * 
+   * @param {any} json The sprite data as json
+   */
+  getSpriteDataFromJson: function (json) {
     //  JSON structure:
     //  {
     //    sprites: {
@@ -55,11 +63,18 @@ const Parser = {
   },
   /**
    * Returns a function that builds AsciiAnimateComponents specified by fileString.
-   * @param {string} The file to load
+   * @param {string} fileString The file data as a string
    * @returns {Object<string, AsciiAnimateComponentFactory>}
    */
-  getComponentFactories: function(fileString) {
+  getComponentFactoriesFromString: function (fileString) {
     let json = JSON.parse(fileString);
+    Parser.getComponentFactoriesFromJson(json);
+  },
+  /**
+   * 
+   * @param {any} json The component factory data in json format
+   */
+  getComponentFactoriesFromJson: function(json) {
     // JSON structure:
     // {
     //    componentName: {
@@ -81,9 +96,15 @@ const Parser = {
 
 class AsciiAnimateComponentFactory {
   constructor(componentSpecs) {
+    /**
+     * @private
+     */
     this.specs = componentSpecs;
   }
   
+  /**
+   * @returns {AsciiAnimateComponent}
+   */
   construct() {
     let animateComponent = new AsciiAnimateComponent();
     for (let frameName in this.specs) {

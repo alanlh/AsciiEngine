@@ -4120,11 +4120,19 @@ Object.freeze(AssetLoader);
 const Parser = {
   /**
    * 
-   * @param {string} fileString The file to load
+   * @param {string} fileString The file data as a string
    * @returns {{sprites: Object<string, Sprite>, styles: Object<string, Style}}
    */
-  getSpriteData: function(fileString) {
+  getSpriteDataFromString: function (fileString) {
     let json = JSON.parse(fileString);
+    Parser.getSpriteDataFromJson(json);
+  },
+
+  /**
+   * 
+   * @param {any} json The sprite data as json
+   */
+  getSpriteDataFromJson: function (json) {
     //  JSON structure:
     //  {
     //    sprites: {
@@ -4161,11 +4169,18 @@ const Parser = {
   },
   /**
    * Returns a function that builds AsciiAnimateComponents specified by fileString.
-   * @param {string} The file to load
+   * @param {string} fileString The file data as a string
    * @returns {Object<string, AsciiAnimateComponentFactory>}
    */
-  getComponentFactories: function(fileString) {
+  getComponentFactoriesFromString: function (fileString) {
     let json = JSON.parse(fileString);
+    Parser.getComponentFactoriesFromJson(json);
+  },
+  /**
+   * 
+   * @param {any} json The component factory data in json format
+   */
+  getComponentFactoriesFromJson: function(json) {
     // JSON structure:
     // {
     //    componentName: {
@@ -4187,9 +4202,15 @@ const Parser = {
 
 class AsciiAnimateComponentFactory {
   constructor(componentSpecs) {
+    /**
+     * @private
+     */
     this.specs = componentSpecs;
   }
   
+  /**
+   * @returns {AsciiAnimateComponent}
+   */
   construct() {
     let animateComponent = new AsciiAnimateComponent();
     for (let frameName in this.specs) {
@@ -4262,14 +4283,22 @@ class ResourceManager {
   async loadSpriteFiles(fileList) {
     for (let spriteFile of fileList) {
       let fileString = await AssetLoader.loadFileAsString(spriteFile);
-      let spriteData = Parser.getSpriteData(fileString);
-      for (let spriteName in spriteData.sprites) {
-        this.add(spriteName, spriteData.sprites[spriteName]);
-      }
-      
-      for (let styleName in spriteData.styles) {
-        this.add(styleName, spriteData.styles[styleName]);
-      }
+      this.loadSpriteFileJson(JSON.parse(fileString));
+    }
+  }
+
+  /**
+   * Loads JSON which contains sprite/style data from one file
+   * @param {Object} json 
+   */
+  loadSpriteFileJson(json) {
+    let spriteData = Parser.getSpriteDataFromJson(json);
+    for (let spriteName in spriteData.sprites) {
+      this.add(spriteName, spriteData.sprites[spriteName]);
+    }
+
+    for (let styleName in spriteData.styles) {
+      this.add(styleName, spriteData.styles[styleName]);
     }
   }
   
@@ -4280,10 +4309,18 @@ class ResourceManager {
   async loadTemplateFiles(fileList) {
     for (let templateFile of fileList) {
       let fileString = await AssetLoader.loadFileAsString(templateFile);
-      let templateData = Parser.getComponentFactories(fileString);
-      for (let templateName in templateData) {
-        this.add(templateName, templateData[templateName]);
-      }
+      this.loadTemplateJson(JSON.parse(fileString));
+    }
+  }
+
+  /**
+   * 
+   * @param {Object} json The json data for one template
+   */
+  loadTemplateJson(json) {
+    let templateData = Parser.getComponentFactoriesFromJson(json);
+    for (let templateName in templateData) {
+      this.add(templateName, templateData[templateName]);
     }
   }
 }
