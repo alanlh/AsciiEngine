@@ -1,13 +1,35 @@
 export default class System {
+  /**
+   * 
+   * @param {string} name The name of the System
+   */
   constructor(name) {
+    /**
+     * @private
+     */
     this._engine = undefined;
+    /**
+     * @private
+     */
     this._systemManager = undefined;
+    /**
+     * @private
+     */
     this._entityManager = undefined;
     
+    /**
+     * @private
+     */
     this._name = name;
     
+    /**
+     * @private
+     */
     this._priority = 0;
     
+    /**
+     * @private
+     */
     this._active = false;
   }
   

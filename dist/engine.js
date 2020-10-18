@@ -675,7 +675,7 @@ class EntityManager {
    * Does not have an associated 
    * 
    * @param {Entity} entity The entity to add.
-   * @param {String} parent The parent to add the entity under. If undefined, 
+   * @param {String} [parent] The parent to add the entity under. If undefined, 
    * then the entity is added as a root node.
    */
   requestAddEntity(entity, parent) {
@@ -833,15 +833,37 @@ class EntityManager {
 }
 
 class System {
+  /**
+   * 
+   * @param {string} name The name of the System
+   */
   constructor(name) {
+    /**
+     * @private
+     */
     this._engine = undefined;
+    /**
+     * @private
+     */
     this._systemManager = undefined;
+    /**
+     * @private
+     */
     this._entityManager = undefined;
     
+    /**
+     * @private
+     */
     this._name = name;
     
+    /**
+     * @private
+     */
     this._priority = 0;
     
+    /**
+     * @private
+     */
     this._active = false;
   }
   
