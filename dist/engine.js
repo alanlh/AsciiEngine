@@ -2100,10 +2100,37 @@ class PositionComponent extends Component {
 
 PositionComponent.type = "PositionComponent";
 
+class AsciiAnimateComponentFactory {
+  constructor(componentSpecs) {
+    /**
+     * @private
+     */
+    this.specs = componentSpecs;
+  }
+
+  /**
+   * @returns {AsciiAnimateComponent}
+   */
+  construct() {
+    let animateComponent = new AsciiAnimateComponent();
+    for (let frameName in this.specs) {
+      // Need to create a copy to prevent (accidental?) changes.
+      animateComponent.addFrame(
+        frameName,
+        [...(this.specs[frameName].spriteNameList)],
+        [...(this.specs[frameName].styleNameList)],
+        [...(this.specs[frameName].relativePositionList)],
+      );
+    }
+    return animateComponent;
+  }
+}
+
 const Components = {
   AsciiRender: AsciiRenderComponent,
   AsciiAnimate: AsciiAnimateComponent,
   Position: PositionComponent,
+  AsciiAnimateFactory: AsciiAnimateComponentFactory,
 };
 
 Object.freeze(Components);
@@ -4222,32 +4249,6 @@ const Parser = {
   }
 };
 
-class AsciiAnimateComponentFactory {
-  constructor(componentSpecs) {
-    /**
-     * @private
-     */
-    this.specs = componentSpecs;
-  }
-  
-  /**
-   * @returns {AsciiAnimateComponent}
-   */
-  construct() {
-    let animateComponent = new AsciiAnimateComponent();
-    for (let frameName in this.specs) {
-      // Need to create a copy to prevent (accidental?) changes.
-      animateComponent.addFrame(
-        frameName,
-        [...(this.specs[frameName].spriteNameList)],
-        [...(this.specs[frameName].styleNameList)],
-        [...(this.specs[frameName].relativePositionList)],
-      );
-    }
-    return animateComponent;
-  }
-}
-
 Object.freeze(Parser);
 
 class ResourceManager {
@@ -5418,7 +5419,6 @@ const AsciiEngine = {
   ModuleSlots: ModuleSlots,
   GL: AsciiGL,
   Gui: GuiElements,
-  Utility: Utility,
 };
 
 export default AsciiEngine;

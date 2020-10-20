@@ -22,7 +22,6 @@ const AsciiEngine = {
   ModuleSlots: ModuleSlots,
   GL: AsciiGL,
   Gui: GuiElements,
-  Utility: Utility,
 }
 
 export default AsciiEngine;

@@ -1,6 +1,6 @@
 import Sprite from "../graphics/Sprite.js";
 import Style from "../graphics/Style.js";
-import AsciiAnimateComponent from "../engine/components/AsciiAnimateComponent.js";
+import AsciiAnimateComponentFactory from "../engine/components/AsciiAnimateComponentFactory.js";
 
 /**
  * There are two main types of files to parse.
@@ -91,32 +91,6 @@ const Parser = {
       factories[componentName] = new AsciiAnimateComponentFactory(componentSpecs);
     }
     return factories;
-  }
-}
-
-class AsciiAnimateComponentFactory {
-  constructor(componentSpecs) {
-    /**
-     * @private
-     */
-    this.specs = componentSpecs;
-  }
-  
-  /**
-   * @returns {AsciiAnimateComponent}
-   */
-  construct() {
-    let animateComponent = new AsciiAnimateComponent();
-    for (let frameName in this.specs) {
-      // Need to create a copy to prevent (accidental?) changes.
-      animateComponent.addFrame(
-        frameName,
-        [...(this.specs[frameName].spriteNameList)],
-        [...(this.specs[frameName].styleNameList)],
-        [...(this.specs[frameName].relativePositionList)],
-      )
-    }
-    return animateComponent;
   }
 }
 
