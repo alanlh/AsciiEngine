@@ -2223,6 +2223,10 @@ const ModuleSlots = {
 };
 
 class AsciiRenderSystem extends SetSystem {
+  /**
+   * 
+   * @param {string} [name] The name for the system. "AsciiRender" by default
+   */
   constructor(name) {
     super(name || "AsciiRender");
     // Use the default Set container for all entities.
@@ -2310,6 +2314,10 @@ AsciiRenderSystem.type = "AsciiRenderSystem";
  * If no entity is focused, keyboard events will be sent to all systems
  */
 class AsciiInputHandlerSystem extends System {
+  /**
+   * 
+   * @param {string} [name] The name for the system. "AsciiInputHandler" by default
+   */
   constructor(name) {
     super(name || "AsciiInputHandler");
     // TODO: Do we actually need to keep track of this?

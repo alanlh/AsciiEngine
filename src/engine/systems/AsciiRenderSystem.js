@@ -5,6 +5,10 @@ import PositionComponent from "../components/PositionComponent.js";
 import ModuleSlots from "../modules/ModuleSlots.js";
 
 export default class AsciiRenderSystem extends SetSystem {
+  /**
+   * 
+   * @param {string} [name] The name for the system. "AsciiRender" by default
+   */
   constructor(name) {
     super(name || "AsciiRender");
     // Use the default Set container for all entities.

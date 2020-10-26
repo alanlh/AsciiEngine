@@ -17,6 +17,10 @@ import ModuleSlots from "../modules/ModuleSlots.js";
  * If no entity is focused, keyboard events will be sent to all systems
  */
 export default class AsciiInputHandlerSystem extends System {
+  /**
+   * 
+   * @param {string} [name] The name for the system. "AsciiInputHandler" by default
+   */
   constructor(name) {
     super(name || "AsciiInputHandler");
     // TODO: Do we actually need to keep track of this?
