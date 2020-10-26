@@ -115,9 +115,13 @@ export default class SystemManager {
    * @param {Boolean} [delay] If true, the System is guaranteed to not run until the next cycle.
    */
   addSystem(system, priority, delay) {
+    if (system.name in this._systems) {
+
+    }
     priority = priority || 0;
     this._systems[system.name] = system;
     this._activeSystems.add(priority, system);
+    this._systemPriorities[system.name] = priority;
     system.init(this);
     
     // If the game has already started, then all existing entities need to be registered with the system.
@@ -143,6 +147,7 @@ export default class SystemManager {
         this._activeSystems.delete(priority, system);
       }
       delete this._systems[name];
+      delete this._systemPriorities[name];
       system.destroy();
     }
   }
