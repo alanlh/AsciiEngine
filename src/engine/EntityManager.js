@@ -91,7 +91,7 @@ export default class EntityManager {
   /**
    * Run after each game loop.
    */
-  processEntityOperations() {
+  postUpdateCleanup() {
     while (!this._entityOperations.empty) {
       let nextOp = this._entityOperations.dequeue();
       this[nextOp.operation](nextOp.target, ...nextOp.args);

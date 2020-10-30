@@ -149,7 +149,7 @@ export default class Engine {
     }
     this._systemManager.getMessageBoard().processMessages();
     // Update Entity/System Managers.
-    this.getEntityManager().processEntityOperations();
-    this.getSystemManager().processEntityOperations();
+    this.getEntityManager().postUpdateCleanup();
+    this.getSystemManager().postUpdateCleanup();
   }
 }
