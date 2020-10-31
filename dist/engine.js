@@ -1188,27 +1188,27 @@ class RootedSearchTreeNode {
       }
       this.size -= deleted;
       for (let childKey in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, childKey);
+        deleted += this._deleteHelper(path, index, value, childKey);
       }
       if (MATCH_ANY in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+        deleted += this._deleteHelper(path, index, value, MATCH_ANY);
       }
       return deleted;
     }
     if (path[index] === undefined) {
       for (let key in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, key);
+        deleted += this._deleteHelper(path, index, value, key);
       }
       if (MATCH_ANY in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+        deleted += this._deleteHelper(path, index, value, MATCH_ANY);
       }
       return deleted;
     }
     if (path[index] in this.children) {
-      deleted += this._deleteHelper(path, index + 1, value, path[index]);
+      deleted += this._deleteHelper(path, index, value, path[index]);
     }
     if (MATCH_ANY in this.children) {
-      deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+      deleted += this._deleteHelper(path, index, value, MATCH_ANY);
     }
     return deleted;
   }
@@ -1646,7 +1646,7 @@ class SystemManager {
    * Alerts all changes to the Systems.
    * @private
    */
-  _postUpdateCleanup() {
+  postUpdateCleanup() {
     this._processEntityUpdates();
     this._updateSystemStatuses();
   }
@@ -4509,15 +4509,23 @@ class ButtonComponent extends Component {
     super();
     
     /**
+     * @type {boolean}
+     * Whether or not the button's rendering data is stored locally or should be retrieved from the resource manager.
+     * If the data is local, the field "sprite" must be set.
+     * If the data is not local, the field "templateKey" must be set.
+     */
+    this.dataIsLocal = true;
+
+    /**
      * @type {Sprite} The sprite of the button.
      */
     this.sprite = new Sprite("");
     /**
-     * @type {string} The text color of the button
+     * @type {string | undefined} The text color of the button
      */
     this.textColor = undefined;
     /**
-     * @type {string?} The background color of the button
+     * @type {string | undefined} The background color of the button
      */
     this.backgroundColor = undefined;
     /**
@@ -4528,6 +4536,23 @@ class ButtonComponent extends Component {
      * @type {string | undefined} The background color of the button when clicked
      */
     this.activeColor = undefined;
+
+    /**
+     * @type {string} The name of the template to use. 
+     */
+    this.templateKey = undefined;
+    /**
+     * @type {string | undefined} The frame to set by default
+     */
+    this.defaultFrame = undefined;
+    /**
+     * @type {string | undefined} The frame to set on mouse hover
+     */
+    this.hoverFrame = undefined;
+    /**
+     * @type {string | undefined} The frame to set on mouse click
+     */
+    this.activeFrame = undefined;
   }
 }
 
@@ -4632,6 +4657,25 @@ class ButtonInternalComponent extends Component {
      * @type {ButtonInternalComponent.MouseStates}
      */
     this.mouseState = ButtonInternalComponent.MouseStates.Default;
+
+    /**
+     * @type {boolean}
+     */
+    this.dataIsLocal = true;
+    this.defaultFrame = ButtonInternalComponent.MouseStates.Default;
+    this.hoverFrame = ButtonInternalComponent.MouseStates.Hover;
+    this.activeFrame = ButtonInternalComponent.MouseStates.Active;
+  }
+
+  get frameName() {
+    switch (this.mouseState) {
+      case ButtonInternalComponent.MouseStates.Default:
+        return this.defaultFrame;
+      case ButtonInternalComponent.MouseStates.Hover:
+        return this.hoverFrame;
+      case ButtonInternalComponent.MouseStates.Active:
+        return this.activeFrame;
+    }
   }
 }
 
@@ -4740,7 +4784,7 @@ class ButtonSystem extends System {
       let entity = this.buttonSubentities[subEntityId];
       let animateComponent = entity.getComponent(AsciiAnimateComponent.type);
       let buttonInternal = entity.getComponent(ButtonInternalComponent.type);
-      animateComponent.setFrame(buttonInternal.mouseState);
+      animateComponent.setFrame(buttonInternal.frameName);
     }
   }
 
@@ -4757,6 +4801,39 @@ class ButtonSystem extends System {
     let positionComponent = new PositionComponent(0, 0, 0);
     subEntity.setComponent(positionComponent);
     
+    if (buttonData.dataIsLocal) {
+      this._setupButtonAnimateComponent(subEntity, buttonData);
+    } else {
+      let rm = this.getEngine().getModule(ModuleSlots.Resources);
+      let aac = rm.get(buttonData.templateKey).construct();
+      subEntity.setComponent(aac);
+    }
+    
+    let buttonInternalComponent = new ButtonInternalComponent();
+    buttonInternalComponent.dataIsLocal = buttonData.dataIsLocal;
+    if (!buttonInternalComponent.dataIsLocal) {
+      buttonInternalComponent.defaultFrame = buttonData.defaultFrame;
+      buttonInternalComponent.hoverFrame = buttonData.hoverFrame;
+      buttonInternalComponent.activeFrame = buttonData.activeFrame;
+    }
+    subEntity.setComponent(buttonInternalComponent);
+
+    this.subscribe(["MouseEvent", subEntity.id, "click"], this._handleMouseClick, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseenter"], this._handleMouseEnter, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseleave"], this._handleMouseLeave, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mousedown"], this._handleMouseDown, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseup"], this._handleMouseUp, false);
+    
+    entity.addChild(subEntity);
+  }
+
+  /**
+   * Sets up the button's animate component for buttons whose data is local.
+   * @private
+   * @param {Entity} subEntity The entity to attach the animate component to.
+   * @param {ButtonComponent} buttonData The component containing the settings for the button
+   */
+  _setupButtonAnimateComponent(subEntity, buttonData) {
     let asciiAnimateComponent = new AsciiAnimateComponent();
     asciiAnimateComponent.dataIsLocal = true;
 
@@ -4786,17 +4863,6 @@ class ButtonSystem extends System {
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Active,
       [buttonData.sprite], [activeStyle], [[0, 0, 0]]);
     subEntity.setComponent(asciiAnimateComponent);
-    
-    let buttonInternalComponent = new ButtonInternalComponent();
-    subEntity.setComponent(buttonInternalComponent);
-
-    this.subscribe(["MouseEvent", subEntity.id, "click"], this._handleMouseClick, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mouseenter"], this._handleMouseEnter, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mouseleave"], this._handleMouseLeave, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mousedown"], this._handleMouseDown, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mouseup"], this._handleMouseUp, false);
-    
-    entity.addChild(subEntity);
   }
 
   /**

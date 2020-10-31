@@ -66,7 +66,7 @@ export default class SystemManager {
    * Alerts all changes to the Systems.
    * @private
    */
-  _postUpdateCleanup() {
+  postUpdateCleanup() {
     this._processEntityUpdates();
     this._updateSystemStatuses();
   }

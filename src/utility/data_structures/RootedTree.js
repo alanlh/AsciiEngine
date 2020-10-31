@@ -127,27 +127,27 @@ export default class RootedSearchTreeNode {
       }
       this.size -= deleted;
       for (let childKey in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, childKey);
+        deleted += this._deleteHelper(path, index, value, childKey);
       }
       if (MATCH_ANY in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+        deleted += this._deleteHelper(path, index, value, MATCH_ANY);
       }
       return deleted;
     }
     if (path[index] === undefined) {
       for (let key in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, key);
+        deleted += this._deleteHelper(path, index, value, key);
       }
       if (MATCH_ANY in this.children) {
-        deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+        deleted += this._deleteHelper(path, index, value, MATCH_ANY);
       }
       return deleted;
     }
     if (path[index] in this.children) {
-      deleted += this._deleteHelper(path, index + 1, value, path[index]);
+      deleted += this._deleteHelper(path, index, value, path[index]);
     }
     if (MATCH_ANY in this.children) {
-      deleted += this._deleteHelper(path, index + 1, value, MATCH_ANY);
+      deleted += this._deleteHelper(path, index, value, MATCH_ANY);
     }
     return deleted;
   }

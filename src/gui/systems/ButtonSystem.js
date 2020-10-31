@@ -3,6 +3,7 @@ import Entity from "../../engine/Entity";
 import PositionComponent from "../../engine/components/PositionComponent.js";
 import AsciiAnimateComponent from "../../engine/components/AsciiAnimateComponent.js";
 import Style from "../../graphics/Style.js";
+import ModuleSlots from "../../engine/modules/ModuleSlots.js";
 
 import ButtonComponent from "../components/ButtonComponent.js";
 import ButtonInternalComponent from "../components/ButtonInternalComponent";
@@ -101,7 +102,7 @@ export default class ButtonSystem extends System {
       let entity = this.buttonSubentities[subEntityId];
       let animateComponent = entity.getComponent(AsciiAnimateComponent.type);
       let buttonInternal = entity.getComponent(ButtonInternalComponent.type);
-      animateComponent.setFrame(buttonInternal.mouseState);
+      animateComponent.setFrame(buttonInternal.frameName);
     }
   }
 
@@ -118,6 +119,39 @@ export default class ButtonSystem extends System {
     let positionComponent = new PositionComponent(0, 0, 0);
     subEntity.setComponent(positionComponent);
     
+    if (buttonData.dataIsLocal) {
+      this._setupButtonAnimateComponent(subEntity, buttonData);
+    } else {
+      let rm = this.getEngine().getModule(ModuleSlots.Resources);
+      let aac = rm.get(buttonData.templateKey).construct();
+      subEntity.setComponent(aac);
+    }
+    
+    let buttonInternalComponent = new ButtonInternalComponent();
+    buttonInternalComponent.dataIsLocal = buttonData.dataIsLocal;
+    if (!buttonInternalComponent.dataIsLocal) {
+      buttonInternalComponent.defaultFrame = buttonData.defaultFrame;
+      buttonInternalComponent.hoverFrame = buttonData.hoverFrame;
+      buttonInternalComponent.activeFrame = buttonData.activeFrame;
+    }
+    subEntity.setComponent(buttonInternalComponent);
+
+    this.subscribe(["MouseEvent", subEntity.id, "click"], this._handleMouseClick, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseenter"], this._handleMouseEnter, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseleave"], this._handleMouseLeave, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mousedown"], this._handleMouseDown, false);
+    this.subscribe(["MouseEvent", subEntity.id, "mouseup"], this._handleMouseUp, false);
+    
+    entity.addChild(subEntity);
+  }
+
+  /**
+   * Sets up the button's animate component for buttons whose data is local.
+   * @private
+   * @param {Entity} subEntity The entity to attach the animate component to.
+   * @param {ButtonComponent} buttonData The component containing the settings for the button
+   */
+  _setupButtonAnimateComponent(subEntity, buttonData) {
     let asciiAnimateComponent = new AsciiAnimateComponent();
     asciiAnimateComponent.dataIsLocal = true;
 
@@ -147,17 +181,6 @@ export default class ButtonSystem extends System {
     asciiAnimateComponent.addFrame(ButtonInternalComponent.MouseStates.Active,
       [buttonData.sprite], [activeStyle], [[0, 0, 0]]);
     subEntity.setComponent(asciiAnimateComponent);
-    
-    let buttonInternalComponent = new ButtonInternalComponent();
-    subEntity.setComponent(buttonInternalComponent);
-
-    this.subscribe(["MouseEvent", subEntity.id, "click"], this._handleMouseClick, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mouseenter"], this._handleMouseEnter, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mouseleave"], this._handleMouseLeave, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mousedown"], this._handleMouseDown, false);
-    this.subscribe(["MouseEvent", subEntity.id, "mouseup"], this._handleMouseUp, false);
-    
-    entity.addChild(subEntity);
   }
 
   /**
