@@ -1644,8 +1644,9 @@ class SystemManager {
    * Enables any systems that were added.
    * Processes all changes that happened to entities in the past cycle.
    * Alerts all changes to the Systems.
+   * @private
    */
-  postUpdateCleanup() {
+  _postUpdateCleanup() {
     this._processEntityUpdates();
     this._updateSystemStatuses();
   }
