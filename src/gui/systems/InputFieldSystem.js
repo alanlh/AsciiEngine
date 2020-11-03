@@ -220,7 +220,6 @@ export default class InputFieldSystem extends System {
 
     entity.addChild(child);
 
-    // TODO: Set focusable.
     this.postMessage(["InputHandlerRequest", "AddFocusable"], child.id);
     this.subscribe(["InputHandlerFocusEvent", child.id, "FocusSet"], this._focusSet);
     this.subscribe(["InputHandlerFocusEvent", child.id, "FocusLost"], this._focusLost);
@@ -229,7 +228,7 @@ export default class InputFieldSystem extends System {
     this.subscribe(["KeyboardEvent", child.id, "keydown", "Arrow"], 
       internalComponent.handleArrowInput.bind(internalComponent));
     this.subscribe(["KeyboardEvent", child.id, "keydown", "Enter"], 
-      internalComponent.handleEnterInput.bind(internalComponent));
+      this._handleEnterInput, true);
     this.subscribe(["KeyboardEvent", child.id, "keydown", "Backspace"], 
       internalComponent.handleBackspaceInput.bind(internalComponent));
     this.subscribe(["KeyboardEvent", child.id, "keydown", "Delete"], 
@@ -246,6 +245,27 @@ export default class InputFieldSystem extends System {
     this.unsubscribe(["InputHandlerFocusEvent", childId]);
     this.unsubscribe(["KeyboardEvent", childId]);
     this.postMessage(["InputHandlerRequest", "RemoveFocusable"], childId);
+  }
+
+  /**
+   * @private
+   * @param {any} _ The body of the message. Unused.
+   * @param {Array<string>} descriptor The message path descriptor
+   */
+  _handleEnterInput(_, descriptor) {
+    let targetId = descriptor[1];
+    if (!(targetId in this.childEntities)) {
+      // This shouldn't happen.
+      throw new Error("InputFieldSystem received a message for an internal entity that no longer exists in the system:", targetId);
+    }
+    /** @type {Entity} */
+    let childEntity = this.childEntities[targetId];
+    let internalComponent = childEntity.getComponent(InputFieldInternalComponent.type);
+    internalComponent.handleEnterInput();
+    if (!internalComponent.multiLine) {
+      let parentEntityId = childEntity.getParent().id;
+      this.postMessage(["InputFieldEvent", parentEntityId, "submit"], {});
+    }
   }
 
   /**
