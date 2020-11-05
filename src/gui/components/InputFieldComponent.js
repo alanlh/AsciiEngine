@@ -42,16 +42,19 @@ export default class InputFieldComponent extends Component {
 
     /**
      * @type {boolean}
+     * @deprecated
      */
     this.editable = false;
 
     /**
      * @type {number}
+     * @deprecated
      */
     this.maxLength = 0;
   }
 
   /**
+   * @readonly
    * @returns {boolean}
    */
   get currentText() {

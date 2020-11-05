@@ -26,18 +26,30 @@ export default class InputFieldSystem extends System {
      * @private
      */
     this.parentEntities = {};
+    /**
+     * @private
+     */
     this.childEntities = {};
     /**
      * @private
      */
     this.childMap = {};
-    /**
-     * @private
-     */
 
+    /**
+     * @type {string}
+     */
     this.defaultTextColor = "#222222";
+    /**
+     * @type {string}
+     */
     this.defaultBackgroundColor = "#dddddd";
+    /**
+     * @type {string}
+     */
     this.defaultFocusedColor = "#bbbbbb";
+    /**
+     * @type {string}
+     */
     this.defaultCursorColor = "#888888";
 
     /**
@@ -174,8 +186,8 @@ export default class InputFieldSystem extends System {
   /**
    * Performs setup work for a newly registered Text Field.
    * The child entity should only be managed by TextFieldSystem. 
-   * @param {Entity} entity The newly added entity to initialize
    * @private
+   * @param {Entity} entity The newly added entity to initialize
    */
   _constructChildEntity(entity) {
     let textFieldData = entity.getComponent(InputFieldComponent.type);
@@ -245,6 +257,11 @@ export default class InputFieldSystem extends System {
     this.unsubscribe(["InputHandlerFocusEvent", childId]);
     this.unsubscribe(["KeyboardEvent", childId]);
     this.postMessage(["InputHandlerRequest", "RemoveFocusable"], childId);
+    if (this.cursorComponent.placedEntityKey === childId) {
+      this.cursorComponent.placedEntityKey = undefined;
+      let cursorRender = this.cursorEntity.getComponent(AsciiRenderComponent.type);
+      cursorRender.visible = false;
+    }
   }
 
   /**
