@@ -55,7 +55,7 @@ export default class InputFieldComponent extends Component {
 
   /**
    * @readonly
-   * @returns {boolean}
+   * @returns {string}
    */
   get currentText() {
     return this._currentText;

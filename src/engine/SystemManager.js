@@ -200,7 +200,6 @@ export default class SystemManager {
     priority = priority || 0;
     this._systems[system.name] = system;
     this._systemPriorities[system.name] = priority;
-    system.init(this);
 
     if (delay) {
       this._systemsToEnable.add(system);
@@ -215,6 +214,8 @@ export default class SystemManager {
         system.add(entity);
       }
     }
+
+    system.init(this);
   }
   
   /**
