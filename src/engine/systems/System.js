@@ -109,7 +109,7 @@ export default class System {
   /**
    * A wrapper around SystemMessageBoard's subscribe.
    * @param {Array<string>} descriptor The event path descriptor
-   * @param {import("../SystemMessageBoard").EventHandler} handler The event handler
+   * @param {([event]: any, [descriptor]: Array<string>, [sender]: string) => void} handler The event handler
    * @param {boolean} bind Whether or not the event handler should be bound to this.
    * @param {string} [source] The source system. If undefined, will accept any system.
    */
