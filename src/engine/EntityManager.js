@@ -149,7 +149,7 @@ export default class EntityManager {
    * Does not have an associated 
    * 
    * @param {Entity} entity The entity to add.
-   * @param {String} [parent] The parent to add the entity under. If undefined, 
+   * @param {Entity} [parent] The parent entity to add the new entity under. If undefined, 
    * then the entity is added as a root node.
    */
   requestAddEntity(entity, parent) {

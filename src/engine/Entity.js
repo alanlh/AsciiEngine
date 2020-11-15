@@ -105,7 +105,7 @@ export default class Entity {
    * Do not call directly if initialized. Call Entity.markForDeletion instead.
    */
   destroy() {
-    // First destories all children.
+    // First destroys all children.
     for (let childId in this._children) {
       this._children[childId].destroy();
     }

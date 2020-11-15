@@ -54,7 +54,6 @@ export default class InputFieldComponent extends Component {
   }
 
   /**
-   * @readonly
    * @returns {string}
    */
   get currentText() {

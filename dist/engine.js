@@ -183,7 +183,7 @@ class Entity {
    * Do not call directly if initialized. Call Entity.markForDeletion instead.
    */
   destroy() {
-    // First destories all children.
+    // First destroys all children.
     for (let childId in this._children) {
       this._children[childId].destroy();
     }
@@ -675,7 +675,7 @@ class EntityManager {
    * Does not have an associated 
    * 
    * @param {Entity} entity The entity to add.
-   * @param {String} [parent] The parent to add the entity under. If undefined, 
+   * @param {Entity} [parent] The parent entity to add the new entity under. If undefined, 
    * then the entity is added as a root node.
    */
   requestAddEntity(entity, parent) {
@@ -943,7 +943,7 @@ class System {
   /**
    * A wrapper around SystemMessageBoard's subscribe.
    * @param {Array<string>} descriptor The event path descriptor
-   * @param {(event: any, descriptor: Array<string>, sender: string) => void} handler The event handler
+   * @param {([event]: any, [descriptor]: Array<string>, [sender]: string) => void} handler The event handler
    * @param {boolean} bind Whether or not the event handler should be bound to this.
    * @param {string} [source] The source system. If undefined, will accept any system.
    */
@@ -4613,7 +4613,6 @@ class InputFieldComponent extends Component {
   }
 
   /**
-   * @readonly
    * @returns {string}
    */
   get currentText() {
