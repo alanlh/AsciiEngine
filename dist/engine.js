@@ -2133,7 +2133,7 @@ class AsciiAnimateComponent extends Component {
    * @param {string} name The name of the frame
    * @param {string[] | Sprite[]} spriteNameList The list of sprites or sprite names in the frame
    * @param {string[] | Style[]} styleNameList The list of styles or style names in the frame
-   * @param {[x: number, y: number, z: number][]} relativePositionList The list of positions to render at
+   * @param {[number, number, number][]} relativePositionList The list of positions to render at
    */
   addFrame(
     name,
