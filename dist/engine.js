@@ -5267,6 +5267,8 @@ class InputFieldSystem extends System {
   }
 
   postUpdate() {
+    // TODO: Do we need to iterate over all fields?
+    // Is it possible for anything other than the entity which the cursor is on/previously on to be changed?
     for (let parentId in this.childMap) {
       let childId = this.childMap[parentId];
       let childEntity = this.childEntities[childId];
@@ -5275,7 +5277,9 @@ class InputFieldSystem extends System {
       let publicComponent = parentEntity.getComponent(InputFieldComponent.type);
       let internalComponent = childEntity.getComponent(InputFieldInternalComponent.type);
 
-      if (!internalComponent.changed) {
+      // If cursor placed on entity, still need to update because the field's position could be changed via a parent.
+      // If so, we need to also update the position of the cursor.
+      if (!internalComponent.changed && this.cursorComponent.placedEntityKey !== childId) {
         continue;
       }
 
@@ -5297,7 +5301,7 @@ class InputFieldSystem extends System {
         continue;
       }
 
-      let positionComponent = this._getChildGlobalPositionComponent(childId);
+      let positionComponent = this._getChildGlobalPosition(childId);
       let globalCursorX = positionComponent.x + internalComponent.cursorX - internalComponent.viewX;
       let globalCursorY = positionComponent.y + internalComponent.cursorY - internalComponent.viewY;
       
@@ -5455,7 +5459,7 @@ class InputFieldSystem extends System {
    */
   _placeCursor(clickPosition, targetEntity) {
     let targetData = targetEntity.getComponent(InputFieldInternalComponent.type);
-    let targetPosition = this._getChildGlobalPositionComponent(targetEntity.id);
+    let targetPosition = this._getChildGlobalPosition(targetEntity.id);
 
     targetData.placeCursor(clickPosition.x - targetPosition.x,
       clickPosition.y - targetPosition.y);
@@ -5475,10 +5479,25 @@ class InputFieldSystem extends System {
    * @private
    * @param {any} entity 
    */
-  _getChildGlobalPositionComponent(childId) {
+  _getChildGlobalPosition(childId) {
     let childEntity = this.childEntities[childId];
     let parentEntity = childEntity.getParent();
-    return parentEntity.getComponent(PositionComponent.type);
+
+    let position = {
+      x: 0,
+      y: 0,
+      z: 0,
+    };
+    while (parentEntity) {
+      if (parentEntity.hasComponent(PositionComponent.type)) {
+        let relativePosition = parentEntity.getComponent(PositionComponent.type);
+        position.x += relativePosition.x;
+        position.y += relativePosition.y;
+        position.z += relativePosition.z;
+      }
+      parentEntity = parentEntity.getParent();
+    }
+    return position;
   }
 }
 
