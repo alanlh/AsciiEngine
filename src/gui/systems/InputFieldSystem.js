@@ -175,13 +175,15 @@ export default class InputFieldSystem extends System {
         continue;
       }
 
-      let positionComponent = this._getChildGlobalPosition(childId);
-      let globalCursorX = positionComponent.x + internalComponent.cursorX - internalComponent.viewX;
-      let globalCursorY = positionComponent.y + internalComponent.cursorY - internalComponent.viewY;
+      let position = this._getChildGlobalPosition(childId);
+      let globalCursorX = position.x + internalComponent.cursorX - internalComponent.viewX;
+      let globalCursorY = position.y + internalComponent.cursorY - internalComponent.viewY;
       
       let cursorPosition = this.cursorEntity.getComponent(PositionComponent.type);
       cursorPosition.x = globalCursorX;
       cursorPosition.y = globalCursorY;
+      // Subtract one so that the cursor is always on top.
+      cursorPosition.z = position.z - 1;
 
       internalComponent.changed = false;
     }
