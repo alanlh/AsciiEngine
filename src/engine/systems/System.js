@@ -148,10 +148,18 @@ export default class System {
   // Methods above should not be overriden. Methods below should be.
   
   /**
-   * Runs when the System is initialized. Should be independent of any entities.
+   * Runs when the System is first registered to the engine.
+   * At this point, any existing entities in the engine will have been added to the System,
+   * but not any entities added during the same game loop (including those added by this system).
    * @interface
    */
-  startup() {}
+  startup() { }
+  
+  /**
+   * Runs when the System has added all of the entities added during startup.
+   * @interface
+   */
+  onInit() { }
   
   /**
    * Runs when the system is removed from the SystemManager.

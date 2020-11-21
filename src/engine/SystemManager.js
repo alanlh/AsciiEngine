@@ -37,6 +37,12 @@ export default class SystemManager {
      * @type {Set<System>}
      * @private
      */
+    this._newSystems = new Set();
+
+    /**
+     * @type {Set<System>}
+     * @private
+     */
     this._systemsToEnable = new Set();
     // Remove and disable are different because we should not call shutdown until after end of cycle. However, we can call startup immediately.
     /**
@@ -113,11 +119,16 @@ export default class SystemManager {
 
     this._engine.getEntityManager().markEntityChangesAsHandled();
   }
-
+  
   /**
    * @private
    */
   _updateSystemStatuses() {
+    for (let system of this._newSystems) {
+      system.onInit();
+    }
+    this._newSystems.clear();
+
     for (let system of this._systemsToEnable) {
       this._enableSystem(system);
     }
@@ -187,7 +198,7 @@ export default class SystemManager {
   /**
    * Adds a system to the SystemManager. 
    * The default priority is 0.
-   * By default, the system is added immediately. (DELAY NOT IMPLEMENTED)
+   * By default, the system is added immediately.
    * 
    * @param {System} system The system to add
    * @param {number} [priority] The priority of the system. Lower priorities are run first. Default 0.
@@ -200,6 +211,8 @@ export default class SystemManager {
     priority = priority || 0;
     this._systems[system.name] = system;
     this._systemPriorities[system.name] = priority;
+
+    this._newSystems.add(system);
 
     if (delay) {
       this._systemsToEnable.add(system);

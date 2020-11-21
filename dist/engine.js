@@ -982,10 +982,18 @@ class System {
   // Methods above should not be overriden. Methods below should be.
   
   /**
-   * Runs when the System is initialized. Should be independent of any entities.
+   * Runs when the System is first registered to the engine.
+   * At this point, any existing entities in the engine will have been added to the System,
+   * but not any entities added during the same game loop (including those added by this system).
    * @interface
    */
-  startup() {}
+  startup() { }
+  
+  /**
+   * Runs when the System has added all of the entities added during startup.
+   * @interface
+   */
+  onInit() { }
   
   /**
    * Runs when the system is removed from the SystemManager.
@@ -1617,6 +1625,12 @@ class SystemManager {
      * @type {Set<System>}
      * @private
      */
+    this._newSystems = new Set();
+
+    /**
+     * @type {Set<System>}
+     * @private
+     */
     this._systemsToEnable = new Set();
     // Remove and disable are different because we should not call shutdown until after end of cycle. However, we can call startup immediately.
     /**
@@ -1693,11 +1707,16 @@ class SystemManager {
 
     this._engine.getEntityManager().markEntityChangesAsHandled();
   }
-
+  
   /**
    * @private
    */
   _updateSystemStatuses() {
+    for (let system of this._newSystems) {
+      system.onInit();
+    }
+    this._newSystems.clear();
+
     for (let system of this._systemsToEnable) {
       this._enableSystem(system);
     }
@@ -1767,7 +1786,7 @@ class SystemManager {
   /**
    * Adds a system to the SystemManager. 
    * The default priority is 0.
-   * By default, the system is added immediately. (DELAY NOT IMPLEMENTED)
+   * By default, the system is added immediately.
    * 
    * @param {System} system The system to add
    * @param {number} [priority] The priority of the system. Lower priorities are run first. Default 0.
@@ -1780,6 +1799,8 @@ class SystemManager {
     priority = priority || 0;
     this._systems[system.name] = system;
     this._systemPriorities[system.name] = priority;
+
+    this._newSystems.add(system);
 
     if (delay) {
       this._systemsToEnable.add(system);
