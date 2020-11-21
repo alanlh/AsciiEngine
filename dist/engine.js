@@ -1622,27 +1622,37 @@ class SystemManager {
     this._messageBoard = new MessageBoard();
 
     /**
-     * @type {Set<System>}
+     * @type {[Set<System>, Set<System>]}
      * @private
      */
-    this._newSystems = new Set();
+    this._newSystems = [new Set(), new Set()];
 
     /**
-     * @type {Set<System>}
+     * @type {[Set<System>, Set<System>]}
      * @private
      */
-    this._systemsToEnable = new Set();
+    this._systemsToEnable = [new Set(), new Set()];
     // Remove and disable are different because we should not call shutdown until after end of cycle. However, we can call startup immediately.
     /**
-     * @type {Set<System>}
+     * @type {[Set<System>, Set<System>]}
      * @private
      */
-    this._systemsToDisable = new Set();
+    this._systemsToDisable = [new Set(), new Set()];
     /**
-     * @type {Set<System>}
+     * @type {[Set<System>, Set<System>]}
      * @priavte
      */
-    this._systemsToRemove = new Set();
+    this._systemsToRemove = [new Set(), new Set()];
+
+    /**
+     * @private
+     */
+    this.BUFFER_TO_ADD_KEY = 0;
+
+    /**
+     * @private
+     */
+    this.BUFFER_TO_USE_KEY = 0;
   }
   
   /**
@@ -1710,28 +1720,37 @@ class SystemManager {
   
   /**
    * @private
+   * Using buffers so that any system changes that occur during the call are not processed immediately.
    */
   _updateSystemStatuses() {
-    for (let system of this._newSystems) {
+    // Flip the add key so that any changes are added to the other buffer.
+    this.BUFFER_TO_ADD_KEY = 1 - this.BUFFER_TO_ADD_KEY;
+    let newSystemBuffer = this._newSystems[this.BUFFER_TO_USE_KEY];
+    for (let system of newSystemBuffer) {
       system.onInit();
     }
-    this._newSystems.clear();
-
-    for (let system of this._systemsToEnable) {
+    newSystemBuffer.clear();
+    
+    let systemsToEnable = this._systemsToEnable[this.BUFFER_TO_USE_KEY];
+    for (let system of systemsToEnable) {
       this._enableSystem(system);
     }
-    this._systemsToEnable.clear();
+    systemsToEnable.clear();
 
-    for (let system of this._systemsToDisable) {
+    let systemsToDisable = this._systemsToDisable[this.BUFFER_TO_USE_KEY];
+    for (let system of systemsToDisable) {
       this._activeSystems.delete(this._systemPriorities[system.name], system);
       system.disable();
     }
-    this._systemsToDisable.clear();
+    systemsToDisable.clear();
 
-    for (let system of this._systemsToRemove) {
+    let systemsToRemove = this._systemsToRemove[this.BUFFER_TO_USE_KEY];
+    for (let system of systemsToRemove) {
       this._removeSystem(system);
     }
-    this._systemsToRemove.clear();
+    systemsToRemove.clear();
+
+    this.BUFFER_TO_USE_KEY = 1 - this.BUFFER_TO_USE_KEY;
   }
 
   /**
@@ -1800,10 +1819,10 @@ class SystemManager {
     this._systems[system.name] = system;
     this._systemPriorities[system.name] = priority;
 
-    this._newSystems.add(system);
+    this._newSystems[this.BUFFER_TO_ADD_KEY].add(system);
 
     if (delay) {
-      this._systemsToEnable.add(system);
+      this._systemsToEnable[this.BUFFER_TO_ADD_KEY].add(system);
     } else {
       this._enableSystem(system);
     }
@@ -1829,7 +1848,7 @@ class SystemManager {
     if (name in this._systems) {
       let system = this._systems[name];
       if (delay) {
-        this._systemsToRemove.add(system);
+        this._systemsToRemove[this.BUFFER_TO_ADD_KEY].add(system);
       } else {
         this._removeSystem(system);
       }
@@ -1850,7 +1869,7 @@ class SystemManager {
     }
     let system = this._systems[name];
     if (delay) {
-      this._systemsToEnable.add(system);
+      this._systemsToEnable[this.BUFFER_TO_ADD_KEY].add(system);
     } else {
       this._enableSystem(system);
     }
@@ -1870,7 +1889,7 @@ class SystemManager {
     if (name in this._systems) {
       let system = this._systems[name];
       if (delay) {
-        this._systemsToDisable.add(system);
+        this._systemsToDisable[this.BUFFER_TO_ADD_KEY].add(system);
       } else {
         this._disableSystem(system);
       }
