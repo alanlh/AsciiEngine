@@ -12,6 +12,10 @@ export default class SetSystem extends System {
     if (this.constructor === SetSystem) {
       throw new TypeError("SetSystem cannot be instantiated directly!");
     }
+    /**
+     * @protected
+     * @type {Set<Entity>}
+     */
     this.entities = new Set();
   }
   

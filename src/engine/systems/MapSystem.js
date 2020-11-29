@@ -11,6 +11,10 @@ export default class MapSystem extends System {
   constructor(name) {
     super(name);
     
+    /**
+     * @protected
+     * @type{Object<string, Entity>}
+     */
     this.entities = {};
   }
   
