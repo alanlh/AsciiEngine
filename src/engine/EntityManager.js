@@ -175,8 +175,10 @@ export default class EntityManager {
    * @param {Entity} entity 
    */
   notifyAddition(entity) {
-    this._added.add(entity);
-    this.entities.add(entity);
+    if (!this.entities.has(entity)) {
+      this._added.add(entity);
+      this.entities.add(entity);
+    }
   }
   
   /**
@@ -203,8 +205,10 @@ export default class EntityManager {
    * @param {Entity} entity 
    */
   notifyDeletion(entity) {
-    this._deleted.add(entity);
-    this.entities.delete(entity);
+    if (!this.entities.has(entity)) {
+      this._deleted.add(entity);
+      this.entities.delete(entity);
+    }
   }
   
   /**

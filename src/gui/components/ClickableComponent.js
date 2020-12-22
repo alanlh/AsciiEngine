@@ -43,3 +43,5 @@ export default class ClickableComponent extends Component {
     this._activeFrame = value;
   }
 }
+
+ClickableComponent.type = "Clickable";
