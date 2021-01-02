@@ -229,6 +229,22 @@ class Entity {
   get id() {
     return this._id;
   }
+
+  /**
+   * Returns a list of the ids of the entity's children.
+   */
+  getChildIds() {
+    return Object.keys(this._children);
+  }
+
+  /**
+   * Iterates over the ids of this entity's children.
+   */
+  *getChildIdIt() {
+    for (let id in this._children) {
+      yield id;
+    }
+  }
   
   // ---------- PUBLIC API ----------- //
   
@@ -731,7 +747,7 @@ class EntityManager {
    * @param {Entity} entity 
    */
   notifyDeletion(entity) {
-    if (!this.entities.has(entity)) {
+    if (this.entities.has(entity)) {
       this._deleted.add(entity);
       this.entities.delete(entity);
     }
@@ -5057,6 +5073,7 @@ class ButtonSystem extends System {
 /**
  * An alternate implementation of ButtonSystem where the user provides the render components.
  * This can be used with both Animate and Render components, but render components will not react to mouse events.
+ * Messages will be sent for both Animate and Render components.
  */
 class ClickableSystem extends MapSystem {
   constructor() {
@@ -5082,6 +5099,13 @@ class ClickableSystem extends MapSystem {
      * @private
      */
     this._handleMouseUp = this._handleMouseUp.bind(this);
+
+    /**
+     * @private
+     * Keep track of entities that are currently being hovered or clicked.
+     * If their visibility is set to false, then their state needs to be reset back to Default.
+     */
+    this._mousedOverEntities = new Set();
   }
 
   check(entity) {
@@ -5102,8 +5126,23 @@ class ClickableSystem extends MapSystem {
 
   remove(entity) {
     this.unsubscribe(["MouseEvent", entity.id]);
+    if (this._mousedOverEntities.has(entity.id)) {
+      this._mousedOverEntities.delete(entity.id);
+    }
     
     super.remove(entity);
+  }
+
+  update() {
+    for (let entityId of this._mousedOverEntities) {
+      const entity = this.entities[entityId];
+      if (entity.hasComponent(AsciiAnimateComponent.type)) {
+        const animateComponent = entity.getComponent(AsciiAnimateComponent.type);
+        if (animateComponent.visible === false) {
+          this._updateClickableMouseState(entityId, ClickableSystem.MouseStates.Default);
+        }
+      }
+    }
   }
 
   /**
@@ -5180,9 +5219,11 @@ class ClickableSystem extends MapSystem {
     switch (mouseState) {
       case ClickableSystem.MouseStates.Default:
         animateComponent.setFrame(clickableComponent.defaultFrame);
+        this._mousedOverEntities.delete(entityId);
         break;
       case ClickableSystem.MouseStates.Hover:
         animateComponent.setFrame(clickableComponent.hoverFrame);
+        this._mousedOverEntities.add(entityId);
         break;
       case ClickableSystem.MouseStates.Active:
         animateComponent.setFrame(clickableComponent.activeFrame);

@@ -151,6 +151,34 @@ export default class Entity {
   get id() {
     return this._id;
   }
+
+  /**
+   * Returns an array of the ids of the entity's children. For now, order is not defined.
+   * @param {boolean} [recursive] Whether or not to recursively include this entity's children too. Default true.
+   * @returns {Array<string>}
+   */
+  getChildIds(recursive = true) {
+    if (recursive) {
+      return new Array(this.getChildIdIt(true));
+    }
+    return Object.keys(this._children);
+  }
+
+  /**
+   * Iterates over the ids of this entity's children. For now, order is not defined.
+   * @param {boolean} [recursive] Whether or not to recursively include this entity's children too. Default true.
+   */
+  *getChildIdIt(recursive = true) {
+    for (let id in this._children) {
+      yield id;
+      if (recursive) {
+        let childEntity = this._children[id];
+        for (let childId of childEntity.getChildIdIt(true)) {
+          yield childId;
+        }
+      }
+    }
+  }
   
   // ---------- PUBLIC API ----------- //
   

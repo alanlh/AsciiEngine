@@ -205,7 +205,7 @@ export default class EntityManager {
    * @param {Entity} entity 
    */
   notifyDeletion(entity) {
-    if (!this.entities.has(entity)) {
+    if (this.entities.has(entity)) {
       this._deleted.add(entity);
       this.entities.delete(entity);
     }
